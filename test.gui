@@ -1,0 +1,344 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<gui namespace='GTK+' version='12'>
+	<entity name='alignment1' type='GtkAlignment'>
+		<scalar name='as-container' type='bool'>true</scalar>
+		<vector name='children'>
+			<entity type='CrowRowChild'>
+				<link name='widget'>image1</link>
+			</entity>
+		</vector>
+	</entity>
+	<entity name='alignment2' type='GtkAlignment'>
+		<scalar name='as-container' type='bool'>true</scalar>
+		<vector name='children'>
+			<entity type='CrowRowChild'>
+				<link name='widget'>label3</link>
+			</entity>
+		</vector>
+		<scalar name='yalign' type='float'>0</scalar>
+	</entity>
+	<entity name='hBox1' type='GtkHBox'>
+		<scalar name='as-container' type='bool'>true</scalar>
+		<scalar name='capacity' type='CrowPoint'>2,0</scalar>
+		<vector name='children'>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>1</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>vBox2</link>
+			</entity>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>0</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>treeView1</link>
+			</entity>
+		</vector>
+	</entity>
+	<entity name='hBox2' type='GtkHBox'>
+		<scalar name='as-container' type='bool'>true</scalar>
+		<scalar name='capacity' type='CrowPoint'>2,0</scalar>
+		<vector name='children'>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>0</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>label1</link>
+			</entity>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>1</scalar>
+				<scalar name='options' type='CrowPackOptions'>CROW_PACK_SHRINK</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>alignment1</link>
+			</entity>
+		</vector>
+	</entity>
+	<entity name='hBox3' type='GtkHBox'>
+		<scalar name='as-container' type='bool'>true</scalar>
+		<scalar name='capacity' type='CrowPoint'>3,0</scalar>
+		<vector name='children'>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>0</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>vBox4</link>
+			</entity>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>1</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>vBox5</link>
+			</entity>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>2</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>vBox6</link>
+			</entity>
+		</vector>
+		<scalar name='homogeneous' type='bool'>true</scalar>
+	</entity>
+	<entity name='hBox4' type='GtkHBox'>
+		<scalar name='as-container' type='bool'>true</scalar>
+		<scalar name='border-width' type='unsigned'>3</scalar>
+		<scalar name='capacity' type='CrowPoint'>2,0</scalar>
+		<vector name='children'>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>0</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>vBox7</link>
+			</entity>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>1</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>vBox8</link>
+			</entity>
+		</vector>
+		<scalar name='homogeneous' type='bool'>true</scalar>
+	</entity>
+	<entity name='image1' type='GtkImage'>
+		<scalar name='icon-name' type='string'>face-monkey</scalar>
+		<scalar name='icon-size' type='GtkIconSize'>GTK_ICON_SIZE_DIALOG</scalar>
+		<scalar name='size-request' type='CrowPoint'>50,45</scalar>
+	</entity>
+	<entity name='image2' type='GtkImage'>
+		<scalar name='icon-name' type='string'>face-monkey</scalar>
+		<scalar name='icon-size' type='GtkIconSize'>GTK_ICON_SIZE_DIALOG</scalar>
+		<scalar name='size-request' type='CrowPoint'>60,60</scalar>
+	</entity>
+	<entity name='image3' type='GtkImage'>
+		<scalar name='icon-name' type='string'>face-monkey</scalar>
+		<scalar name='icon-size' type='GtkIconSize'>GTK_ICON_SIZE_DIALOG</scalar>
+		<scalar name='size-request' type='CrowPoint'>60,65</scalar>
+	</entity>
+	<entity name='label1' type='GtkLabel'>
+		<scalar name='label' type='string'>&lt;span size="x-large"&gt;Title&lt;/span&gt;</scalar>
+		<scalar name='selectable' type='bool'>true</scalar>
+		<scalar name='use-markup' type='bool'>true</scalar>
+		<scalar name='use-underline' type='bool'>true</scalar>
+		<scalar name='xalign' type='float'>0.1</scalar>
+	</entity>
+	<entity name='label2' type='GtkLabel'>
+		<scalar name='label' type='string'>Discription:</scalar>
+		<scalar name='xalign' type='float'>0</scalar>
+	</entity>
+	<entity name='label3' type='GtkLabel'>
+		<scalar name='label' type='string'>This is the ultimat task for you and your family. Thanks to the best engenierien \n lol</scalar>
+		<scalar name='selectable' type='bool'>true</scalar>
+		<scalar name='wrap' type='bool'>true</scalar>
+		<scalar name='xalign' type='float'>0.03</scalar>
+		<scalar name='yalign' type='float'>0</scalar>
+	</entity>
+	<entity name='label4' type='GtkLabel'>
+		<scalar name='label' type='string'>Created:</scalar>
+	</entity>
+	<entity name='label5' type='GtkLabel'>
+		<scalar name='label' type='string'>Started:</scalar>
+	</entity>
+	<entity name='label6' type='GtkLabel'>
+		<scalar name='label' type='string'>Due:</scalar>
+	</entity>
+	<entity name='label7' type='GtkLabel'>
+		<scalar name='label' type='string'>12.11.2012</scalar>
+	</entity>
+	<entity name='label8' type='GtkLabel'>
+		<scalar name='label' type='string'>12.11.2012</scalar>
+	</entity>
+	<entity name='label9' type='GtkLabel'>
+		<scalar name='label' type='string'>12.11.2012</scalar>
+	</entity>
+	<entity name='label10' type='GtkLabel'>
+		<scalar name='label' type='string'>Creater:</scalar>
+	</entity>
+	<entity name='label11' type='GtkLabel'>
+		<scalar name='label' type='string'>Owner:</scalar>
+	</entity>
+	<entity name='label12' type='GtkLabel'>
+		<scalar name='label' type='string'>Max Ungültig</scalar>
+	</entity>
+	<entity name='label13' type='GtkLabel'>
+		<scalar name='label' type='string'>Max Ungültig</scalar>
+	</entity>
+	<entity name='notebook1' type='GtkNotebook'>
+		<scalar name='as-container' type='bool'>true</scalar>
+		<scalar name='capacity' type='int'>2</scalar>
+		<vector name='children'>
+			<entity type='CrowNotebookChild'>
+				<scalar name='index' type='int'>0</scalar>
+				<link name='widget'>vBox3</link>
+			</entity>
+		</vector>
+		<scalar name='page' type='int'>0</scalar>
+		<scalar name='scrollable' type='bool'>true</scalar>
+		<scalar name='tab-pos' type='GtkPositionType'>GTK_POS_BOTTOM</scalar>
+	</entity>
+	<entity name='toolbar1' type='GtkToolbar'>
+	</entity>
+	<entity name='treeView1' type='GtkTreeView'>
+		<scalar name='headers-visible' type='bool'>false</scalar>
+		<scalar name='sample-data' type='bool'>true</scalar>
+		<scalar name='size-request' type='CrowPoint'>30,-1</scalar>
+	</entity>
+	<entity name='vBox1' type='GtkVBox'>
+		<scalar name='as-container' type='bool'>true</scalar>
+		<scalar name='capacity' type='CrowPoint'>2,0</scalar>
+		<vector name='children'>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>0</scalar>
+				<scalar name='options' type='CrowPackOptions'>CROW_PACK_SHRINK</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>toolbar1</link>
+			</entity>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>1</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>hBox1</link>
+			</entity>
+		</vector>
+	</entity>
+	<entity name='vBox2' type='GtkVBox'>
+		<scalar name='as-container' type='bool'>true</scalar>
+		<scalar name='capacity' type='CrowPoint'>2,0</scalar>
+		<vector name='children'>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>1</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>notebook1</link>
+			</entity>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>0</scalar>
+				<scalar name='options' type='CrowPackOptions'>CROW_PACK_SHRINK</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>hBox2</link>
+			</entity>
+		</vector>
+	</entity>
+	<entity name='vBox3' type='GtkVBox'>
+		<scalar name='as-container' type='bool'>true</scalar>
+		<scalar name='capacity' type='CrowPoint'>4,0</scalar>
+		<vector name='children'>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>0</scalar>
+				<scalar name='options' type='CrowPackOptions'>CROW_PACK_SHRINK</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>label2</link>
+			</entity>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>1</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>alignment2</link>
+			</entity>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>3</scalar>
+				<scalar name='options' type='CrowPackOptions'>CROW_PACK_SHRINK</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>hBox3</link>
+			</entity>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>2</scalar>
+				<scalar name='options' type='CrowPackOptions'>CROW_PACK_SHRINK</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>hBox4</link>
+			</entity>
+		</vector>
+	</entity>
+	<entity name='vBox4' type='GtkVBox'>
+		<scalar name='as-container' type='bool'>true</scalar>
+		<scalar name='capacity' type='CrowPoint'>2,0</scalar>
+		<vector name='children'>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>0</scalar>
+				<scalar name='options' type='CrowPackOptions'>CROW_PACK_SHRINK</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>label4</link>
+			</entity>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>1</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>label7</link>
+			</entity>
+		</vector>
+	</entity>
+	<entity name='vBox5' type='GtkVBox'>
+		<scalar name='as-container' type='bool'>true</scalar>
+		<scalar name='capacity' type='CrowPoint'>2,0</scalar>
+		<vector name='children'>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>0</scalar>
+				<scalar name='options' type='CrowPackOptions'>CROW_PACK_SHRINK</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>label5</link>
+			</entity>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>1</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>label8</link>
+			</entity>
+		</vector>
+	</entity>
+	<entity name='vBox6' type='GtkVBox'>
+		<scalar name='as-container' type='bool'>true</scalar>
+		<scalar name='capacity' type='CrowPoint'>2,0</scalar>
+		<vector name='children'>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>0</scalar>
+				<scalar name='options' type='CrowPackOptions'>CROW_PACK_SHRINK</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>label6</link>
+			</entity>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>1</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>label9</link>
+			</entity>
+		</vector>
+	</entity>
+	<entity name='vBox7' type='GtkVBox'>
+		<scalar name='as-container' type='bool'>true</scalar>
+		<scalar name='capacity' type='CrowPoint'>3,0</scalar>
+		<vector name='children'>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>0</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>label10</link>
+			</entity>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>1</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>image2</link>
+			</entity>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>2</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>label12</link>
+			</entity>
+		</vector>
+	</entity>
+	<entity name='vBox8' type='GtkVBox'>
+		<scalar name='as-container' type='bool'>true</scalar>
+		<scalar name='capacity' type='CrowPoint'>3,0</scalar>
+		<vector name='children'>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>0</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>label11</link>
+			</entity>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>1</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>image3</link>
+			</entity>
+			<entity type='CrowBoxChild'>
+				<scalar name='index' type='int'>2</scalar>
+				<scalar name='pack' type='int'>0</scalar>
+				<link name='widget'>label13</link>
+			</entity>
+		</vector>
+	</entity>
+	<entity name='window1' type='GtkWindow'>
+		<scalar name='as-container' type='bool'>true</scalar>
+		<vector name='children'>
+			<entity type='CrowRowChild'>
+				<link name='widget'>vBox1</link>
+			</entity>
+		</vector>
+		<scalar name='default-size' type='CrowPoint'>600,280</scalar>
+		<scalar name='design-size' type='CrowPoint'>822,574</scalar>
+		<scalar name='size-request' type='CrowPoint'>600,280</scalar>
+		<scalar name='title' type='string'>Tasks</scalar>
+	</entity>
+</gui>
