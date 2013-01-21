@@ -1,23 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
+  <object class="GtkTextBuffer" id="textbuffer1">
+    <property name="text" translatable="yes">aloz of test alot of this is alot of text.
+Bitte alles schön zusammen schreiben und ambesten nichts zu nah</property>
+  </object>
   <object class="GtkListStore" id="task_list">
     <columns>
       <!-- column-name Task -->
       <column type="gchararray"/>
+      <!-- column-name GtkMessageType1 -->
+      <column type="GtkMessageType"/>
     </columns>
     <data>
       <row>
         <col id="0" translatable="yes">Task 1</col>
+        <col id="1">warning</col>
       </row>
       <row>
         <col id="0" translatable="yes">Task 2</col>
+        <col id="1">info</col>
       </row>
     </data>
   </object>
-  <object class="GtkTextBuffer" id="textbuffer1">
-    <property name="text" translatable="yes">aloz of test alot of this is alot of text.
-Bitte alles schön zusammen schreiben und ambesten nichts zu nah</property>
+  <object class="GtkTextBuffer" id="textbuffer2">
+    <property name="text" translatable="yes">This is a rather long comment for the world</property>
   </object>
   <object class="GtkWindow" id="window1">
     <property name="width_request">600</property>
@@ -47,11 +54,12 @@ Bitte alles schön zusammen schreiben und ambesten nichts zu nah</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkTreeView" id="treeview1">
+              <object class="GtkTreeView" id="task_view">
                 <property name="width_request">200</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="model">task_list</property>
+                <property name="search_column">5</property>
                 <child internal-child="selection">
                   <object class="GtkTreeSelection" id="treeview-selection2"/>
                 </child>
@@ -122,7 +130,7 @@ Bitte alles schön zusammen schreiben und ambesten nichts zu nah</property>
                     <property name="tab_pos">bottom</property>
                     <property name="show_border">False</property>
                     <child>
-                      <object class="GtkBox" id="box5">
+                      <object class="GtkBox" id="summary_box">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="orientation">vertical</property>
@@ -140,7 +148,7 @@ Bitte alles schön zusammen schreiben und ambesten nichts zu nah</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkTextView" id="textview1">
+                          <object class="GtkTextView" id="discription_txtView">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="wrap_mode">word</property>
@@ -159,7 +167,7 @@ Bitte alles schön zusammen schreiben und ambesten nichts zu nah</property>
                           <object class="GtkBox" id="box_user">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="border_width">2</property>
+                            <property name="border_width">5</property>
                             <property name="homogeneous">True</property>
                             <child>
                               <object class="GtkBox" id="box_requester">
@@ -180,9 +188,12 @@ Bitte alles schön zusammen schreiben und ambesten nichts zu nah</property>
                                 </child>
                                 <child>
                                   <object class="GtkImage" id="image2">
+                                    <property name="width_request">60</property>
+                                    <property name="height_request">60</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="stock">gtk-missing-image</property>
+                                    <property name="icon_name">face-plain</property>
+                                    <property name="icon-size">6</property>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
@@ -195,6 +206,9 @@ Bitte alles schön zusammen schreiben und ambesten nichts zu nah</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="label" translatable="yes">Max Musterbeispiel</property>
+                                    <attributes>
+                                      <attribute name="weight" value="bold"/>
+                                    </attributes>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
@@ -233,6 +247,7 @@ Bitte alles schön zusammen schreiben und ambesten nichts zu nah</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="icon_name">face-monkey</property>
+                                    <property name="icon-size">6</property>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
@@ -246,6 +261,9 @@ Bitte alles schön zusammen schreiben und ambesten nichts zu nah</property>
                                     <property name="can_focus">False</property>
                                     <property name="label" translatable="yes">Max Musterbeispiel</property>
                                     <property name="justify">fill</property>
+                                    <attributes>
+                                      <attribute name="weight" value="bold"/>
+                                    </attributes>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
@@ -400,13 +418,90 @@ Bitte alles schön zusammen schreiben und ambesten nichts zu nah</property>
                       </packing>
                     </child>
                     <child>
-                      <placeholder/>
+                      <object class="GtkBox" id="comment_box">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <object class="GtkLabel" id="label14">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="xalign">0.0099999997764825821</property>
+                            <property name="label" translatable="yes">Comments:</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkBox" id="box6">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="orientation">vertical</property>
+                            <child>
+                              <object class="GtkTextView" id="Comment_TxtView">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="editable">False</property>
+                                <property name="wrap_mode">word</property>
+                                <property name="left_margin">14</property>
+                                <property name="right_margin">3</property>
+                                <property name="buffer">textbuffer2</property>
+                                <property name="accepts_tab">False</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkAlignment" id="alignment2">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="xalign">0.87999999523162842</property>
+                                <property name="xscale">0</property>
+                                <child>
+                                  <object class="GtkLabel" id="label16">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">Paule Keule</property>
+                                  </object>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
                     </child>
                     <child type="tab">
                       <object class="GtkLabel" id="label2">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">page 2</property>
+                        <property name="xalign">0.51999998092651367</property>
+                        <property name="xpad">4</property>
+                        <property name="label" translatable="yes">Comments</property>
                       </object>
                       <packing>
                         <property name="position">1</property>
