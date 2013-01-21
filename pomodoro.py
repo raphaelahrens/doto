@@ -67,6 +67,7 @@ class StatusIcon:
         self.__menu.show_start()
         #here comes the nect step
 
+
 class NotifyMenu(gtk.Menu):
     def __init__(self, icon):
         gtk.Menu.__init__(self)
@@ -101,6 +102,7 @@ class NotifyMenu(gtk.Menu):
     def callback(self, widget, func):
         func()
 
+
 class Pomodoro:
     startmessage = "Pomodoro started.\n It will last %d minutes."
     restartmessage = "Get back to Work .\n You have  %d minutes."
@@ -111,8 +113,6 @@ class Pomodoro:
         self.__break_limit = break_limit * 60
         self.__limit = self.__work_limit
         self.__paused = True
-
-
 
         self.__round_counter = 0
 
@@ -171,7 +171,6 @@ class Pomodoro:
         self.end_message = self.end_work
         self.__limit = self.__work_limit
         self._state = "running"
-        self.__paused = True
         return self.__callback_msg(Pomodoro.restartmessage, start_icon, self.__restart, "ok", "Back to work")
 
     def end_work(self):
@@ -182,9 +181,9 @@ class Pomodoro:
         else:
             self.__limit = self.__break_limit
         self._state = "break"
-        self.__paused = True
         return self.__callback_msg(Pomodoro.restartmessage, break_icon, self.__restart, "ok", "Take a Break!")
     def end(self):
+        self.__paused = True
         end_msg = self.end_message()
         end_msg.show()
 
@@ -205,6 +204,7 @@ class Pomodoro:
     def __callback_msg(self, msg,icon, callback, action , string):
         self.__set_icon_and_message(icon, msg)
         return self._notifyer.get_callback_message(msg%self.__minutes_left(), icon, callback, action, string)
+
 
 class NotifyHandler:
     def __init__(self):
