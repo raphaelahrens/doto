@@ -3,14 +3,20 @@
 import gtk
 import pynotify
 import os
+import sys
 
-start_icon = os.path.realpath("/usr/share/icons/gnome/48x48/status/appointment-soon.png")
+icon_path = "/usr/local/share/icons/gnome/48x48"
+
+start_icon = os.path.realpath(icon_path + "/status/appointment-soon.png")
 break_icon = os.path.realpath("/home/tant/pomodoro/icons/coffee_break.png")
-pause_icon = os.path.realpath("/usr/share/icons/gnome/48x48/actions/player_pause.png")
+pause_icon = os.path.realpath(icon_path + "/actions/player_pause.png")
 summary = "Pomodoro"
 
 
 class StatusIcon:
+    '''
+    Main application for the Pomodoro task watcher
+    '''
     def __init__(self):
         self.statusicon = gtk.StatusIcon()
         self.statusicon.set_from_file(start_icon)
@@ -82,9 +88,6 @@ class NotifyMenu(gtk.Menu):
         self.show_all()
         self.show_start()
 
-    def __add_quit(self):
-        self.append(self.quit)
-
     def show_start(self):
         self.start.show()
         self.pause.hide()
@@ -104,8 +107,8 @@ class Pomodoro:
     endmessage = "Pomodoro ended.\n Take a break!\n You have %d minutes."
     pausemessage = "Pomodoro is paused.\n You have %d minutes left."
     def __init__(self, work_limit, break_limit):
-        self.__work_limit = work_limit#* 60
-        self.__break_limit = break_limit#* 60
+        self.__work_limit = work_limit * 60
+        self.__break_limit = break_limit * 60
         self.__limit = self.__work_limit
         self.__paused = True
 
@@ -223,6 +226,10 @@ class NotifyHandler:
     def _msg_closed(self, msg):
         del self._msgs[id(msg)]
 
-pynotify.init("Pomodoro")
-StatusIcon()
-gtk.main()
+def main():
+    pynotify.init("Pomodoro")
+    StatusIcon()
+    gtk.main()
+
+if __name__ == "__main__":
+    sys.exit(main())
