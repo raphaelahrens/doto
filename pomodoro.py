@@ -24,11 +24,8 @@ class StatusIcon:
         self.statusicon.connect("activate", self.left_click_event)
         self.statusicon.set_tooltip("StatusIcon Example")
         self.__pomodoro = Pomodoro(25,5)
-
         self.__state = self.start
-
         gtk.timeout_add(1000, self._timeout_callback)
-
         self.__menu = NotifyMenu(self)
 
     def left_click_event(self,icon):
@@ -71,17 +68,14 @@ class StatusIcon:
 class NotifyMenu(gtk.Menu):
     def __init__(self, icon):
         gtk.Menu.__init__(self)
-
         self.start = gtk.MenuItem("Start")
         self.pause = gtk.MenuItem("Pause")
         self.done = gtk.MenuItem("Done")
         self.quit = gtk.MenuItem("Quit")
-
         self.start.connect("activate", self.callback, icon.start)
         self.pause.connect("activate", self.callback, icon.pause)
         self.done.connect("activate", self.callback, icon.done)
         self.quit.connect("activate", gtk.main_quit)
-
         self.append(self.start)
         self.append(self.pause)
         self.append(self.done)
