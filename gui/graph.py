@@ -5,10 +5,11 @@ import cairo
 
 min_width = 2
 
-text_color = cairo.SolidPattern(0, 0, 0)
-background_color = {"completed": cairo.SolidPattern(0.1, 0.9, 0),
-                    "pending":   cairo.SolidPattern(1, 1.0, 0)
-                    }
+black = cairo.SolidPattern(0, 0, 0)
+background_colors = {
+    "completed": cairo.SolidPattern(0.1, 0.9, 0),
+    "pending":   cairo.SolidPattern(1, 1.0, 0)
+}
 
 
 class DependencyGraph(window.Screen):
@@ -31,7 +32,7 @@ class DependencyGraph(window.Screen):
 
     def draw_task(self, task):
         def draw_text(text, width):
-            self.cr.set_source(text_color)
+            self.cr.set_source(black)
             self.cr.select_font_face("Courier", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
             self.cr.set_font_size(0.2)
             self.cr.move_to(width, 0.5)
@@ -46,20 +47,22 @@ class DependencyGraph(window.Screen):
                 bg_w = width + 0.1
 
             self.cr.rectangle(0, 0, bg_w, bg_h)
-            self.cr.set_source(background_color[task.status])
+            self.cr.set_source(background_colors[task.status])
             self.cr.set_line_width(0.03)
             self.cr.set_line_join(cairo.LINE_JOIN_ROUND)
             self.cr.fill_preserve()
-            self.cr.set_source(text_color)
+            self.cr.set_source(black)
             self.cr.stroke()
-            draw_text(task.description, (bg_w - width) / 2)
-            return self.cr.user_to_device(0, 0)
+            draw_text(task.description, (bg_w - width) / 2.0)
+            right, center = self.cr.user_to_device(bg_w, bg_h / 2.0)
+            left = self.cr.user_to_device(0.0, 0.0)[0]
+
+            self.nodes[task.description] = (left, center, right)
 
         self.cr.save()
         self.cr.select_font_face("Courier", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
         self.cr.set_font_size(0.2)
         self.cr.translate(0.05, 0.05)
         self.cr.scale(.9, .9)
-        r = draw_background()
+        draw_background()
         self.cr.restore()
-        return r

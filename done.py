@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 
 import taskw
+import pygraphviz as pgv
 import gui.gtk_window as window
-from gui.graph import DependencyGraph
 
 
 class TaskItem:
@@ -22,60 +22,38 @@ class TaskItem:
         return "(%s, %s)" % (self.uuid, self.description)
 
 
-class LayerItem:
-    def __init__(self, task):
-        self.task = task
-        self.follower = []
-
-    def inc_layer(self, follower):
-        self.follower += [follower]
-
-    def layer(self):
-        return len(self.follower)
-
-    def __repr__(self):
-        return "(%d, %s)" % (self.layer(), self.task)
-
-
 class TaskStore:
     def __init__(self, tw):
         tw = taskw.TaskWarrior()
         all_tasks = tw.load_tasks()
         self.pending = map(TaskItem, all_tasks["pending"])
         self.completed = map(TaskItem, all_tasks["completed"])
-        self.task_index = {}
+        self.index = {}
         for item in self.pending + self.completed:
-            self.task_index[item.uuid] = item
+            self.index[item.uuid] = item
 
 
 def create_data(task_store):
-    def update_deps(task):
-        for dep in task.depends:
-            if dep in data and data[task.uuid].layer() <= data[dep].layer():
-                data[dep].inc_layer(data[task.uuid])
-                update_deps(data[dep].task)
-            else:
-                data[dep] = LayerItem(task_store.task_index[dep])
-
-    data = {}
+    def add_node(t):
+        A.add_node(t.uuid, label=t.description)
+        marked.add(t.uuid)
+    marked = set()
+    A = pgv.AGraph(directed=True)
     for task in task_store.pending:
-        if task.uuid in data:
-            data[task.uuid].task = task
-        else:
-            data[task.uuid] = LayerItem(task)
-        update_deps(task)
-    return data
+        add_node(task)
+        for dep in task.depends:
+            if dep not in marked:
+                add_node(task_store.index[dep])
+            A.add_edge(dep, task.uuid)
+    return A
 
 
 def main():
     store = TaskStore(taskw.TaskWarrior())
-    layers = create_data(store)
-    layer_zero = []
-    for item in layers.iteritems():
-        if item[1].layer() == 0:
-            layer_zero.append(item[1])
+    graph = create_data(store)
+    graph.write("test.dot")
 
-    window.run(DependencyGraph(layer_zero))
+    #window.run()
 
 if __name__ == "__main__":
     main()
