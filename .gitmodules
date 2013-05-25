@@ -1,6 +1,3 @@
 [submodule "modules/xdot.py"]
 	path = modules/xdot.py
 	url = https://github.com/jrfonseca/xdot.py.git
-[submodule "modules/taskw"]
-	path = modules/taskw
-	url = https://github.com/ralphbean/taskw.git/
