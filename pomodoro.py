@@ -5,7 +5,7 @@ import pynotify
 import os
 import sys
 
-icon_path = "/usr/share/icons/gnome/48x48/"
+icon_path = "/usr/local/share/icons/gnome/48x48/"
 
 start_icon = os.path.realpath(icon_path + "status/appointment-soon.png")
 break_icon = os.path.realpath("/home/tant/pomodoro/icons/coffee_break.png")
