@@ -60,7 +60,7 @@ class TaskItem:
         return "uuid: %s\n Name: %s \n(%s)\n\n %s" % (self.uuid, self.description, self.status, self.data)
 
     def label(self):
-        l = [self.description, '\n', STATE.revert(self.status)]
+        l = [self.description, '\\n', STATE.revert(self.status)]
         if self.start:
             l += [time.ctime(float(self.start))]
         return ''.join(l)
