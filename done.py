@@ -12,7 +12,7 @@ import xdot
 def enum(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)
     keys = list(value for value in enums.iterkeys())
-    ident = dict((key, value) for key, value in enums.iteritems())
+    ident = enums.copy()
     revert = dict((value, key) for key, value in enums.iteritems())
     enums['keys'] = keys
     enums['ident'] = ident.get
@@ -77,7 +77,7 @@ class TaskStore:
         self.pending = [x for x in items if x.status == STATE.pending]
 
 
-def create_data(task_store):
+def create_graph(task_store):
     def add_node(t):
        # label = '<<TABLE><TR><TD>%s</TD></TR><TR><TD><IMG SRC="%s"/></TD><TD><IMG SRC="%s"/></TD></TR></TABLE>>'
         A.add_node(t.uuid, URL=t.uuid, label=t.label(), fillcolor=status_colors[t.status])
@@ -86,20 +86,19 @@ def create_data(task_store):
     A = pgv.AGraph(directed=True, rankdir="LR")
     A.node_attr.update(style="rounded, filled", shape="box", color="black")
     for task in task_store.pending:
-        #if task.depends:
-            add_node(task)
-            for dep in task.depends:
-                if task_store.index[dep].status != STATE.deleted:
-                    if dep not in marked:
-                        add_node(task_store.index[dep])
-                    A.add_edge(dep, task.uuid)
+        add_node(task)
+        for dep in task.depends:
+            if task_store.index[dep].status != STATE.deleted:
+                if dep not in marked:
+                    add_node(task_store.index[dep])
+                A.add_edge(dep, task.uuid)
     return A
 
 
 def dep_graph(store):
     def click(widget, url, event):
         print str(store.index[url])
-    graph = create_data(store)
+    graph = create_graph(store)
     widget = xdot.DotWidget()
     widget.connect('clicked', click)
     widget.set_dotcode(graph.string())
