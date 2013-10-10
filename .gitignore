@@ -1,1 +1,3 @@
-avatare/
+*.pyc
+*.swp
+.ropeproject/
