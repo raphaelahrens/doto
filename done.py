@@ -113,6 +113,7 @@ def main():
                         nargs='?', default=CMD.graph,
                         help='the command, which will be executed.')
     args = parser.parse_args()
+    print args.cmd
 
     if args.cmd == CMD.graph:
         widget = dep_graph(store)
