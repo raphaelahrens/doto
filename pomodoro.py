@@ -1,15 +1,10 @@
-#!/usr/bin/python2
-
+#!/usr/bin/env python2
 import gtk
 import pynotify
-import os
 import sys
 
-icon_path = "/usr/local/share/icons/gnome/48x48/"
+import icon
 
-start_icon = os.path.realpath(icon_path + "status/appointment-soon.png")
-break_icon = os.path.realpath("/home/tant/pomodoro/icons/coffee_break.png")
-pause_icon = os.path.realpath(icon_path + "actions/player_pause.png")
 summary = "Pomodoro"
 
 
@@ -19,16 +14,16 @@ class StatusIcon:
     '''
     def __init__(self):
         self.statusicon = gtk.StatusIcon()
-        self.statusicon.set_from_file(start_icon)
+        self.statusicon.set_from_file(icon.start)
         self.statusicon.connect("popup-menu", self.right_click_event)
         self.statusicon.connect("activate", self.left_click_event)
         self.statusicon.set_tooltip("StatusIcon Example")
-        self.__pomodoro = Pomodoro(25,5)
+        self.__pomodoro = Pomodoro(25, 5)
         self.__state = self.start
         gtk.timeout_add(1000, self._timeout_callback)
         self.__menu = NotifyMenu(self)
 
-    def left_click_event(self,icon):
+    def left_click_event(self, icon):
         self.__state()
 
     def set_tooltip(self):
@@ -52,6 +47,7 @@ class StatusIcon:
         self.__state = self.pause
         self.set_tooltip_and_icon()
         self.__menu.show_running()
+
     def pause(self):
         self.__pomodoro.pause()
         self.__state = self.start
@@ -102,6 +98,7 @@ class Pomodoro:
     restartmessage = "Get back to Work .\n You have  %d minutes."
     endmessage = "Pomodoro ended.\n Take a break!\n You have %d minutes."
     pausemessage = "Pomodoro is paused.\n You have %d minutes left."
+
     def __init__(self, work_limit, break_limit):
         self.__work_limit = work_limit * 60
         self.__break_limit = break_limit * 60
@@ -114,7 +111,7 @@ class Pomodoro:
 
         self.end_message = self.end_work
 
-        self._icon = start_icon
+        self._icon = icon.start
         self._message = Pomodoro.startmessage
 
         self._notifyer = NotifyHandler()
@@ -128,14 +125,14 @@ class Pomodoro:
         return self._message
 
     def start(self):
-        start_msg= self.__msg(Pomodoro.startmessage, start_icon)
+        start_msg = self.__msg(Pomodoro.startmessage, icon.start)
         start_msg.show()
         self._state = "running"
         self.__paused = False
 
     def count(self):
         if self.__paused:
-           return False
+            return False
         self.__limit -= 1
         if 0 >= self.__limit:
             self.end()
@@ -152,7 +149,7 @@ class Pomodoro:
         return (self.__minutes_left(), self.__seconds_left())
 
     def pause(self):
-        pause_msg= self.__msg(Pomodoro.pausemessage , pause_icon)
+        pause_msg = self.__msg(Pomodoro.pausemessage, icon.pause)
         pause_msg.show()
         self._state = "paused"
         self.__paused = True
@@ -165,17 +162,18 @@ class Pomodoro:
         self.end_message = self.end_work
         self.__limit = self.__work_limit
         self._state = "running"
-        return self.__callback_msg(Pomodoro.restartmessage, start_icon, self.__restart, "ok", "Back to work")
+        return self.__callback_msg(Pomodoro.restartmessage, icon.start, self.__restart, "ok", "Back to work")
 
     def end_work(self):
         self.end_message = self.end_break
         self.__round_counter += 1
         if self.__round_counter % 4 == 0:
-            self.__limit = self.__break_limit*4
+            self.__limit = self.__break_limit * 4
         else:
             self.__limit = self.__break_limit
         self._state = "break"
-        return self.__callback_msg(Pomodoro.restartmessage, break_icon, self.__restart, "ok", "Take a Break!")
+        return self.__callback_msg(Pomodoro.restartmessage, icon.coffeebreak, self.__restart, "ok", "Take a Break!")
+
     def end(self):
         self.__paused = True
         end_msg = self.end_message()
@@ -194,10 +192,11 @@ class Pomodoro:
 
     def __msg(self, msg, icon):
         self.__set_icon_and_message(icon, msg)
-        return self._notifyer.get_notify_message(msg%self.__minutes_left(), icon)
-    def __callback_msg(self, msg,icon, callback, action , string):
+        return self._notifyer.get_notify_message(msg % self.__minutes_left(), icon)
+
+    def __callback_msg(self, msg, icon, callback, action, string):
         self.__set_icon_and_message(icon, msg)
-        return self._notifyer.get_callback_message(msg%self.__minutes_left(), icon, callback, action, string)
+        return self._notifyer.get_callback_message(msg % self.__minutes_left(), icon, callback, action, string)
 
 
 class NotifyHandler:
@@ -219,6 +218,7 @@ class NotifyHandler:
 
     def _msg_closed(self, msg):
         del self._msgs[id(msg)]
+
 
 def main():
     pynotify.init("Pomodoro")
