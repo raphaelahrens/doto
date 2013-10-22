@@ -23,6 +23,9 @@ status_colors = {
 
 
 class Task:
+    """
+    Super class of all tasks
+    """
     def __init__(self, title, description, created, due, started):
         self.title = unicode(title)
         self.description = unicode(description)
