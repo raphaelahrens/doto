@@ -14,7 +14,7 @@ class StatusIcon:
     '''
     def __init__(self):
         self.statusicon = gtk.StatusIcon()
-        self.statusicon.set_from_file(icon.start)
+        self.statusicon.set_from_pixbuf(icon.start.pixbuf)
         self.statusicon.connect("popup-menu", self.right_click_event)
         self.statusicon.connect("activate", self.left_click_event)
         self.statusicon.set_tooltip("StatusIcon Example")
@@ -30,7 +30,7 @@ class StatusIcon:
         self.statusicon.set_tooltip("Pomodoro is %s.\nYou have %d:%02d minutes left.\nRounds finished: %d" % self.__pomodoro.get_info())
 
     def set_icon(self):
-        self.statusicon.set_from_file(self.__pomodoro.icon)
+        self.statusicon.set_from_pixbuf(self.__pomodoro.icon.pixbuf)
 
     def set_tooltip_and_icon(self):
         self.set_tooltip()
@@ -51,7 +51,7 @@ class StatusIcon:
     def pause(self):
         self.__pomodoro.pause()
         self.__state = self.start
-        self.statusicon.set_from_file(self.__pomodoro.icon)
+        self.set_tooltip_and_icon()
 
     def right_click_event(self, icon, button, t_time):
         self.__menu.popup(None, None, gtk.status_icon_position_menu, button, t_time, icon)
@@ -125,7 +125,7 @@ class Pomodoro:
         return self._message
 
     def start(self):
-        start_msg = self.__msg(Pomodoro.startmessage, icon.start)
+        start_msg = self.__msg(Pomodoro.startmessage, icon.ticking)
         start_msg.show()
         self._state = "running"
         self.__paused = False
@@ -162,7 +162,7 @@ class Pomodoro:
         self.end_message = self.end_work
         self.__limit = self.__work_limit
         self._state = "running"
-        return self.__callback_msg(Pomodoro.restartmessage, icon.start, self.__restart, "ok", "Back to work")
+        return self.__callback_msg(Pomodoro.restartmessage, icon.ticking, self.__restart, "ok", "Back to work")
 
     def end_work(self):
         self.end_message = self.end_break
@@ -204,7 +204,7 @@ class NotifyHandler:
         self._msgs = {}
 
     def get_notify_message(self, msg, icon):
-        msg = pynotify.Notification(summary, msg, icon)
+        msg = pynotify.Notification(summary, msg, icon.filename)
         msg.connect('closed', self._msg_closed)
         self._msgs[id(msg)] = msg
         return msg

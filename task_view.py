@@ -44,15 +44,11 @@ class TaskInfo(gtk.Window):
 #        lblFiles = gtk.Label("Files")
         self.notebook.append_page(self.summaryview.getLayout(), lblSummary)
 
-        hbox1 = gtk.HBox()
-        hbox1.pack_start(self.notebook)
-        hbox1.show_all()
-        self.add(hbox1)
-        self.show()
+        self.add(self.notebook)
+        self.show_all()
 
-    def main(self, tasks):
+    def show_task(self, tasks):
         self.summaryview.show_task(tasks[0])
-        gtk.main()
 
 
 class SummaryView:
@@ -168,7 +164,11 @@ class SummaryView:
     def getLayout(self):
         return self.vbox1
 
-if __name__ == "__main__":
+def main():
     tw_store = task.TaskwarrioirStore()
     hello = TaskInfo()
-    hello.main(tw_store.get_tasks())
+    hello.show_task(tw_store.get_tasks())
+    gtk.main()
+
+if __name__ == "__main__":
+    main()

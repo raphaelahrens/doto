@@ -13,25 +13,23 @@ def enum(*sequential, **named):
     enums['revert'] = revert.get
     return type('Enum', (), enums)
 
-STATE = enum("completed", "pending", "deleted")
-
-status_colors = {
-    STATE.completed: "darkolivegreen4",
-    STATE.pending:   "cornflowerblue",
-    STATE.deleted:   "red",
-}
+STATE = enum("pending", "started", "blocked", "paused", "completed", "deleted")
 
 
 class Task:
     """
     Super class of all tasks
     """
-    def __init__(self, title, description, created, due, started):
+    def __init__(self, title, description, created, due, started,
+                 state=STATE.pending):
+        """
+        """
         self.title = unicode(title)
         self.description = unicode(description)
         self.created = created
         self.due = due
         self.started = started
+        self.state = state
 
 
 class TWTask(Task):
