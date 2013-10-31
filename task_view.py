@@ -9,6 +9,9 @@ import pango
 import time
 
 import task
+from icon import Theme
+
+icons = Theme(32)
 
 
 class TaskInfo(gtk.Window):
@@ -68,7 +71,16 @@ class SummaryView:
         font.set_size(14000)
         font.set_weight(pango.WEIGHT_BOLD)
         self.lblTaskTitle.modify_font(font)
-        self.vbox1.pack_start(self.lblTaskTitle, expand=False)
+
+        self.imgPriority = gtk.Image()
+        self.imgState = gtk.Image()
+
+        hboxTitle = gtk.HBox()
+
+        hboxTitle.pack_start(self.lblTaskTitle)
+        hboxTitle.pack_start(self.imgState, expand=False)
+        hboxTitle.pack_start(self.imgPriority, expand=False)
+        self.vbox1.pack_start(hboxTitle, expand=False)
 
         font = pango.FontDescription()
         font.set_weight(pango.WEIGHT_BOLD)
@@ -120,11 +132,11 @@ class SummaryView:
 
         vboxOriginator = gtk.VBox()
         vboxOriginator.pack_start(self.lblOriginator)
-        vboxOriginator.pack_start(self.imgOriginator)
+        #vboxOriginator.pack_start(self.imgOriginator)
 
         vboxOwner = gtk.VBox()
         vboxOwner.pack_start(self.lblOwner)
-        vboxOwner.pack_start(self.imgOwner)
+        #vboxOwner.pack_start(self.imgOwner)
 
         hboxUser = gtk.HBox()
         hboxUser.pack_start(vboxOriginator)
@@ -146,7 +158,9 @@ class SummaryView:
         self.lblOriginator.set_text("Rapahel")
         self.lblOwner.set_text("Sarah")
 
-        self.imgOriginator.set_from_file("./avatars/Bwoob.jpg")
+       # self.imgOriginator.set_from_file("./avatars/Bwoob.jpg")
+        self.imgState.set_from_pixbuf(icons.ticking.pixbuf)
+        self.imgPriority.set_from_pixbuf(icons.priority[2].pixbuf)
 
         self.tbDescription.set_text(task.description)
         self.lblCreated.set_text(time.asctime(task.created))

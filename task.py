@@ -30,6 +30,8 @@ class Task:
         self.due = due
         self.started = started
         self.state = state
+        self.source = None
+        self.category = None
 
 
 class TWTask(Task):

@@ -7,10 +7,12 @@ pygtk.require('2.0')
 import gtk
 
 import task
-import icon
+from icon import Theme
+
+icons = Theme(24)
 
 
-class TaskView(gtk.Window):
+class TaskList(gtk.Window):
     """
     This is a GUI to view the Task of the Done!Tools project.
     """
@@ -34,7 +36,8 @@ class TaskView(gtk.Window):
 
         self.connect("destroy", self.destroy)
 
-        self.liststore = gtk.ListStore(gtk.gdk.Pixbuf, str, str, str, str)
+        ## the ListStore stores the Icon, the title, the date of creation, the state, source
+        self.liststore = gtk.ListStore(gtk.gdk.Pixbuf, gtk.gdk.Pixbuf, gtk.gdk.Pixbuf, str, str, str)
 
         # create the TreeView using liststore
         treeview = gtk.TreeView(self.liststore)
@@ -45,19 +48,22 @@ class TaskView(gtk.Window):
 
         # add a row with text and a stock item - color strings for
         # the background
-        for i in xrange(1,10):
-            self.liststore.append([icon.coffeebreak.pixbuf, 'Open', gtk.STOCK_OPEN, 'Open a File', "red"])
-            self.liststore.append([icon.pause.pixbuf, 'New', gtk.STOCK_NEW, 'New File', "blue"])
-            self.liststore.append([icon.ticking.pixbuf, 'Print', gtk.STOCK_PRINT, 'Print File', "grey"])
+        for i in xrange(1, 10):
+            self.liststore.append([icons.ticking.pixbuf, icons.priority[0].pixbuf, icons.coffeebreak.pixbuf, 'Open', gtk.STOCK_OPEN, 'Open a File'])
+            self.liststore.append([icons.coffeebreak.pixbuf, icons.priority[3].pixbuf, icons.ticking.pixbuf, 'Open', gtk.STOCK_OPEN, 'Open a File'])
+            self.liststore.append([icons.pause.pixbuf, icons.priority[2].pixbuf, icons.ticking.pixbuf, 'New', gtk.STOCK_NEW, 'New File'])
+            self.liststore.append([icons.coffeebreak.pixbuf, icons.priority[1].pixbuf, icons.pause.pixbuf, 'Print', gtk.STOCK_PRINT, 'Print File'])
 
         # add columns to treeview
         treeview.append_column(tvc_title)
         treeview.append_column(tvc_created)
 
         # create a CellRenderers to render the data
-        cellpb = gtk.CellRendererPixbuf()
-        cell = gtk.CellRendererText()
-        cell1 = gtk.CellRendererText()
+        cpb_source = gtk.CellRendererPixbuf()
+        cpb_priori = gtk.CellRendererPixbuf()
+        cpb_state = gtk.CellRendererPixbuf()
+        ct_title = gtk.CellRendererText()
+        ct_created = gtk.CellRendererText()
 
         # set background color property
         #cellpb.set_property('cell-background', 'yellow')
@@ -65,15 +71,19 @@ class TaskView(gtk.Window):
         #cell1.set_property('cell-background', 'red')
 
         # add the cells to the columns - 2 in the first
-        tvc_title.pack_start(cellpb, False)
-        tvc_title.pack_start(cell, True)
-        tvc_created.pack_start(cell1, True)
+        tvc_title.pack_start(cpb_source, False)
+        tvc_title.pack_start(cpb_priori, False)
+        tvc_title.pack_start(cpb_state, False)
+        tvc_title.pack_start(ct_title, True)
+        tvc_created.pack_start(ct_created, True)
 
         # set the cell attributes to the appropriate liststore column
         # GTK+ 2.0 doesn't support the "stock_id" property
-        tvc_title.set_attributes(cell, text=1)
-        tvc_title.set_attributes(cellpb, pixbuf=0)
-        tvc_created.set_attributes(cell1, text=3, cell_background=4)
+        tvc_title.set_attributes(ct_title, text=3)
+        tvc_title.set_attributes(cpb_source, pixbuf=0)
+        tvc_title.set_attributes(cpb_priori, pixbuf=1)
+        tvc_title.set_attributes(cpb_state, pixbuf=2)
+        tvc_created.set_attributes(ct_created, text=5)
 
         # make treeview searchable
         treeview.set_search_column(0)
@@ -84,7 +94,12 @@ class TaskView(gtk.Window):
         # Allow drag and drop reordering of rows
         treeview.set_reorderable(True)
 
-        self.add(treeview)
+        scrolled_window = gtk.ScrolledWindow()
+        scrolled_window.set_policy(hscrollbar_policy=gtk.POLICY_NEVER, vscrollbar_policy=gtk.POLICY_AUTOMATIC)
+
+        scrolled_window.add_with_viewport(treeview)
+
+        self.add(scrolled_window)
 
         self.show_all()
 
@@ -94,7 +109,7 @@ class TaskView(gtk.Window):
 
 def main():
     tw_store = task.TaskwarrioirStore()
-    hello = TaskView()
+    hello = TaskList()
     gtk.main()
 
 if __name__ == "__main__":
