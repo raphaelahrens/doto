@@ -22,7 +22,6 @@ class Icon:
         """
         Constructs an Icon object from a file
          The volume of the Icon ist size*size
-
         @param filename The full path to the file of the icon
         @param The size of the Icon.
         """
@@ -58,12 +57,50 @@ class Icon:
 class Theme:
     """
     The theme class for the Done!Tools
+
+    @param size The size of the Icons for the theme
     """
     def __init__(self, size):
         """
 
         """
-        self.start = Icon.new_icon_from_icon_names([gtk.STOCK_MEDIA_PLAY, "player_play"], size)
-        self.ticking = Icon.new_icon_from_icon_names(["appointment-soon"], size)
-        self.coffeebreak = Icon.new_icon_from_file("/home/tant/pomodoro/icons/coffee_break.svg", size)
-        self.pause = Icon.new_icon_from_icon_names([gtk.STOCK_MEDIA_PAUSE, "player_pause"], size)
+        self._size = size
+        self.__start = None
+        self.__ticking = None
+        self.__coffeebreak = None
+        self.__pause = None
+
+        self.__priority = None
+
+    @property
+    def start(self):
+        if not self.__start:
+            self.__start = Icon.new_icon_from_icon_names([gtk.STOCK_MEDIA_PLAY, "player_play"], self._size)
+        return self.__start
+
+    @property
+    def ticking(self):
+        if not self.__ticking:
+            self.__ticking = Icon.new_icon_from_icon_names(["appointment-soon"], self._size)
+        return self.__ticking
+
+    @property
+    def coffeebreak(self):
+        if not self.__coffeebreak:
+            self.__coffeebreak = Icon.new_icon_from_file("/home/tant/pomodoro/icons/coffee_break.svg", self._size)
+        return self.__coffeebreak
+
+    @property
+    def pause(self):
+        if not self.__pause:
+            self.__pause = Icon.new_icon_from_icon_names([gtk.STOCK_MEDIA_PAUSE, "player_pause"], self._size)
+        return self.__pause
+
+    @property
+    def priority(self):
+        if not self.__priority:
+            self.__priority = [Icon.new_icon_from_file("/home/tant/pomodoro/icons/priori_0.svg", self._size),
+                               Icon.new_icon_from_file("/home/tant/pomodoro/icons/priori_1.svg", self._size),
+                               Icon.new_icon_from_file("/home/tant/pomodoro/icons/priori_2.svg", self._size),
+                               Icon.new_icon_from_file("/home/tant/pomodoro/icons/priori_3.svg", self._size)]
+        return self.__priority

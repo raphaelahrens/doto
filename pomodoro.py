@@ -3,7 +3,9 @@ import gtk
 import pynotify
 import sys
 
-import icon
+from icon import Theme
+
+icons = Theme(128)
 
 summary = "Pomodoro"
 
@@ -14,7 +16,7 @@ class StatusIcon:
     '''
     def __init__(self):
         self.statusicon = gtk.StatusIcon()
-        self.statusicon.set_from_pixbuf(icon.start.pixbuf)
+        self.statusicon.set_from_pixbuf(icons.start.pixbuf)
         self.statusicon.connect("popup-menu", self.right_click_event)
         self.statusicon.connect("activate", self.left_click_event)
         self.statusicon.set_tooltip("StatusIcon Example")
@@ -111,7 +113,7 @@ class Pomodoro:
 
         self.end_message = self.end_work
 
-        self._icon = icon.start
+        self._icon = icons.start
         self._message = Pomodoro.startmessage
 
         self._notifyer = NotifyHandler()
@@ -125,7 +127,7 @@ class Pomodoro:
         return self._message
 
     def start(self):
-        start_msg = self.__msg(Pomodoro.startmessage, icon.ticking)
+        start_msg = self.__msg(Pomodoro.startmessage, icons.ticking)
         start_msg.show()
         self._state = "running"
         self.__paused = False
@@ -149,7 +151,7 @@ class Pomodoro:
         return (self.__minutes_left(), self.__seconds_left())
 
     def pause(self):
-        pause_msg = self.__msg(Pomodoro.pausemessage, icon.pause)
+        pause_msg = self.__msg(Pomodoro.pausemessage, icons.pause)
         pause_msg.show()
         self._state = "paused"
         self.__paused = True
@@ -162,7 +164,7 @@ class Pomodoro:
         self.end_message = self.end_work
         self.__limit = self.__work_limit
         self._state = "running"
-        return self.__callback_msg(Pomodoro.restartmessage, icon.ticking, self.__restart, "ok", "Back to work")
+        return self.__callback_msg(Pomodoro.restartmessage, icons.ticking, self.__restart, "ok", "Back to work")
 
     def end_work(self):
         self.end_message = self.end_break
@@ -172,7 +174,7 @@ class Pomodoro:
         else:
             self.__limit = self.__break_limit
         self._state = "break"
-        return self.__callback_msg(Pomodoro.restartmessage, icon.coffeebreak, self.__restart, "ok", "Take a Break!")
+        return self.__callback_msg(Pomodoro.restartmessage, icons.coffeebreak, self.__restart, "ok", "Take a Break!")
 
     def end(self):
         self.__paused = True
