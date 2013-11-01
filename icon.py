@@ -83,7 +83,7 @@ class Theme:
     @property
     def ticking(self):
         if not self.__ticking:
-            self.__ticking = Icon.new_icon_from_icon_names(["appointment-soon"], self._size)
+            self.__ticking = Icon.new_icon_from_file(config.tools_path + "/icons/ticking.svg", self._size)
         return self.__ticking
 
     @property
