@@ -2,4 +2,4 @@
 Done!Tools config file
 """
 
-tools_path = "/home/tant/git/pomodoro/"
+tools_path = "/home/tant/pomodoro/"
