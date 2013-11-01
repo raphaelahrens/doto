@@ -1,5 +1,7 @@
 import gtk
 
+import config
+
 _theme = gtk.icon_theme_get_default()
 
 
@@ -87,7 +89,7 @@ class Theme:
     @property
     def coffeebreak(self):
         if not self.__coffeebreak:
-            self.__coffeebreak = Icon.new_icon_from_file("/home/tant/pomodoro/icons/coffee_break.svg", self._size)
+            self.__coffeebreak = Icon.new_icon_from_file(config.tools_path + "/icons/coffee_break.svg", self._size)
         return self.__coffeebreak
 
     @property
@@ -99,8 +101,8 @@ class Theme:
     @property
     def priority(self):
         if not self.__priority:
-            self.__priority = [Icon.new_icon_from_file("/home/tant/pomodoro/icons/priori_0.svg", self._size),
-                               Icon.new_icon_from_file("/home/tant/pomodoro/icons/priori_1.svg", self._size),
-                               Icon.new_icon_from_file("/home/tant/pomodoro/icons/priori_2.svg", self._size),
-                               Icon.new_icon_from_file("/home/tant/pomodoro/icons/priori_3.svg", self._size)]
+            self.__priority = [Icon.new_icon_from_file(config.tools_path + "/icons/priori_0.svg", self._size),
+                               Icon.new_icon_from_file(config.tools_path + "/icons/priori_1.svg", self._size),
+                               Icon.new_icon_from_file(config.tools_path + "/icons/priori_2.svg", self._size),
+                               Icon.new_icon_from_file(config.tools_path + "/icons/priori_3.svg", self._size)]
         return self.__priority
