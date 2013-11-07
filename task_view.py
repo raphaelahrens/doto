@@ -6,10 +6,13 @@ import pygtk
 pygtk.require('2.0')
 import gtk
 import pango
-import time
+
+import datetime
 
 import task
+import config
 from icon import Theme
+import theme
 
 icons = Theme(32)
 
@@ -66,33 +69,29 @@ class SummaryView:
         self.vbox1 = gtk.VBox()
         self.lblTaskTitle = gtk.Label()
         self.lblTaskTitle.set_alignment(0.0, 0.5)
-        self.lblTaskTitle.set_padding(10, 5)
-        font = pango.FontDescription()
-        font.set_size(14000)
-        font.set_weight(pango.WEIGHT_BOLD)
-        self.lblTaskTitle.modify_font(font)
+        self.lblTaskTitle.modify_font(theme.title_font)
+
+        self.lblTaskState = gtk.Label()
+        self.lblTaskState.set_alignment(0.9, 0.5)
+        self.lblTaskState.modify_font(theme.state_font)
+
+        vboxTitle = gtk.VBox()
+        vboxTitle.pack_start(self.lblTaskTitle)
+        vboxTitle.pack_start(self.lblTaskState)
 
         self.imgPriority = gtk.Image()
-        self.imgState = gtk.Image()
 
-        hboxTitle = gtk.HBox()
+        hboxHeader = gtk.HBox()
 
-        hboxTitle.pack_start(self.lblTaskTitle)
-        hboxTitle.pack_start(self.imgState, expand=False)
-        hboxTitle.pack_start(self.imgPriority, expand=False)
-        self.vbox1.pack_start(hboxTitle, expand=False)
-
-        font = pango.FontDescription()
-        font.set_weight(pango.WEIGHT_BOLD)
+        hboxHeader.pack_start(vboxTitle, expand=False, fill=True, padding=5)
+        hboxHeader.pack_end(self.imgPriority, expand=False, padding=5)
+        self.vbox1.pack_start(hboxHeader, expand=False, padding=5)
 
         sw = gtk.ScrolledWindow()
         sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
 
         tvDescription = gtk.TextView()
-        tvDescription.set_size_request(600, -1)
-        #tvDescription.set_justify(gtk.JUSTIFY_LEFT)
-        #tvDescription.set_alignment(0.0, 0.0)
-        #tvDescription.set_padding(20, 0)
+        tvDescription.set_size_request(400, -1)
         tvDescription.set_left_margin(20)
         tvDescription.set_wrap_mode(gtk.WRAP_WORD)
         tvDescription.set_editable(False)
@@ -102,81 +101,109 @@ class SummaryView:
         self.tbDescription = tvDescription.get_buffer()
 
         sw.add(tvDescription)
-        self.vbox1.pack_start(sw)
 
-        self.lblOriginator = gtk.Label()
-        self.lblOriginator.modify_font(font)
-        self.lblOriginator.set_padding(10, 0)
+        self.lblOriginator = DateLabel()
 
         self.imgOriginator = gtk.Image()
-        self.imgOriginator.set_size_request(130, 130)
+        self.imgOriginator.set_size_request(80 + 10, 80 + 10)
 
-        self.lblOwner = gtk.Label()
-        self.lblOwner.modify_font(font)
-        self.lblOwner.set_padding(10, 0)
+        self.lblOwner = DateLabel()
 
         self.imgOwner = gtk.Image()
-        self.imgOwner.set_size_request(130, 130)
+        self.imgOwner.set_size_request(80 + 10, 80 + 10)
 
-        self.lblCreated = gtk.Label()
-        self.lblCreated.modify_font(font)
-        self.lblCreated.set_padding(10, 0)
+        self.lblCreated = DateLabel()
 
-        self.lblStarted = gtk.Label()
-        self.lblStarted.modify_font(font)
-        self.lblStarted.set_padding(10, 0)
+        self.lblStarted = DateLabel()
 
-        self.lblDue = gtk.Label()
-        self.lblDue.modify_font(font)
-        self.lblDue.set_padding(10, 0)
+        self.lblDue = DateLabel()
+
+        hboxUser = gtk.HBox()
+        hboxUser.pack_start(self.imgOriginator)
+        hboxUser.pack_start(self.imgOwner)
+
+        vboxAttributes = gtk.VBox()
+
+        def create_date_layout(lbl, title, icon):
+            box = gtk.HBox()
+            vbox = gtk.VBox()
+            img = gtk.Image()
+            title = gtk.Label(title)
+            title.set_alignment(0.0, 0.5)
+            title.modify_font(theme.description_font)
+
+            vbox.pack_start(title)
+            vbox.pack_start(lbl)
+            img.set_from_pixbuf(icon.pixbuf)
+            box.pack_start(img, False, False, 2)
+            box.pack_start(vbox)
+            return box
+
+        vboxAttributes.pack_start(create_date_layout(self.lblCreated, "created on", icons.created), expand=False, fill=False, padding=10)
+        vboxAttributes.pack_start(create_date_layout(self.lblStarted, "started on", icons.done), expand=False, fill=False, padding=10)
+        vboxAttributes.pack_start(create_date_layout(self.lblDue, "due to", icons.due), expand=False, fill=False, padding=10)
+        vboxAttributes.pack_end(hboxUser, expand=False, padding=20)
 
         vboxOriginator = gtk.VBox()
         vboxOriginator.pack_start(self.lblOriginator)
-        #vboxOriginator.pack_start(self.imgOriginator)
 
         vboxOwner = gtk.VBox()
         vboxOwner.pack_start(self.lblOwner)
-        #vboxOwner.pack_start(self.imgOwner)
 
-        hboxUser = gtk.HBox()
-        hboxUser.pack_start(vboxOriginator)
-        hboxUser.pack_start(vboxOwner)
+        hbox1 = gtk.HBox()
+        hbox1.pack_start(sw)
+        hbox1.pack_start(vboxAttributes, expand=False)
 
-        self.vbox1.pack_start(hboxUser, expand=False)
-
-        hboxDates = gtk.HBox()
-        hboxDates.pack_start(self.lblCreated, fill=False)
-        hboxDates.pack_start(self.lblStarted)
-        hboxDates.pack_start(self.lblDue)
-        self.vbox1.pack_start(hboxDates, expand=False, fill=False)
+        self.vbox1.pack_start(hbox1)
 
         self.vbox1.show_all()
 
-    def show_task(self, task):
-        self.lblTaskTitle.set_text(task.title)
+    def show_task(self, t):
+        self.lblTaskTitle.set_text(t.title)
+        self.lblTaskState.set_text("is " + task.STATE.revert(t.state))
 
         self.lblOriginator.set_text("Rapahel")
         self.lblOwner.set_text("Sarah")
 
-       # self.imgOriginator.set_from_file("./avatars/Bwoob.jpg")
-        self.imgState.set_from_pixbuf(icons.ticking.pixbuf)
+        self.imgOriginator.set_from_pixbuf(pixbuf_from_file("./avatars/Bwoob.jpg", 80))
+        self.imgOwner.set_from_pixbuf(pixbuf_from_file("./avatars/business-man-avatar.svg", 80))
         self.imgPriority.set_from_pixbuf(icons.priority[2].pixbuf)
 
-        self.tbDescription.set_text(task.description)
-        self.lblCreated.set_text(time.asctime(task.created))
-        if task.due:
-            self.lblDue.set_text(time.asctime(task.due))
+        self.tbDescription.set_text(t.description)
+        self.lblCreated.set_date(t.created)
+        if t.due:
+            self.lblDue.set_date(t.due)
         else:
-            self.lblDue.set_text(time.asctime(time.gmtime()))
-        if task.started:
-            self.lblStarted.set_text(time.asctime(task.started))
+            self.lblDue.set_date(datetime.datetime.now())
+        if t.started:
+            self.lblStarted.set_date(t.started)
         else:
-            self.lblStarted.set_text(time.asctime(time.gmtime()))
-#       self.lblOriginator.set_text(task.originator)
-#       self.lblOwner.set_text(task.owner)
+            self.lblStarted.set_date(datetime.datetime.now())
+#       self.lblOriginator.set_text(t.originator)
+#       self.lblOwner.set_text(t.owner)
 
     def getLayout(self):
         return self.vbox1
+
+
+class DateLabel(gtk.Label):
+    def __init__(self):
+        gtk.Label.__init__(self)
+        self.modify_font(theme.date_font)
+
+    def set_date(self, date):
+        if date:
+            str_tmp = date.strftime(config.date_str)
+        else:
+            str_tmp = ""
+        self.set_text(str_tmp)
+
+
+def pixbuf_from_file(filename, size):
+    pixbuf = gtk.gdk.pixbuf_new_from_file(filename)
+    pixbuf = pixbuf.scale_simple(80, 80, gtk.gdk.INTERP_BILINEAR)
+    return pixbuf
+
 
 def main():
     tw_store = task.TaskwarrioirStore()

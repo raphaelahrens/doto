@@ -71,13 +71,15 @@ class Theme:
         self.__ticking = None
         self.__coffeebreak = None
         self.__pause = None
-
         self.__priority = None
+        self.__created = None
+        self.__due = None
+        self.__done = None
 
     @property
     def start(self):
         if not self.__start:
-            self.__start = Icon.new_icon_from_icon_names([gtk.STOCK_MEDIA_PLAY, "player_play"], self._size)
+            self.__start = Icon.new_icon_from_file(config.tools_path + "/icons/play.svg", self._size)
         return self.__start
 
     @property
@@ -95,14 +97,34 @@ class Theme:
     @property
     def pause(self):
         if not self.__pause:
-            self.__pause = Icon.new_icon_from_icon_names([gtk.STOCK_MEDIA_PAUSE, "player_pause"], self._size)
+            self.__pause = Icon.new_icon_from_file(config.tools_path + "/icons/pause.svg", self._size)
         return self.__pause
 
     @property
     def priority(self):
         if not self.__priority:
-            self.__priority = [Icon.new_icon_from_file(config.tools_path + "/icons/priori_0.svg", self._size),
-                               Icon.new_icon_from_file(config.tools_path + "/icons/priori_1.svg", self._size),
-                               Icon.new_icon_from_file(config.tools_path + "/icons/priori_2.svg", self._size),
-                               Icon.new_icon_from_file(config.tools_path + "/icons/priori_3.svg", self._size)]
+            self.__priority = []
+            for f_str in ["./icons/priori_0.svg",
+                          "./icons/priori_1.svg",
+                          "./icons/priori_2.svg",
+                          "./icons/priori_3.svg"]:
+                    self.__priority.append(Icon.new_icon_from_file(config.tools_path + f_str, self._size))
         return self.__priority
+
+    @property
+    def created(self):
+        if not self.__created:
+            self.__created = Icon.new_icon_from_file(config.tools_path + "/icons/created.svg", self._size)
+        return self.__created
+
+    @property
+    def due(self):
+        if not self.__due:
+            self.__due = Icon.new_icon_from_file(config.tools_path + "/icons/due.svg", self._size)
+        return self.__due
+
+    @property
+    def done(self):
+        if not self.__done:
+            self.__done = Icon.new_icon_from_file(config.tools_path + "/icons/done.svg", self._size)
+        return self.__done

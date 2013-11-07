@@ -1,5 +1,5 @@
 import json
-import time
+import datetime
 import subprocess
 
 
@@ -43,7 +43,7 @@ class TWTask(Task):
                 return default
 
         def get_time(s, d):
-            return time.strptime(d[s], "%Y%m%dT%H%M%SZ") if s in d else None
+            return datetime.datetime.strptime(d[s], "%Y%m%dT%H%M%SZ") if s in d else None
 
         _description = "description"
         Task.__init__(self, task_dict[_description][0:100], task_dict[_description],
