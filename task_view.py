@@ -5,7 +5,6 @@
 import pygtk
 pygtk.require('2.0')
 import gtk
-import pango
 
 import datetime
 
@@ -41,32 +40,7 @@ class TaskInfo(gtk.Window):
 
         self.connect("destroy", self.destroy)
 
-        self.summaryview = SummaryView()
-
-        self.notebook = gtk.Notebook()
-        self.notebook.set_tab_pos(gtk.POS_BOTTOM)
-        lblSummary = gtk.Label("Summary")
-#        lblComments = gtk.Label("Comments")
-#        lblFiles = gtk.Label("Files")
-        self.notebook.append_page(self.summaryview.getLayout(), lblSummary)
-
-        self.add(self.notebook)
-        self.show_all()
-
-    def show_task(self, tasks):
-        self.summaryview.show_task(tasks[0])
-
-
-class SummaryView:
-    """
-    the summary view of the task
-    """
-
-    def __init__(self):
-        """
-        set the view layout
-        """
-        self.vbox1 = gtk.VBox()
+        self.vbMain = gtk.VBox()
         self.lblTaskTitle = gtk.Label()
         self.lblTaskTitle.set_alignment(0.0, 0.5)
         self.lblTaskTitle.modify_font(theme.title_font)
@@ -85,14 +59,47 @@ class SummaryView:
 
         hboxHeader.pack_start(vboxTitle, expand=False, fill=True, padding=5)
         hboxHeader.pack_end(self.imgPriority, expand=False, padding=5)
-        self.vbox1.pack_start(hboxHeader, expand=False, padding=5)
 
-        sw = gtk.ScrolledWindow()
-        sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        self.summaryview = SummaryView()
+
+        self.notebook = gtk.Notebook()
+        self.notebook.set_tab_pos(gtk.POS_BOTTOM)
+        lblSummary = gtk.Label("Summary")
+#        lblComments = gtk.Label("Comments")
+#        lblFiles = gtk.Label("Files")
+        self.notebook.append_page(self.summaryview.getLayout(), lblSummary)
+
+        self.vbMain.pack_start(hboxHeader, expand=False, padding=5)
+        self.vbMain.pack_start(self.notebook)
+
+        self.add(self.vbMain)
+        self.show_all()
+
+    def show_header(self, t):
+        self.lblTaskTitle.set_text(t.title)
+        self.lblTaskState.set_text("is " + task.STATE.revert(t.state))
+        self.imgPriority.set_from_pixbuf(icons.priority[2].pixbuf)
+
+    def show_task(self, tasks):
+        self.show_header(tasks[6])
+        self.summaryview.show_task(tasks[6])
+
+
+class SummaryView:
+    """
+    the summary view of the task
+    """
+
+    def __init__(self):
+        """
+        set the view layout
+        """
+        swDescription = gtk.ScrolledWindow()
+        swDescription.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
 
         tvDescription = gtk.TextView()
         tvDescription.set_size_request(400, -1)
-        tvDescription.set_left_margin(20)
+        #tvDescription.set_left_margin(20)
         tvDescription.set_wrap_mode(gtk.WRAP_WORD)
         tvDescription.set_editable(False)
         tvDescription.set_accepts_tab(True)
@@ -100,7 +107,7 @@ class SummaryView:
 
         self.tbDescription = tvDescription.get_buffer()
 
-        sw.add(tvDescription)
+        swDescription.add(tvDescription)
 
         self.lblOriginator = DateLabel()
 
@@ -135,41 +142,38 @@ class SummaryView:
             vbox.pack_start(title)
             vbox.pack_start(lbl)
             img.set_from_pixbuf(icon.pixbuf)
-            box.pack_start(img, False, False, 2)
-            box.pack_start(vbox)
+            box.pack_start(img, False, False, padding=5)
+            box.pack_start(vbox, padding=5)
             return box
 
-        vboxAttributes.pack_start(create_date_layout(self.lblCreated, "created on", icons.created), expand=False, fill=False, padding=10)
-        vboxAttributes.pack_start(create_date_layout(self.lblStarted, "started on", icons.done), expand=False, fill=False, padding=10)
-        vboxAttributes.pack_start(create_date_layout(self.lblDue, "due to", icons.due), expand=False, fill=False, padding=10)
+        vboxDates = gtk.VBox()
+        vboxDates.pack_start(create_date_layout(self.lblCreated, "created on", icons.created), expand=False, fill=False, padding=10)
+        vboxDates.pack_start(create_date_layout(self.lblStarted, "started on", icons.done), expand=False, fill=False, padding=10)
+        vboxDates.pack_start(create_date_layout(self.lblDue, "due to", icons.due), expand=False, fill=False, padding=10)
+
+        frDates = gtk.Frame()
+        frDates.add(vboxDates)
+        lbl = gtk.Label("Dates")
+        lbl.modify_font(theme.frame_font)
+        frDates.set_label_widget(lbl)
+
+        vboxAttributes.pack_start(frDates, expand=False, padding=10)
         vboxAttributes.pack_end(hboxUser, expand=False, padding=20)
 
-        vboxOriginator = gtk.VBox()
-        vboxOriginator.pack_start(self.lblOriginator)
+        self.hbView = gtk.HBox()
+        self.hbView.pack_start(swDescription)
+        self.hbView.pack_start(vboxAttributes, expand=False)
 
-        vboxOwner = gtk.VBox()
-        vboxOwner.pack_start(self.lblOwner)
-
-        hbox1 = gtk.HBox()
-        hbox1.pack_start(sw)
-        hbox1.pack_start(vboxAttributes, expand=False)
-
-        self.vbox1.pack_start(hbox1)
-
-        self.vbox1.show_all()
+        self.hbView.show_all()
 
     def show_task(self, t):
-        self.lblTaskTitle.set_text(t.title)
-        self.lblTaskState.set_text("is " + task.STATE.revert(t.state))
-
         self.lblOriginator.set_text("Rapahel")
         self.lblOwner.set_text("Sarah")
 
         self.imgOriginator.set_from_pixbuf(pixbuf_from_file("./avatars/Bwoob.jpg", 80))
         self.imgOwner.set_from_pixbuf(pixbuf_from_file("./avatars/business-man-avatar.svg", 80))
-        self.imgPriority.set_from_pixbuf(icons.priority[2].pixbuf)
 
-        self.tbDescription.set_text(t.description)
+        self.tbDescription.set_text((t.description + " ") * 100)
         self.lblCreated.set_date(t.created)
         if t.due:
             self.lblDue.set_date(t.due)
@@ -183,13 +187,14 @@ class SummaryView:
 #       self.lblOwner.set_text(t.owner)
 
     def getLayout(self):
-        return self.vbox1
+        return self.hbView
 
 
 class DateLabel(gtk.Label):
     def __init__(self):
         gtk.Label.__init__(self)
         self.modify_font(theme.date_font)
+        self.set_alignment(0.0, 0.5)
 
     def set_date(self, date):
         if date:
