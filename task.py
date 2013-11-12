@@ -7,31 +7,89 @@ def enum(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)
     keys = list(value for value in enums.iterkeys())
     ident = enums.copy()
-    revert = dict((value, key) for key, value in enums.iteritems())
     enums['keys'] = keys
     enums['ident'] = ident.get
-    enums['revert'] = revert.get
     return type('Enum', (), enums)
 
 STATE = enum("pending", "started", "blocked", "paused", "completed", "deleted")
+DIFFICULTY = enum("unknown", "simple", "easy", "medium", "hard")
+
+
+def str_from_time_span(t_span):
+    def one_or_more(t, single_str, multiple_str):
+        return single_str % t if t == 1 else multiple_str % t
+    if t_span.days < 0:
+        raise
+    if t_span.days > 0:
+        return one_or_more(t_span.days, "%d day", "%d days")
+    if t_span.seconds > 3600:
+        return one_or_more(t_span.seconds // 3600, "%d hour", "%d hours")
+    if t_span.seconds > 60:
+        return one_or_more(t_span.seconds // 60, "%d minute", "%d minutes")
+    return one_or_more(t_span.seconds, "%d second", "%d seconds")
+
+
+class Schedule:
+    def __init__(self, start=None, end=None):
+        self.__start = start
+        self.__end = end
+
+    @property
+    def start(self):
+        return self.__start
+
+    @start.setter
+    def start(self, value):
+        self.__start = value
+
+    @property
+    def end(self):
+        return self.__end
+
+    @end.setter
+    def end(self, value):
+        self.__end = value
+
+    def time_span(self):
+        return self.__end - self.__start
+
+    def time_left_str(self):
+        return str_from_time_span(self.time_span)
+
+
+class EncodeError(Exception):
+    pass
 
 
 class Task:
     """
     Super class of all tasks
     """
-    def __init__(self, title, description, created, due, started,
-                 state=STATE.pending):
+    def __init__(self, title, description, created=datetime.datetime.now(), started=None, due=None,
+                 difficulty=DIFFICULTY.unknown, state=STATE.pending):
         """
         """
         self.title = unicode(title)
         self.description = unicode(description)
-        self.created = created
-        self.due = due
-        self.started = started
         self.state = state
-        self.source = None
+        self.difficulty = difficulty
+        self.due = due
         self.category = None
+        self.source = None
+
+        self.schedule = Schedule()
+
+        self.created = created
+        self.started = started
+
+
+class TaskEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, Task):
+            return {Task.__name__: o.__dict__}
+        if isinstance(o, datetime.datetime):
+            return {datetime.datetime.__name__: (o.year, o.month, o.day, o.hour, o.minute, o.second, o.microsecond)}
+        return json.JSONEncoder.default(self, o)
 
 
 class TWTask(Task):
@@ -46,10 +104,10 @@ class TWTask(Task):
             return datetime.datetime.strptime(d[s], "%Y%m%dT%H%M%SZ") if s in d else None
 
         _description = "description"
-        Task.__init__(self, task_dict[_description][0:100], task_dict[_description],
-                      get_time("entry", task_dict),
-                      get_time("due", task_dict),
-                      get_time("start", task_dict)
+        Task.__init__(self, task_dict[_description][0:10], task_dict[_description],
+                      created=get_time("entry", task_dict),
+                      due=get_time("due", task_dict),
+                      started=get_time("start", task_dict)
                       )
         if "depends" in task_dict:
             self.depends = task_dict["depends"].split(",")
