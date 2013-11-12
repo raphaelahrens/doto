@@ -25,4 +25,9 @@ What are the parts of a task?
 3. Relationship with other tasks
 3.1 dependencies
 3.2 child tasks
-3.3 
+
+4. Source of the task
+4.1 Link to original source
+4.2 Name (Icon) of the source
+4.3 Extra view for additional information
+4.4 and dragons be here
