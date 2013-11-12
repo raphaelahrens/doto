@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 
-# example helloworld.py
-
 import pygtk
 pygtk.require('2.0')
 import gtk
-
 import datetime
+
+import i18n
+_ = i18n.language.ugettext
 
 import task
 import config
 from icon import Theme
-import theme
 
+import theme
 icons = Theme(32)
 
 
@@ -50,8 +50,8 @@ class TaskInfo(gtk.Window):
         self.lblTaskState.modify_font(theme.state_font)
 
         self.lblDue = DateLabel()
-        boxDue = create_date_layout(self.lblDue, "due to", icons.due)
-        boxDue.set_size_request(180, -1)
+        boxDue = create_date_layout(self.lblDue, _("due"), icons.due)
+        boxDue.set_size_request(190, -1)
 
         vboxTitle = gtk.VBox()
         vboxTitle.pack_start(self.lblTaskTitle)
@@ -68,12 +68,13 @@ class TaskInfo(gtk.Window):
         self.summaryview = SummaryView()
 
         self.notebook = gtk.Notebook()
+        self.notebook.set_border_width(4)
         self.notebook.set_tab_pos(gtk.POS_BOTTOM)
-        lblSummary = gtk.Label("Summary")
+        lblSummary = gtk.Label(_("Summary"))
         self.notebook.append_page(self.summaryview.getLayout(), lblSummary)
-        lblComments = gtk.Label("Comments")
+        lblComments = gtk.Label(_("Comments"))
         self.notebook.append_page(gtk.Label("LOL"), lblComments)
-        lblFiles = gtk.Label("Files")
+        lblFiles = gtk.Label(_("Files"))
         self.notebook.append_page(gtk.Label("LOL"), lblFiles)
 
         self.vboxMain.pack_start(hboxHeader, expand=False, padding=5)
@@ -84,7 +85,7 @@ class TaskInfo(gtk.Window):
 
     def show_header(self, t):
         self.lblTaskTitle.set_text(t.title)
-        self.lblTaskState.set_text("is " + task.STATE.revert(t.state))
+        self.lblTaskState.set_text(_("is ") + task.STATE.revert(t.state))
         self.imgPriority.set_from_pixbuf(icons.priority[2].pixbuf)
         if t.due:
             self.lblDue.set_time_left(t.due)
@@ -107,6 +108,7 @@ class SummaryView:
         """
         swDescription = gtk.ScrolledWindow()
         swDescription.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        swDescription.set_border_width(5)
 
         tvDescription = gtk.TextView()
         tvDescription.set_size_request(400, -1)
@@ -134,8 +136,8 @@ class SummaryView:
         hboxUser.pack_start(self.imgOwner)
 
         vboxDates = gtk.VBox()
-        vboxDates.pack_start(create_date_layout(self.lblCreated, "created on", icons.created), expand=False, fill=False, padding=10)
-        vboxDates.pack_start(create_date_layout(self.lblStarted, "started on", icons.done), expand=False, fill=False, padding=10)
+        vboxDates.pack_start(create_date_layout(self.lblCreated, _("created on"), icons.created), expand=False, fill=False, padding=10)
+        vboxDates.pack_start(create_date_layout(self.lblStarted, _("started on"), icons.done), expand=False, fill=False, padding=10)
 
         def create_frame(name, widget):
             """
@@ -151,16 +153,16 @@ class SummaryView:
             frame.set_label_widget(lbl)
             return frame
 
-        frDates = create_frame("Dates", vboxDates)
-        frUser = create_frame("Originator & Owner", hboxUser)
+        frDates = create_frame(_("Dates"), vboxDates)
+        frUser = create_frame(_("Originator & Owner"), hboxUser)
 
         vboxAttributes = gtk.VBox()
-        vboxAttributes.pack_start(frDates, expand=False, padding=10)
-        vboxAttributes.pack_end(frUser, expand=False, padding=20)
+        vboxAttributes.pack_start(frDates, expand=False, padding=5)
+        vboxAttributes.pack_end(frUser, expand=False, padding=5)
 
         self.hboxView = gtk.HBox()
-        self.hboxView.pack_start(swDescription)
-        self.hboxView.pack_start(vboxAttributes, expand=False)
+        self.hboxView.pack_start(swDescription, padding=5)
+        self.hboxView.pack_start(vboxAttributes, expand=False, padding=5)
 
         self.hboxView.show_all()
 
@@ -202,24 +204,15 @@ class DateLabel(gtk.Label):
 
         @param date The date to display
         """
-        t_diff = date - date.today()
-
-        def one_or_more(t, single_str, multiple_str):
-            if t == 1:
-                self.set_text(single_str % t)
-            else:
-                self.set_text(multiple_str % t)
-
-        if t_diff.days > 7:
-            self.set_text(date.strftime(config.date_str))
-        elif t_diff.days > 0:
-            one_or_more(t_diff.days, "in %d day", "in %d days")
-        elif t_diff.seconds > 3600:
-            one_or_more(t_diff.seconds // 3600, "in %d hour", "in %d hours")
-        elif t_diff.seconds > 60:
-            one_or_more(t_diff.seconds // 60, "in %d minute", "in %d minutes")
-        else:
-            one_or_more(t_diff.seconds, "in %d second", "in %d seconds")
+        t_span = date - date.today()
+        if t_span.days < 0:
+            self.set_text(_("over due"))
+            return
+        if t_span.days < 7:
+            self.set_text(_("in ") + task.str_from_time_span(t_span))
+            return
+        self.set_text(_("to ") + date.strftime(config.date_str))
+        return
 
     def set_date(self, date):
         """
