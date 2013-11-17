@@ -29,43 +29,72 @@ def str_from_time_span(t_span):
     return one_or_more(t_span.seconds, "%d second", "%d seconds")
 
 
-class Schedule:
+class JSONSerialize(object):
+    ser_classes = {}
+
+    @classmethod
+    def add_class(cls):
+        JSONSerialize.ser_classes[cls.__name__] = cls
+
+    @classmethod
+    def create_dict(cls, members):
+        return {"__class": cls.__name__, "__members": members}
+
+    def json_serialize(self):
+        return self.__class__.create_dict(self.__dict__)
+
+
+class Date(datetime.datetime, JSONSerialize):
+    def json_serialize(self):
+        return Date.create_dict(self.isoformat())
+
+
+class TimeSpan(JSONSerialize):
     def __init__(self, start=None, end=None):
-        self.__start = start
-        self.__end = end
+        self.__start = None
+        self.__end = None
+        self.start = start
+        self.end = end
 
     @property
     def start(self):
         return self.__start
 
     @start.setter
-    def start(self, value):
-        self.__start = value
+    def start(self, start):
+        if start is not None:
+            assert isinstance(start, Date), "The argument start is of type %r and not task.Date." % type(start)
+            assert self.__end is None or self.__end >= start, "The start date must be older then the start date."
+        self.__start = start
 
     @property
     def end(self):
         return self.__end
 
     @end.setter
-    def end(self, value):
-        self.__end = value
+    def end(self, end):
+        if end is not None:
+            assert end is None or isinstance(end, Date), "The argument end is of type %r and not task.Date." % type(end)
+            assert self.__start is None or self.__start <= end, "The end date must be newer then the start date."
+        self.__end = end
 
     def time_span(self):
         return self.__end - self.__start
 
     def time_left_str(self):
         return str_from_time_span(self.time_span)
+TimeSpan.add_class()
 
 
 class EncodeError(Exception):
     pass
 
 
-class Task:
+class Task(JSONSerialize):
     """
     Super class of all tasks
     """
-    def __init__(self, title, description, created=datetime.datetime.now(), started=None, due=None,
+    def __init__(self, title, description, created=Date.now(), started=None, due=None,
                  difficulty=DIFFICULTY.unknown, state=STATE.pending):
         """
         """
@@ -77,18 +106,17 @@ class Task:
         self.category = None
         self.source = None
 
-        self.schedule = Schedule()
+        self.schedule = TimeSpan()
 
         self.created = created
         self.started = started
+Task.add_class()
 
 
 class TaskEncoder(json.JSONEncoder):
     def default(self, o):
-        if isinstance(o, Task):
-            return {Task.__name__: o.__dict__}
-        if isinstance(o, datetime.datetime):
-            return {datetime.datetime.__name__: (o.year, o.month, o.day, o.hour, o.minute, o.second, o.microsecond)}
+        if isinstance(o, JSONSerialize):
+            return o.json_serialize()
         return json.JSONEncoder.default(self, o)
 
 
@@ -134,7 +162,7 @@ class TWTask(Task):
         return "(%s, %s)" % (self.uuid, self.description)
 
 
-class TaskwarrioirStore:
+class TaskwarrioirStore(object):
     def __init__(self):
         output = subprocess.check_output(["task", "export"])
         items = map(TWTask, json.loads("[" + output + "]"))
