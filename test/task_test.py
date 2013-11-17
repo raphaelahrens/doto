@@ -85,16 +85,32 @@ class TestTask(unittest.TestCase):
         self.assertEqual(t.description, description)
 
 
-class TestJSONCoder(unittest.TestCase):
+class TestEncoder(unittest.TestCase):
     """
     Test for the JSON de- and encoder
     """
-    def setUp(self):
-        self.en = task.TaskEncoder()
-
     def test_encode(self):
         """
         Test the constructor of the encoder
         """
+        en = task.TaskEncoder()
         t = task.Task(title=title, description=description)
-        self.en.encode(t)
+        en.encode(t)
+
+
+class TestDecoder(unittest.TestCase):
+    def test_constructor(self):
+        task.TaskDecoder()
+
+
+class TestDeAndEnCoder(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.en = task.TaskEncoder()
+        cls.de = task.TaskDecoder()
+
+    def test_decoder(self):
+        task_org = task.Task("one task", "long description")
+        json_code = self.en.encode(task_org)
+        task_copy = self.de.decode(json_code)
+        self.assertEqual(task_org, task_copy)
