@@ -32,13 +32,16 @@ def str_from_time_span(t_span):
 class JSONSerialize(object):
     ser_classes = {}
 
+    class_id = "__class"
+    member_id = "__members"
+
     @classmethod
     def add_class(cls):
         JSONSerialize.ser_classes[cls.__name__] = cls
 
     @classmethod
     def create_dict(cls, members):
-        return {"__class": cls.__name__, "__members": members}
+        return {JSONSerialize.class_id: cls.__name__, JSONSerialize.member_id: members}
 
     def json_serialize(self):
         return self.__class__.create_dict(self.__dict__)
@@ -117,6 +120,10 @@ class TaskEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, JSONSerialize):
             return o.json_serialize()
+
+
+class TaskDecoder(json.JSONDecoder):
+    def default(self, o):
         return json.JSONEncoder.default(self, o)
 
 
