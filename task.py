@@ -32,8 +32,9 @@ def str_from_time_span(t_span):
 class JSONSerialize(object):
     ser_classes = {}
 
-    class_id = "__class"
-    member_id = "__members"
+    module_id = "__module__"
+    class_id = "__class__"
+    member_id = "__members__"
 
     @classmethod
     def add_class(cls):
@@ -41,7 +42,9 @@ class JSONSerialize(object):
 
     @classmethod
     def create_dict(cls, members):
-        return {JSONSerialize.class_id: cls.__name__, JSONSerialize.member_id: members}
+        return {JSONSerialize.module_id: cls.__module__,
+                JSONSerialize.class_id: cls.__name__,
+                JSONSerialize.member_id: members}
 
     def json_serialize(self):
         return self.__class__.create_dict(self.__dict__)
@@ -54,35 +57,35 @@ class Date(datetime.datetime, JSONSerialize):
 
 class TimeSpan(JSONSerialize):
     def __init__(self, start=None, end=None):
-        self.__start = None
-        self.__end = None
+        self._start = None
+        self._end = None
         self.start = start
         self.end = end
 
     @property
     def start(self):
-        return self.__start
+        return self._start
 
     @start.setter
     def start(self, start):
         if start is not None:
             assert isinstance(start, Date), "The argument start is of type %r and not task.Date." % type(start)
-            assert self.__end is None or self.__end >= start, "The start date must be older then the start date."
-        self.__start = start
+            assert self._end is None or self._end >= start, "The start date must be older then the start date."
+        self._start = start
 
     @property
     def end(self):
-        return self.__end
+        return self._end
 
     @end.setter
     def end(self, end):
         if end is not None:
             assert end is None or isinstance(end, Date), "The argument end is of type %r and not task.Date." % type(end)
-            assert self.__start is None or self.__start <= end, "The end date must be newer then the start date."
-        self.__end = end
+            assert self._start is None or self._start <= end, "The end date must be newer then the start date."
+        self._end = end
 
     def time_span(self):
-        return self.__end - self.__start
+        return self._end - self._start
 
     def time_left_str(self):
         return str_from_time_span(self.time_span)
