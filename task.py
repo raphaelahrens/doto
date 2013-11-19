@@ -1,6 +1,8 @@
 import json
 import datetime
+import pytz
 import subprocess
+import config
 
 
 def enum(*sequential, **named):
@@ -47,18 +49,39 @@ class JSONSerialize(object):
                 JSONSerialize.member_id: members}
 
     @classmethod
-    def create_from_json(cls, d):
+    def new_from_json(cls, d):
         tmp = JSONSerialize()
         tmp.__dict__ = d
         tmp.__class__ = cls
+        return tmp
 
     def json_serialize(self):
         return self.__class__.create_dict(self.__dict__)
 
 
 class Date(datetime.datetime, JSONSerialize):
+
+    utc_id = "utc"
+    local_tz = pytz.timezone(config.local_tz)
+
+    def get_local(self):
+        return self.astimezone(Date.local_tz)
+
     def json_serialize(self):
-        return Date.create_dict(self.isoformat())
+        return Date.create_dict({Date.utc_id: (self.year,
+                                               self.month,
+                                               self.day,
+                                               self.hour,
+                                               self.minute,
+                                               self.second,
+                                               self.microsecond)
+                                 })
+
+    @classmethod
+    def new_from_json(cls, d):
+        year, month, day, hour, minute, second, ms = d[Date.utc_id]
+        return Date(year, month, day, hour, minute, second, ms, pytz.utc)
+Date.add_class()
 
 
 class TimeSpan(JSONSerialize):
