@@ -46,6 +46,12 @@ class JSONSerialize(object):
                 JSONSerialize.class_id: cls.__name__,
                 JSONSerialize.member_id: members}
 
+    @classmethod
+    def create_from_json(cls, d):
+        tmp = JSONSerialize()
+        tmp.__dict__ = d
+        tmp.__class__ = cls
+
     def json_serialize(self):
         return self.__class__.create_dict(self.__dict__)
 
