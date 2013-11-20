@@ -85,7 +85,7 @@ class TaskInfo(gtk.Window):
 
     def show_header(self, t):
         self.lblTaskTitle.set_text(t.title)
-        self.lblTaskState.set_text(_("is ") + task.STATE.revert(t.state))
+        self.lblTaskState.set_text(_("is ") + "pending") # task.STATE.revert(t.state))
         self.imgPriority.set_from_pixbuf(icons.priority[2].pixbuf)
         if t.due:
             self.lblDue.set_time_left(t.due)
@@ -200,11 +200,11 @@ class DateLabel(gtk.Label):
 
     def set_time_left(self, date):
         """
-        Set the label to the time left until today
+        Set the label to the time left until now
 
         @param date The date to display
         """
-        t_span = date - date.today()
+        t_span = date - date.now()
         if t_span.days < 0:
             self.set_text(_("over due"))
             return
@@ -221,11 +221,7 @@ class DateLabel(gtk.Label):
         @param self the Label
         @param date The date to which the label shall be set
         """
-        if date:
-            str_tmp = date.strftime(config.date_str)
-        else:
-            str_tmp = ""
-        self.set_text(str_tmp)
+        self.set_text(date.local_str() if date else "")
 
 
 def create_date_layout(lbl, title, icon):

@@ -36,7 +36,6 @@ class JSONSerialize(object):
 
     module_id = "__module__"
     class_id = "__class__"
-    member_id = "__members__"
 
     @classmethod
     def add_class(cls):
@@ -44,12 +43,13 @@ class JSONSerialize(object):
 
     @classmethod
     def create_dict(cls, members):
-        return {JSONSerialize.module_id: cls.__module__,
-                JSONSerialize.class_id: cls.__name__,
-                JSONSerialize.member_id: members}
+        ret_dict = {JSONSerialize.module_id: cls.__module__,
+                    JSONSerialize.class_id: cls.__name__}
+        ret_dict.update(members)
+        return ret_dict
 
     @classmethod
-    def new_from_json(cls, d):
+    def from_json(cls, d):
         tmp = JSONSerialize()
         tmp.__dict__ = d
         tmp.__class__ = cls
@@ -59,28 +59,73 @@ class JSONSerialize(object):
         return self.__class__.create_dict(self.__dict__)
 
 
-class Date(datetime.datetime, JSONSerialize):
-
+class Date(JSONSerialize):
     utc_id = "utc"
     local_tz = pytz.timezone(config.local_tz)
 
+    def __init__(self, date):
+        self._date = date
+        if self._date.tzinfo:
+            self._date = self._date.astimezone(pytz.utc)
+        else:
+            raise AttributeError("The given date had no timezone data")
+
     def get_local(self):
-        return self.astimezone(Date.local_tz)
+        return self._date.astimezone(Date.local_tz)
 
     def json_serialize(self):
-        return Date.create_dict({Date.utc_id: (self.year,
-                                               self.month,
-                                               self.day,
-                                               self.hour,
-                                               self.minute,
-                                               self.second,
-                                               self.microsecond)
+        return Date.create_dict({Date.utc_id: (self._date.year, self._date.month,
+                                               self._date.day, self._date.hour,
+                                               self._date.minute, self._date.second,
+                                               self._date.microsecond)
                                  })
 
+    def __lt__(self, o):
+        return self._date <= Date._is_date(o)
+
+    def __le__(self, o):
+        return self._date <= Date._is_date(o)
+
+    def __eq__(self, o):
+        return self._date == Date._is_date(o)
+
+    def __ge__(self, o):
+        return self._date >= Date._is_date(o)
+
+    def __gt__(self, o):
+        return self._date > Date._is_date(o)
+
+    def __sub__(self, o):
+        return self._date - Date._is_date(o)
+
+    def __add__(self, o):
+        return self._date + Date._is_date(o)
+
+    def local_str(self):
+        return self._date.strftime(config.date_str)
+
     @classmethod
-    def new_from_json(cls, d):
+    def from_json(cls, d):
         year, month, day, hour, minute, second, ms = d[Date.utc_id]
-        return Date(year, month, day, hour, minute, second, ms, pytz.utc)
+        date = datetime.datetime(year, month, day, hour, minute, second, ms, pytz.utc)
+        return Date(date)
+
+    @classmethod
+    def local(cls, year, month, day, hour=0, minute=0, second=0, microsecond=0):
+        return Date(datetime.datetime(year, month, day, hour, minute, second, microsecond, tzinfo=Date.local_tz))
+
+    @classmethod
+    def now(cls, tz=local_tz):
+        return Date(datetime.datetime.now(tz))
+
+    def get_date(self):
+        return self._date
+
+    @staticmethod
+    def _is_date(o):
+        if isinstance(o, Date):
+            return o._date
+        return o
 Date.add_class()
 
 
@@ -118,6 +163,9 @@ class TimeSpan(JSONSerialize):
 
     def time_left_str(self):
         return str_from_time_span(self.time_span)
+
+    def __eq__(self, obj):
+        return isinstance(obj, TimeSpan) and self.end == obj.end and self.start == obj.start
 TimeSpan.add_class()
 
 
@@ -145,6 +193,13 @@ class Task(JSONSerialize):
 
         self.created = created
         self.started = started
+
+    def __eq__(self, obj):
+        return (isinstance(obj, Task) and self.title == obj.title and self.description == obj.description and
+                self.state == obj.state and self.difficulty == obj.difficulty and
+                self.due == obj.due and self.category == obj.category and
+                self.source == obj.source and self.schedule == obj.schedule and
+                self.created == obj.created and self.started == obj.started)
 Task.add_class()
 
 
@@ -155,8 +210,19 @@ class TaskEncoder(json.JSONEncoder):
 
 
 class TaskDecoder(json.JSONDecoder):
-    def default(self, o):
-        return json.JSONEncoder.default(self, o)
+
+    def __init__(self):
+        json.JSONDecoder.__init__(self, object_hook=self.check_for_interface)
+
+    def check_for_interface(self, d):
+        if JSONSerialize.class_id in d and JSONSerialize.module_id in d:
+            module_name = d.pop(JSONSerialize.module_id)
+            class_name = d.pop(JSONSerialize.class_id)
+            module_o = __import__(module_name)
+            class_o = getattr(module_o, class_name)
+            return class_o.from_json(d)
+        else:
+            return d
 
 
 class TWTask(Task):
@@ -168,7 +234,7 @@ class TWTask(Task):
                 return default
 
         def get_time(s, d):
-            return datetime.datetime.strptime(d[s], "%Y%m%dT%H%M%SZ") if s in d else None
+            return Date(datetime.datetime.strptime(d[s], "%Y%m%dT%H%M%SZ")) if s in d else None
 
         _description = "description"
         Task.__init__(self, task_dict[_description][0:10], task_dict[_description],
