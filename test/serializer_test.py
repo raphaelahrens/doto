@@ -39,6 +39,14 @@ class TestDeAndEnCoder(unittest.TestCase):
         span_copy = self.de.decode(span_code)
         self.assertEqual(span_org, span_copy)
 
+    def test_TimeSpan2(self):
+        start = task.Date.local(2010, 10, 1)
+        end = task.Date.local(2010, 12, 1)
+        span_org = task.TimeSpan(start, end)
+        span_code = self.en.encode(span_org)
+        span_copy = self.de.decode(span_code)
+        self.assertEqual(span_org, span_copy)
+
     def test_Task(self):
         task_org = task.Task("one task", "long description")
         json_code = self.en.encode(task_org)
