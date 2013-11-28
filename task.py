@@ -4,6 +4,7 @@ import subprocess
 import config
 
 from serializer import JSONSerialize
+from state import State
 
 
 def enum(*sequential, **named):
@@ -14,8 +15,48 @@ def enum(*sequential, **named):
     enums['ident'] = ident.get
     return type('Enum', (), enums)
 
-STATE = enum("pending", "started", "blocked", "paused", "completed", "deleted")
 DIFFICULTY = enum("unknown", "simple", "easy", "medium", "hard")
+
+
+def _add_new_state(d, key, name=None):
+    state = State(key, name)
+    print state
+    d[key] = state
+    return state
+
+
+class TaskStateHolder(JSONSerialize):
+    states = {}
+    pending = _add_new_state(states, "pending")
+    started = _add_new_state(states, "started")
+    completed = _add_new_state(states, "completed")
+    blocked = _add_new_state(states, "blocked")
+    interrupted = _add_new_state(states, "interrupted")
+    pending.set_neighbor(started, "start")
+    started.set_neighbor(completed, "complete")
+    started.set_neighbor(blocked, "block")
+    started.set_neighbor(interrupted, "interrupt")
+    blocked.set_neighbor(started, "unblock")
+    interrupted.set_neighbor(started, "restart")
+
+    def __init__(self, state=pending):
+        self._state = state
+
+    def next_state(self, action):
+        self._state = self._state.next_state(action)
+
+    def get_actions(self):
+        return self._state.get_neighbors()
+
+    def json_serialize(self):
+        return TaskStateHolder.create_dict({"state": self._state.key})
+
+    def __eq__(self, obj):
+        return self._state.key == obj._state.key
+
+    @classmethod
+    def from_json(cls, d):
+        return TaskStateHolder(state=TaskStateHolder.states[d["state"]])
 
 
 def str_from_time_span(t_span):
@@ -99,7 +140,6 @@ class Date(JSONSerialize):
         if isinstance(o, Date):
             return o._date
         return o
-Date.add_class()
 
 
 class TimeSpan(JSONSerialize):
@@ -139,7 +179,6 @@ class TimeSpan(JSONSerialize):
 
     def __eq__(self, obj):
         return isinstance(obj, TimeSpan) and self.end == obj.end and self.start == obj.start
-TimeSpan.add_class()
 
 
 class Task(JSONSerialize):
@@ -147,12 +186,12 @@ class Task(JSONSerialize):
     Super class of all tasks
     """
     def __init__(self, title, description, created=Date.now(), started=None, due=None,
-                 difficulty=DIFFICULTY.unknown, state=STATE.pending):
+                 difficulty=DIFFICULTY.unknown, state=TaskStateHolder()):
         """
         """
         self.title = unicode(title)
         self.description = unicode(description)
-        self.state = state
+        self.state = TaskStateHolder()
         self.difficulty = difficulty
         self.due = due
         self.category = None
@@ -169,7 +208,6 @@ class Task(JSONSerialize):
                 self.due == obj.due and self.category == obj.category and
                 self.source == obj.source and self.schedule == obj.schedule and
                 self.created == obj.created and self.started == obj.started)
-Task.add_class()
 
 
 class TWTask(Task):
@@ -196,7 +234,7 @@ class TWTask(Task):
 
         self._id = task_dict["id"]
         self.uuid = task_dict["uuid"]
-        self.status = STATE.ident(task_dict["status"])
+        self.status = TaskStateHolder()
         self.urgency = task_dict["urgency"]
 
         self.end = get_attr("end", None)
@@ -216,10 +254,11 @@ class TWTask(Task):
 
 class TaskwarrioirStore(object):
     def __init__(self):
+        import json
         output = subprocess.check_output(["task", "export"])
         items = map(TWTask, json.loads("[" + output + "]"))
         self.index = dict((x.uuid, x) for x in items)
-        self.pending = [x for x in items if x.status == STATE.pending]
+        self.pending = [x for x in items if x.status == "pending"]
 
     def get_tasks(self):
         return self.pending

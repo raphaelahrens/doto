@@ -131,6 +131,31 @@ class TestTimeSpan(unittest.TestCase):
             task.TimeSpan(self.end, self.start)
 
 
+class TestState(unittest.TestCase):
+    def test_contructor(self):
+        """
+        Test if the constructor works properly
+        """
+        state = task.TaskStateHolder()
+        self.assertEqual(state._state, task.TaskStateHolder.pending)
+
+    def test_contructor2(self):
+        """
+        Test if the constructor works properly
+        """
+        for k, v in task.TaskStateHolder.states.iteritems():
+            state = task.TaskStateHolder(v)
+            self.assertEqual(state._state, v)
+
+    def test_next(self):
+        state = task.TaskStateHolder()
+        self.assertEqual(state._state, task.TaskStateHolder.pending)
+        actions = state.get_actions()
+        print actions
+        state.next_state(action=actions[0])
+        self.assertEqual(state._state, task.TaskStateHolder.started)
+
+
 class TestTask(unittest.TestCase):
     """
     Test for the Task class
@@ -143,6 +168,3 @@ class TestTask(unittest.TestCase):
         t = task.Task(title=title, description=description)
         self.assertEqual(t.title, title)
         self.assertEqual(t.description, description)
-
-
-

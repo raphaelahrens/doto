@@ -33,6 +33,12 @@ class TestDeAndEnCoder(unittest.TestCase):
         date_copy = self.de.decode(date_code)
         self.assertEqual(date_org, date_copy)
 
+    def test_State(self):
+        state_org = task.TaskStateHolder()
+        code = self.en.encode(state_org)
+        copy = self.de.decode(code)
+        self.assertEqual(state_org, copy)
+
     def test_TimeSpan(self):
         span_org = task.TimeSpan()
         span_code = self.en.encode(span_org)
