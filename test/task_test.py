@@ -1,7 +1,7 @@
+"""Unitests for the task module."""
+
 import unittest
-
 import task
-
 from datetime import datetime, timedelta
 import pytz
 
@@ -10,19 +10,25 @@ description = "long description of this task \n"
 
 
 class TestDate(unittest.TestCase):
+
+    """Unittest for the Date class."""
+
     @classmethod
     def setUpClass(cls):
+        """ Setup of datetime object for comparisons."""
         cls.d1 = datetime(2011, 12, 13, 14, 15, 16, tzinfo=task.Date.local_tz)
         cls.d2 = cls.d1.astimezone(pytz.utc)
         cls.d_gt = datetime(2012, 12, 13, 14, 15, 16, tzinfo=task.Date.local_tz)
         cls.d_lt = datetime(2010, 12, 13, 14, 15, 16, tzinfo=task.Date.local_tz)
 
-    def test_constructor(self):
+    def test_local_constructor(self):
+        """Test the local constructor of Date."""
         local = task.Date.local(2011, 12, 13, 14, 15, 16)
         self.assertEqual(local, self.d1)
         self.assertEqual(local, self.d2)
 
     def test_eq(self):
+        """."""
         local1 = task.Date.local(2011, 12, 13, 14, 15, 16)
         local2 = task.Date.local(2011, 12, 13, 14, 15, 16)
         self.assertEqual(local1, local2)
@@ -30,6 +36,7 @@ class TestDate(unittest.TestCase):
         self.assertEqual(local1, self.d2)
 
     def test_gt(self):
+        """Test if the greater operator works."""
         big = task.Date.local(2012, 12, 13, 14, 15, 16)
         small = task.Date.local(2011, 12, 13, 14, 15, 16)
         self.assertGreater(big, small)
@@ -37,6 +44,7 @@ class TestDate(unittest.TestCase):
         self.assertGreater(big, self.d2)
 
     def test_ge(self):
+        """Test if the greater equal operator works."""
         big = task.Date.local(2012, 12, 13, 14, 15, 16)
         small = task.Date.local(2011, 12, 13, 14, 15, 16)
         equal = task.Date.local(2012, 12, 13, 14, 15, 16)
@@ -47,6 +55,7 @@ class TestDate(unittest.TestCase):
         self.assertGreaterEqual(big, self.d_lt)
 
     def test_lt(self):
+        """Test if the lesser operator works."""
         small = task.Date.local(2010, 12, 13, 14, 15, 16)
         big = task.Date.local(2012, 12, 13, 14, 15, 16)
         self.assertLess(small, big)
@@ -54,6 +63,7 @@ class TestDate(unittest.TestCase):
         self.assertLess(small, self.d2)
 
     def test_le(self):
+        """Test if the lesser equal operator works."""
         small = task.Date.local(2010, 12, 13, 14, 15, 16)
         big = task.Date.local(2011, 12, 13, 14, 15, 16)
         equal = task.Date.local(2010, 12, 13, 14, 15, 16)
@@ -64,12 +74,14 @@ class TestDate(unittest.TestCase):
         self.assertLessEqual(small, self.d_lt)
 
     def test_sub(self):
+        """Test if the subtraction operator works."""
         a = task.Date.local(2010, 12, 13, 14, 15, 16)
         b = task.Date.local(2010, 12, 13, 14, 14, 16)
         delta = timedelta(0, 60, 0)
         self.assertEqual(a - b, delta)
 
     def test_add(self):
+        """Test if the add operator works."""
         a = task.Date.local(2010, 12, 13, 14, 15, 16)
         b = timedelta(0, 60, 0)
         x = task.Date.local(2010, 12, 13, 14, 16, 16)
@@ -78,33 +90,34 @@ class TestDate(unittest.TestCase):
 
 class TestTimeSpan(unittest.TestCase):
 
+    """Unittest for the TimeSpan class."""
+
     @classmethod
     def setUpClass(cls):
+        """Set up the test data, start and end (start < end)."""
         cls.start = task.Date.local(2011, 12, 13, 14, 15, 16)
         cls.end = task.Date.local(2011, 12, 14, 14, 15, 16)
 
-    """
-    Test for the TimeSpan class
-    """
     def test_constructor(self):
-        """
-        Test for the constructor of TimeSpan
-        """
+        """Test for the constructor of TimeSpan."""
         span = task.TimeSpan(start=self.start, end=self.end)
         self.assertEqual(span.start, self.start)
         self.assertEqual(span.end, self.end)
 
     def test_set_start(self):
+        """Test the start setter."""
         span = task.TimeSpan()
         span.start = self.start
         self.assertEqual(span.start, self.start)
 
     def test_set_end(self):
+        """Test the end setter."""
         span = task.TimeSpan()
         span.end = self.end
         self.assertEqual(span.end, self.end)
 
     def test_start_greater_end(self):
+        """Test that start is greater then end."""
         span = task.TimeSpan()
         span.start = self.start
         span.end = self.end
@@ -113,6 +126,7 @@ class TestTimeSpan(unittest.TestCase):
         self.assertGreater(span.end, span.start)
 
     def test_start_end_equal(self):
+        """Test if start and end can be set to be equal."""
         span = task.TimeSpan()
         span.start = self.start
         span.end = self.start
@@ -120,51 +134,85 @@ class TestTimeSpan(unittest.TestCase):
         self.assertEqual(span.start, self.start)
         self.assertEqual(span.end, span.start)
 
+    def test_fail_on_end_lesser_start(self):
+        """Test if the start setter fails if start > end."""
+        span = task.TimeSpan()
+        span.end = self.start
+        with self.assertRaises(AssertionError):
+            span.start = self.end
+
     def test_fail_on_start_greater_end(self):
+        """Test if the end setter fails if start > end."""
         span = task.TimeSpan()
         span.start = self.end
         with self.assertRaises(AssertionError):
             span.end = self.start
 
     def test_fail_2_start_greater_end(self):
+        """Test if the contructor fails if start > end."""
         with self.assertRaises(AssertionError):
             task.TimeSpan(self.end, self.start)
 
 
 class TestState(unittest.TestCase):
+
+    """Unittest for the StateHolder class."""
+
     def test_contructor(self):
-        """
-        Test if the constructor works properly
-        """
-        state = task.TaskStateHolder()
-        self.assertEqual(state._state, task.TaskStateHolder.pending)
+        """Test if the constructor works properly."""
+        state = task.StateHolder()
+        self.assertEqual(state.state, task.StateHolder.pending)
 
     def test_contructor2(self):
-        """
-        Test if the constructor works properly
-        """
-        for k, v in task.TaskStateHolder.states.iteritems():
-            state = task.TaskStateHolder(v)
-            self.assertEqual(state._state, v)
+        """Test if the constructor works properly with arguments."""
+        for v in task.StateHolder.states.itervalues():
+            state = task.StateHolder(v)
+            self.assertEqual(state.state, v)
 
     def test_next(self):
-        state = task.TaskStateHolder()
-        self.assertEqual(state._state, task.TaskStateHolder.pending)
+        """Test if the next_state method gives us the next state."""
+        state = task.StateHolder()
+        self.assertEqual(state.state, task.StateHolder.pending)
         actions = state.get_actions()
-        print actions
         state.next_state(action=actions[0])
-        self.assertEqual(state._state, task.TaskStateHolder.started)
+        self.assertEqual(state.state, task.StateHolder.started)
+
+    def test_multiple_next(self):
+        """."""
+        state = task.StateHolder(task.StateHolder.started)
+        self.assertEqual(state.state, task.StateHolder.started)
+
+        for _ in range(100):
+            state.next_state("block")
+            self.assertEqual(state.state, task.StateHolder.blocked)
+            state.next_state("unblock")
+            self.assertEqual(state.state, task.StateHolder.started)
+            state.next_state("interrupt")
+            self.assertEqual(state.state, task.StateHolder.interrupted)
+            state.next_state("restart")
+            self.assertEqual(state.state, task.StateHolder.started)
+
+        state.next_state("complete")
+        self.assertEqual(state.state, task.StateHolder.completed)
+
+    def test_fail_on_final(self):
+        """Test if next_state fail when called on a FinalState."""
+        from state import FinalStateException
+        state = task.StateHolder(task.StateHolder.completed)
+        self.assertRaises(FinalStateException, state.next_state, ("test"))
+
+    def test_fail_wrong_action(self):
+        """Test if next_state fails on wrong input."""
+        state = task.StateHolder(task.StateHolder.started)
+        self.assertRaises(KeyError, state.next_state, "test")
 
 
 class TestTask(unittest.TestCase):
-    """
-    Test for the Task class
-    """
+
+    """Test for the Task class."""
 
     def test_constructor(self):
-        """
-        Test the constructor of the Task
-        """
+        """Test the constructor of the Task."""
         t = task.Task(title=title, description=description)
         self.assertEqual(t.title, title)
         self.assertEqual(t.description, description)

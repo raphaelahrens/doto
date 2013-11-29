@@ -1,6 +1,4 @@
-"""
-Done!Tools config file
-"""
+"""Done!Tools config file."""
 
 tools_path = "/home/tant/pomodoro/"
 

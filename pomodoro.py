@@ -1,4 +1,6 @@
 #!/usr/bin/env python2
+
+"""pomodoro is a simple pomodoro clock and part of the Done!Tools."""
 import gtk
 import pynotify
 import sys
@@ -10,10 +12,10 @@ icons = Theme(128)
 summary = "Pomodoro"
 
 
-class StatusIcon:
-    '''
-    Main application for the Pomodoro task watcher
-    '''
+class StatusIcon(object):
+
+    """Main application for the Pomodoro task watcher."""
+
     def __init__(self):
         self.statusicon = gtk.StatusIcon()
         self.statusicon.set_from_pixbuf(icons.start.pixbuf)
@@ -95,7 +97,7 @@ class NotifyMenu(gtk.Menu):
         func()
 
 
-class Pomodoro:
+class Pomodoro(object):
     startmessage = "Pomodoro started.\n It will last %d minutes."
     restartmessage = "Get back to Work .\n You have  %d minutes."
     endmessage = "Pomodoro ended.\n Take a break!\n You have %d minutes."
@@ -201,7 +203,7 @@ class Pomodoro:
         return self._notifyer.get_callback_message(msg % self.__minutes_left(), icon, callback, action, string)
 
 
-class NotifyHandler:
+class NotifyHandler(object):
     def __init__(self):
         self._msgs = {}
 

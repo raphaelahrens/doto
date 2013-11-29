@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+"""The module defines erverything that is needed for the gettext transalation."""
 import os
 import locale
 import gettext
