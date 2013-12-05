@@ -110,7 +110,9 @@ class StateHolder(JSONSerialize):
         return StateHolder.create_dict({"state": self._state.key})
 
     def __eq__(self, obj):
-        return self._state.key == obj.state.key
+        if isinstance(obj, StateHolder):
+            return self._state.key == obj.state.key
+        return self._state.key == obj
 
     @classmethod
     def from_json(cls, d):
@@ -174,12 +176,16 @@ class Date(JSONSerialize):
     """
 
     utc_id = "utc"
-    local_tz = pytz.timezone(config.local_tz)
+    local_tz = pytz.timezone(config.LOCAL_TZ)
 
-    def __init__(self, date):
+    def __init__(self, date, local_tz=False):
         self._date = date
         if self._date.tzinfo:
+            # _date has a time zone make it to utc
             self._date = self._date.astimezone(pytz.utc)
+        elif local_tz:
+            # _date has no timezone letz use the given timezone
+            self._date = Date.local_tz.localize(self._date)
         else:
             raise AttributeError("The given date had no timezone data")
 
@@ -242,7 +248,7 @@ class Date(JSONSerialize):
         @return the date as a localized string
 
         """
-        return self.get_local().strftime(config.date_str)
+        return self.get_local().strftime(config.DATE_STR)
 
     @classmethod
     def from_json(cls, d):
@@ -446,7 +452,7 @@ class TWTask(Task):
 
         def parse_time(s, d):
             """Parse the time stamp of a task warrior task."""
-            return Date(datetime.datetime.strptime(d[s], "%Y%m%dT%H%M%SZ")) if s in d else None
+            return Date(datetime.datetime.strptime(d[s], "%Y%m%dT%H%M%SZ"), local_tz=True) if s in d else None
 
         _description = "description"
         Task.__init__(self, task_dict[_description][0:10], task_dict[_description],
@@ -461,7 +467,6 @@ class TWTask(Task):
 
         self._id = task_dict["id"]
         self.uuid = task_dict["uuid"]
-        self.status = StateHolder()
         self.urgency = task_dict["urgency"]
 
         self.end = get_attr("end", None)
@@ -473,7 +478,7 @@ class TWTask(Task):
         self.data = task_dict
 
     def __str__(self):
-        return unicode("uuid: %s\n Name: %s \n(%s)\n\n %s" % (self.uuid, self.description, self.status, self.data))
+        return unicode("uuid: %s\n Name: %s \n(%s)\n\n %s" % (self.uuid, self.description, self.state, self.data))
 
     def __repr__(self):
         return "(%s, %s)" % (self.uuid, self.description)
@@ -488,7 +493,7 @@ class TaskwarrioirStore(object):
         output = subprocess.check_output(["task", "export"])
         items = [TWTask(x) for x in json.loads("[" + output + "]")]
         self.index = dict((x.uuid, x) for x in items)
-        self.pending = [x for x in items if x.status == "pending"]
+        self.pending = [x for x in items if x.state == "pending"]
 
     def get_tasks(self):
         """

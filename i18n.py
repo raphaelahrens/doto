@@ -20,24 +20,35 @@ LOCALE_DIR = os.path.join(APP_DIR, "i18n")  # .mo files will then be located in 
 DEFAULT_LANGUAGES = os.environ.get("LANG", "").split(":")
 DEFAULT_LANGUAGES += ["en_US"]
 
-lc, encoding = locale.getdefaultlocale()
-if lc:
-    languages = [lc]
 
-# Concat all languages (env + default locale),
-#  and here we have the languages and location of the translations
-languages += DEFAULT_LANGUAGES
-print (languages)
-mo_location = LOCALE_DIR
+def _init_languages():
+    """
+    Create the gettext languages.
 
-# Lets tell those details to gettext
-#  (nothing to change here for you)
-gettext.install(True, localedir=None, unicode=1)
+    @return the gettext object
 
-gettext.find(APP_NAME, mo_location)
+    """
 
-gettext.textdomain(APP_NAME)
+    # Get locals but ignore the encoding (2 arg).
+    default_lc, _ = locale.getdefaultlocale()
+    if default_lc:
+        languages = [default_lc]
 
-gettext.bind_textdomain_codeset(APP_NAME, "UTF-8")
+    # Concat all languages (env + default locale),
+    #  and here we have the languages and location of the translations
+    languages += DEFAULT_LANGUAGES
+    mo_location = LOCALE_DIR
 
-language = gettext.translation(APP_NAME, mo_location, languages=languages, fallback=True)
+    # Lets tell those details to gettext
+    #  (nothing to change here for you)
+    gettext.install(True, localedir=None, unicode=1)
+
+    gettext.find(APP_NAME, mo_location)
+
+    gettext.textdomain(APP_NAME)
+
+    gettext.bind_textdomain_codeset(APP_NAME, "UTF-8")
+
+    return gettext.translation(APP_NAME, mo_location, languages=languages, fallback=True)
+
+LANGUAGE = _init_languages()

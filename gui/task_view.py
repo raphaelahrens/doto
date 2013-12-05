@@ -12,13 +12,13 @@ import gtk
 import datetime
 
 import i18n
-_ = i18n.language.ugettext
+_ = i18n.LANGUAGE.ugettext
 
 import task
 import config
+import theme
 from icon import Theme
 
-import theme
 ICONS = Theme(32)
 
 
@@ -51,11 +51,11 @@ class TaskInfo(gtk.Window):
         self.vbox_main = gtk.VBox()
         self.lbl_task_title = gtk.Label()
         self.lbl_task_title.set_alignment(0.0, 0.5)
-        self.lbl_task_title.modify_font(theme.title_font)
+        self.lbl_task_title.modify_font(theme.TITLE_FONT)
 
         self.lbl_task_state = gtk.Label()
         self.lbl_task_state.set_alignment(0.9, 0.5)
-        self.lbl_task_state.modify_font(theme.state_font)
+        self.lbl_task_state.modify_font(theme.STATE_FONT)
 
         self.lbl_due = DateLabel()
         box_due = create_date_layout(self.lbl_due, _("due"), ICONS.due)
@@ -166,7 +166,7 @@ class SummaryView(object):
             frame = gtk.Frame()
             frame.add(widget)
             lbl = gtk.Label(name)
-            lbl.modify_font(theme.frame_font)
+            lbl.modify_font(theme.FRAME_FONT)
             frame.set_label_widget(lbl)
             return frame
 
@@ -216,7 +216,7 @@ class DateLabel(gtk.Label):
 
     def __init__(self):
         gtk.Label.__init__(self)
-        self.modify_font(theme.date_font)
+        self.modify_font(theme.DATE_FONT)
         self.set_alignment(0.0, 0.5)
 
     def set_time_left(self, date):
@@ -233,7 +233,7 @@ class DateLabel(gtk.Label):
         if t_span.days < 7:
             self.set_text(_("in ") + task.str_from_time_span(t_span))
             return
-        self.set_text(_("to ") + date.strftime(config.date_str))
+        self.set_text(_("to ") + date.strftime(config.DATE_STR))
         return
 
     def set_date(self, date):
@@ -264,7 +264,7 @@ def create_date_layout(lbl, title, icon):
     img = gtk.Image()
     title = gtk.Label(title)
     title.set_alignment(0.0, 0.5)
-    title.modify_font(theme.description_font)
+    title.modify_font(theme.DESCRIPTION_FONT)
 
     vbox.pack_start(title)
     vbox.pack_start(lbl)

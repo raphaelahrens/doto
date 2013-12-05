@@ -29,6 +29,9 @@ class JSONSerialize(object):
         """
         The method takes a dictionary and adds the class and module information.
 
+        The members parameter needs to be of the type dictionary
+        or an assertion error is thrown.
+
         @param members the dictionary with the serializable data
         @return the merged dictionary
 
@@ -40,18 +43,18 @@ class JSONSerialize(object):
         return ret_dict
 
     @classmethod
-    def from_json(cls, d):
+    def from_json(cls, member_dict):
         """
-        Use the dictionary d and creates a new object of this class.
+        Use the dictionary member_dict and creates a new object of this class.
 
-        @param d the dictionary which was created from a JSON encoded string
+        @param member_dict the dictionary which was created from a JSON encoded string
         @return the object created from the dictionary
 
         """
         # Here we create a simple object which we can form into the object we
         # need. tmp could also be of the type object
         tmp = JSONSerialize()
-        tmp.__dict__ = d  # pylint: disable=W0201
+        tmp.__dict__ = member_dict  # pylint: disable=W0201
         tmp.__class__ = cls
         return tmp
 

@@ -4,7 +4,7 @@ import gtk
 
 import config
 
-_theme = gtk.icon_theme_get_default()
+_THEME = gtk.icon_theme_get_default()
 
 
 class Icon(object):
@@ -47,7 +47,7 @@ class Icon(object):
         @return a new Icon object
 
         """
-        icon_info = _theme.choose_icon(icon_names, size, 0)
+        icon_info = _THEME.choose_icon(icon_names, size, 0)
         return Icon(icon_info.get_filename(), icon_info.load_icon())
 
     @property
@@ -106,7 +106,7 @@ class Theme(object):
 
         """
         if not self.__start:
-            self.__start = Icon.new_icon_from_file(config.tools_path + "/icons/play.svg", self._size)
+            self.__start = Icon.new_icon_from_file(config.TOOLS_PATH + "/icons/play.svg", self._size)
         return self.__start
 
     @property
@@ -118,7 +118,7 @@ class Theme(object):
 
         """
         if not self.__ticking:
-            self.__ticking = Icon.new_icon_from_file(config.tools_path + "/icons/ticking.svg", self._size)
+            self.__ticking = Icon.new_icon_from_file(config.TOOLS_PATH + "/icons/ticking.svg", self._size)
         return self.__ticking
 
     @property
@@ -130,7 +130,7 @@ class Theme(object):
 
         """
         if not self.__coffeebreak:
-            self.__coffeebreak = Icon.new_icon_from_file(config.tools_path + "/icons/coffee_break.svg", self._size)
+            self.__coffeebreak = Icon.new_icon_from_file(config.TOOLS_PATH + "/icons/coffee_break.svg", self._size)
         return self.__coffeebreak
 
     @property
@@ -142,7 +142,7 @@ class Theme(object):
 
         """
         if not self.__pause:
-            self.__pause = Icon.new_icon_from_file(config.tools_path + "/icons/pause.svg", self._size)
+            self.__pause = Icon.new_icon_from_file(config.TOOLS_PATH + "/icons/pause.svg", self._size)
         return self.__pause
 
     @property
@@ -159,7 +159,7 @@ class Theme(object):
                           "./icons/priori_1.svg",
                           "./icons/priori_2.svg",
                           "./icons/priori_3.svg"]:
-                self.__priority.append(Icon.new_icon_from_file(config.tools_path + f_str, self._size))
+                self.__priority.append(Icon.new_icon_from_file(config.TOOLS_PATH + f_str, self._size))
         return self.__priority
 
     @property
@@ -171,7 +171,7 @@ class Theme(object):
 
         """
         if not self.__created:
-            self.__created = Icon.new_icon_from_file(config.tools_path + "/icons/created.svg", self._size)
+            self.__created = Icon.new_icon_from_file(config.TOOLS_PATH + "/icons/created.svg", self._size)
         return self.__created
 
     @property
@@ -183,7 +183,7 @@ class Theme(object):
 
         """
         if not self.__due:
-            self.__due = Icon.new_icon_from_file(config.tools_path + "/icons/due.svg", self._size)
+            self.__due = Icon.new_icon_from_file(config.TOOLS_PATH + "/icons/due.svg", self._size)
         return self.__due
 
     @property
@@ -195,5 +195,5 @@ class Theme(object):
 
         """
         if not self.__done:
-            self.__done = Icon.new_icon_from_file(config.tools_path + "/icons/done.svg", self._size)
+            self.__done = Icon.new_icon_from_file(config.TOOLS_PATH + "/icons/done.svg", self._size)
         return self.__done

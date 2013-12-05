@@ -1,7 +1,7 @@
 """Done!Tools config file."""
 
-tools_path = "/home/tant/pomodoro/"
+TOOLS_PATH = "/home/tant/pomodoro/"
 
-date_str = "%d. %b. %Y"  # %H:%m"
+DATE_STR = "%d. %b. %Y"  # %H:%m"
 
-local_tz = "Europe/Berlin"
+LOCAL_TZ = "Europe/Berlin"
