@@ -15,7 +15,6 @@ import i18n
 _ = i18n.LANGUAGE.ugettext
 
 import task
-import config
 import theme
 from icon import Theme
 
@@ -233,7 +232,7 @@ class DateLabel(gtk.Label):
         if t_span.days < 7:
             self.set_text(_("in ") + task.str_from_time_span(t_span))
             return
-        self.set_text(_("to ") + date.strftime(config.DATE_STR))
+        self.set_text(_("to ") + date.local_str())
         return
 
     def set_date(self, date):

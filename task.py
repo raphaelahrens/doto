@@ -248,7 +248,7 @@ class Date(JSONSerialize):
         @return the date as a localized string
 
         """
-        return self.get_local().strftime(config.DATE_STR)
+        return self.get_local().strftime(config.DATE_OUT_STR)
 
     @classmethod
     def from_json(cls, d):
@@ -285,6 +285,22 @@ class Date(JSONSerialize):
         """
         return Date(datetime.datetime(year, month, day, hour, minute, second,
                                       microsecond, tzinfo=Date.local_tz))
+
+    @classmethod
+    def local_from_str(cls, date_str):
+        """
+        Create a Date object from a string.
+
+        The string needs to follow the format in config.DATE_INPUT_STR.
+
+        @param date_str the string which will be parsed infor a date
+
+        @return the new Date object
+
+        """
+        date = datetime.datetime.strftime(date_str, config.DATE_INPUT_STR)
+
+        return Date(date, local_tz=Date.local_tz)
 
     @classmethod
     def now(cls, timezone=local_tz):
