@@ -216,3 +216,38 @@ class TestTask(unittest.TestCase):
         t = task.Task(title=title, description=description)
         self.assertEqual(t.title, title)
         self.assertEqual(t.description, description)
+
+
+class TestStore(unittest.TestCase):
+
+    """Test if the task storing and loading data with the task store"""
+
+    path = "./test/data/"
+
+    def test_load_empty(self):
+        """Test if we can load the empty file data_load_empty.doto ."""
+        store = task.Store(TestStore.path + "data_load_empty.doto")
+        self.assertEquals(store._version, 9)
+        self.assertEquals(store._tasks, [])
+
+    def test_save_load_empty(self):
+        """Test if it is possible to load the saved data."""
+        store = task.Store(TestStore.path + "data_save.doto", create=True)
+        store.save()
+        self.assertTrue(store.saved)
+        store = task.Store(TestStore.path + "data_save.doto")
+        self.assertEqual(store._version, 0)
+        self.assertEqual(store._tasks, [])
+
+    def test_save_load_100(self):
+        """Test if we ca store 100 tasks and restore them."""
+        t = task.Task("title", "description")
+        save_store = task.Store(TestStore.path + "data_save_100.doto", create=True)
+        for i in range(100):
+            save_store.add(t)
+        save_store.save()
+        self.assertTrue(save_store.saved)
+        load_store = task.Store(TestStore.path + "data_save_100.doto")
+        for i in range(100):
+            self.assertEqual(load_store._tasks[i], t)
+        self.assertEqual(load_store._version, 0)

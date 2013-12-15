@@ -10,8 +10,9 @@ import datetime
 import pytz
 import subprocess
 import config
+import sqlite3
 
-from serializer import JSONSerialize
+import serializer
 from state import State, FinalState
 
 
@@ -48,7 +49,7 @@ def _add_new_state(states, key, name=None):
     return state
 
 
-class StateHolder(JSONSerialize):
+class StateHolder(serializer.JSONSerialize):
 
     """
     This class is used to manage the state of a Task object.
@@ -166,7 +167,7 @@ def str_from_time_span(t_span):
     return one_or_more(t_span.seconds, "%d second", "%d seconds")
 
 
-class Date(JSONSerialize):
+class Date(serializer.JSONSerialize):
 
     """
     Date is the representation of a Task.
@@ -188,6 +189,15 @@ class Date(JSONSerialize):
             self._date = Date.local_tz.localize(self._date)
         else:
             raise AttributeError("The given date had no timezone data")
+
+    def __get_tuple(self):
+        return (self._date.year,
+                self._date.month,
+                self._date.day,
+                self._date.hour,
+                self._date.minute,
+                self._date.second,
+                self._date.microsecond)
 
     def get_local(self):
         """
@@ -211,14 +221,7 @@ class Date(JSONSerialize):
         @return the dictionary created
 
         """
-        return Date.create_dict({Date.utc_id: (self._date.year,
-                                               self._date.month,
-                                               self._date.day,
-                                               self._date.hour,
-                                               self._date.minute,
-                                               self._date.second,
-                                               self._date.microsecond)
-                                 })
+        return Date.create_dict({Date.utc_id: self.__get_tuple()})
 
     def __lt__(self, obj):
         return self._date <= Date._ret_date_or_obj(obj)
@@ -240,6 +243,13 @@ class Date(JSONSerialize):
 
     def __add__(self, obj):
         return self._date + Date._ret_date_or_obj(obj)
+
+    def isoformat(self):
+        return self._date.isoformat()
+
+    def __conform__(self, protocol):
+        if protocol is sqlite3.PrepareProtocol:
+            return "%s" % self.isoformat()
 
     def local_str(self):
         """
@@ -343,7 +353,7 @@ class Date(JSONSerialize):
         return obj
 
 
-class TimeSpan(JSONSerialize):
+class TimeSpan(serializer.JSONSerialize):
 
     """
     TimeSpan is a class to represent a span of time with a start and an end.
@@ -357,6 +367,7 @@ class TimeSpan(JSONSerialize):
     def __init__(self, start=None, end=None):
         self._start = None
         self._end = None
+        # call the setters of the properties (don't let it foul you)
         self.start = start
         self.end = end
 
@@ -420,8 +431,12 @@ class TimeSpan(JSONSerialize):
     def __eq__(self, obj):
         return isinstance(obj, TimeSpan) and self.end == obj.end and self.start == obj.start
 
+    def __conform__(self, protocol):
+        if protocol is sqlite3.PrepareProtocol:
+            return "%s;%s" % (self.start, self.end)
 
-class Task(JSONSerialize):
+
+class Task(serializer.JSONSerialize):
 
     """
     Super class of all tasks.
@@ -429,6 +444,10 @@ class Task(JSONSerialize):
     Task implements the basic functionalaty of a task.
 
     """
+
+    @staticmethod
+    def create_table():
+        return
 
     def __init__(self, title, description, created=Date.now(),
                  started=None, due=None, difficulty=DIFFICULTY.unknown,
@@ -441,17 +460,72 @@ class Task(JSONSerialize):
         self.category = None
         self.source = None
 
-        self.schedule = TimeSpan()
+        # Planned schedule holds the planned start and end
+        self.scheduled = TimeSpan()
+        # In the real schedule the actual start and end time are stored
+        self.real_schedule = TimeSpan()
 
         self.created = created
-        self.started = started
 
     def __eq__(self, obj):
-        return (isinstance(obj, Task) and self.title == obj.title and self.description == obj.description and
-                self.state == obj.state and self.difficulty == obj.difficulty and
-                self.due == obj.due and self.category == obj.category and
-                self.source == obj.source and self.schedule == obj.schedule and
-                self.created == obj.created and self.started == obj.started)
+        return (isinstance(obj, Task)
+                and self.title == obj.title
+                and self.description == obj.description
+                and self.state == obj.state
+                and self.difficulty == obj.difficulty
+                and self.due == obj.due
+                and self.category == obj.category
+                and self.source == obj.source
+                and self.scheduled == obj.scheduled
+                and self.real_schedule == obj.real_schedule
+                and self.created == obj.created)
+
+
+class Store(object):
+
+    """
+    The Store class holds the list of tasks and is responsible for loading and saving them to a file.
+
+    In addition the store can search throu the tasks and manage the tasks
+    """
+
+    version = "version"
+
+    def __init__(self, filename, create=False):
+        self._tasks = []
+        self._new_tasks = []
+        self._filename = filename
+        self._decoder = serializer.TaskDecoder()
+        self._encoder = serializer.TaskEncoder()
+        self._version = 0
+        if create:
+            self.save()
+        else:
+            self.load()
+
+    def load(self):
+        fd = open(self._filename, "r")
+        header = self._decoder.decode(fd.readline())
+        self._tasks = self._decoder.decode(fd.read())
+        self._version = header[Store.version]
+
+    def save(self):
+        new_header_str = self._encoder.encode({Store.version: self._version})
+        self._tasks += self._new_tasks
+        self._new_tasks = []
+        new_task_str = self._encoder.encode(self._tasks)
+        fd = open(self._filename, "w+", 4096)
+        fd.write(new_header_str + "\n")
+        fd.write(new_task_str)
+        fd.close()
+        self._saved = True
+
+    def add(self, task):
+        self._new_tasks.append(task)
+
+    @property
+    def saved(self):
+        return len(self._new_tasks) == 0
 
 
 class TWTask(Task):
