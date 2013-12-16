@@ -4,6 +4,7 @@ import unittest
 import task
 from datetime import datetime, timedelta
 import pytz
+import sqlite3
 
 title = "important task"
 description = "long description of this task \n"
@@ -87,6 +88,13 @@ class TestDate(unittest.TestCase):
         x = task.Date.local(2010, 12, 13, 14, 16, 16)
         self.assertEqual(x, a + b)
 
+    def test_conform(self):
+        """Test if it is possible to create and retrieve a Date Object."""
+        d_org = task.Date.now()
+        sql_str = d_org.__conform__(sqlite3.PrepareProtocol)
+        d_copy = task.Date.from_sqlite(sql_str)
+        self.assertEqual(d_org, d_copy)
+
 
 class TestTimeSpan(unittest.TestCase):
 
@@ -153,6 +161,13 @@ class TestTimeSpan(unittest.TestCase):
         with self.assertRaises(AssertionError):
             task.TimeSpan(self.end, self.start)
 
+    def test_conform(self):
+        """Test if it is possible to create and retrieve a TimeSpan object."""
+        span_org = task.TimeSpan(start=task.Date.now(), end=task.Date.now())
+        sql_str = span_org.__conform__(sqlite3.PrepareProtocol)
+        span_copy = task.TimeSpan.from_sqlite(sql_str)
+        self.assertEqual(span_org, span_copy)
+
 
 class TestState(unittest.TestCase):
 
@@ -197,7 +212,7 @@ class TestState(unittest.TestCase):
 
     def test_fail_on_final(self):
         """Test if next_state fail when called on a FinalState."""
-        from state import FinalStateException
+        from statemachine import FinalStateException
         state = task.StateHolder(task.StateHolder.completed)
         self.assertRaises(FinalStateException, state.next_state, ("test"))
 
@@ -205,6 +220,13 @@ class TestState(unittest.TestCase):
         """Test if next_state fails on wrong input."""
         state = task.StateHolder(task.StateHolder.started)
         self.assertRaises(KeyError, state.next_state, "test")
+
+    def test_conform(self):
+        """Test if it is possible to create and retrieve a TimeSpan object."""
+        state_org = task.StateHolder()
+        sql_str = state_org.__conform__(sqlite3.PrepareProtocol)
+        state_copy = task.StateHolder.from_sqlite(sql_str)
+        self.assertEqual(state_org, state_copy)
 
 
 class TestTask(unittest.TestCase):

@@ -13,7 +13,7 @@ import config
 import sqlite3
 
 import serializer
-from state import State, FinalState
+import statemachine
 
 
 def enum(*sequential, **named):
@@ -44,7 +44,7 @@ def _add_new_state(states, key, name=None):
     @return the new state
 
     """
-    state = State(key, name)
+    state = statemachine.State(key, name)
     states[key] = state
     return state
 
@@ -62,7 +62,7 @@ class StateHolder(serializer.JSONSerialize):
     """
 
     states = {}
-    completed = FinalState(states, "completed")
+    completed = statemachine.FinalState(states, "completed")
     states[completed.key] = completed
     pending = _add_new_state(states, "pending")
     started = _add_new_state(states, "started")
@@ -110,6 +110,10 @@ class StateHolder(serializer.JSONSerialize):
         """
         return StateHolder.create_dict({"state": self._state.key})
 
+    def __conform__(self, protocol):
+        if protocol is sqlite3.PrepareProtocol:
+            return self._state.key
+
     def __eq__(self, obj):
         if isinstance(obj, StateHolder):
             return self._state.key == obj.state.key
@@ -124,7 +128,17 @@ class StateHolder(serializer.JSONSerialize):
         @return the object created from the dictionary
 
         """
-        return StateHolder(state=StateHolder.states[d["state"]])
+        return cls(state=StateHolder.states[d["state"]])
+
+    @classmethod
+    def from_sqlite(cls, text):
+        """
+        Create a StateHolder from the given text.
+
+        @param text the state in textform
+        @return the new StateHolder
+        """
+        return cls(state=StateHolder.states[text])
 
 
 def one_or_more(amount, single_str, multiple_str):
@@ -250,6 +264,11 @@ class Date(serializer.JSONSerialize):
     def __conform__(self, protocol):
         if protocol is sqlite3.PrepareProtocol:
             return "%s" % self.isoformat()
+
+    @classmethod
+    def from_sqlite(cls, text):
+        import dateutil.parser
+        return Date(dateutil.parser.parse(text))
 
     def local_str(self):
         """
@@ -433,7 +452,14 @@ class TimeSpan(serializer.JSONSerialize):
 
     def __conform__(self, protocol):
         if protocol is sqlite3.PrepareProtocol:
-            return "%s;%s" % (self.start, self.end)
+            return "%s;%s" % (self.start.__conform__(protocol), self.end.__conform__(protocol))
+
+    @classmethod
+    def from_sqlite(cls, text):
+        start_str, end_str = text.split(";")
+        start = Date.from_sqlite(start_str)
+        end = Date.from_sqlite(end_str)
+        return cls(start=start, end=end)
 
 
 class Task(serializer.JSONSerialize):
