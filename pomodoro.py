@@ -5,9 +5,9 @@ import gtk
 import pynotify
 import sys
 
-from icon import Theme
+import gui.icon
 
-ICONS = Theme(128)
+ICONS = gui.icon.Theme(128)
 
 SUMMARY = "Pomodoro"
 
