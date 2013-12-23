@@ -452,13 +452,15 @@ class TimeSpan(serializer.JSONSerialize):
 
     def __conform__(self, protocol):
         if protocol is sqlite3.PrepareProtocol:
-            return "%s;%s" % (self.start.__conform__(protocol), self.end.__conform__(protocol))
+            start_str = self.start.__conform__(protocol) if self.start else ""
+            end_str = self.end.__conform__(protocol) if self.end else ""
+            return "%s;%s" % (start_str, end_str)
 
     @classmethod
     def from_sqlite(cls, text):
         start_str, end_str = text.split(";")
-        start = Date.from_sqlite(start_str)
-        end = Date.from_sqlite(end_str)
+        start = Date.from_sqlite(start_str) if start_str != "" else None
+        end = Date.from_sqlite(end_str) if end_str != "" else None
         return cls(start=start, end=end)
 
 
@@ -475,23 +477,78 @@ class Task(serializer.JSONSerialize):
     def create_table():
         return
 
-    def __init__(self, title, description, created=Date.now(),
-                 started=None, due=None, difficulty=DIFFICULTY.unknown,
-                 state=StateHolder()):
-        self.title = unicode(title)
-        self.description = unicode(description)
-        self.state = state
-        self.difficulty = difficulty
-        self.due = due
-        self.category = None
-        self.source = None
-
+    def __init__(self, title, description, task_id=None, created=Date.now(),
+                 due=None, difficulty=DIFFICULTY.unknown, category=None, source=None,
+                 state=StateHolder(), scheduled=TimeSpan(), real_schedule=TimeSpan()):
+        self._task_id = task_id
+        self._title = title
+        self._description = description
+        self._state = state
+        self._difficulty = difficulty
+        self._category = category
+        self._source = source
+        self._due = due
+        self._created = created
         # Planned schedule holds the planned start and end
-        self.scheduled = TimeSpan()
+        self._scheduled = scheduled
         # In the real schedule the actual start and end time are stored
-        self.real_schedule = TimeSpan()
+        self._real_schedule = real_schedule
 
-        self.created = created
+    @property
+    def task_id(self):
+        return self._task_id
+
+    @property
+    def title(self):
+        return self._title
+
+    @title.setter
+    def title(self, obj):
+        self._title = obj
+
+    @property
+    def description(self):
+        return self._description
+
+    @description.setter
+    def description(self, obj):
+        self._description = obj
+
+    @property
+    def state(self):
+        return self._state
+
+    @property
+    def difficulty(self):
+        return self._difficulty
+
+    @difficulty.setter
+    def difficulty(self, obj):
+        self._difficulty = obj
+
+    @property
+    def category(self):
+        return self._category
+
+    @property
+    def source(self):
+        return self._source
+
+    @property
+    def due(self):
+        return self._due
+
+    @property
+    def created(self):
+        return self._created
+
+    @property
+    def scheduled(self):
+        return self._scheduled
+
+    @property
+    def real_schedule(self):
+        return self._real_schedule
 
     def __eq__(self, obj):
         return (isinstance(obj, Task)
@@ -500,11 +557,17 @@ class Task(serializer.JSONSerialize):
                 and self.state == obj.state
                 and self.difficulty == obj.difficulty
                 and self.due == obj.due
+                and self.created == obj.created
                 and self.category == obj.category
                 and self.source == obj.source
                 and self.scheduled == obj.scheduled
-                and self.real_schedule == obj.real_schedule
-                and self.created == obj.created)
+                and self.real_schedule == obj.real_schedule)
+
+    def __str__(self):
+        return repr(self)
+
+    def __repr__(self):
+        return repr((self.title, self.description, self.state, self.difficulty, self.due, self.category, self.source, self.scheduled, self.real_schedule))
 
 
 class Store(object):
