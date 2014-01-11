@@ -17,7 +17,7 @@ import statemachine
 import util
 
 
-DIFFICULTY = util.enum("unknown", "simple", "easy", "medium", "hard")
+DIFFICULTY = util.enum(unknown=0, simple=1, easy=2, medium=3, hard=4)
 
 
 def _add_new_state(states, key, name=None):

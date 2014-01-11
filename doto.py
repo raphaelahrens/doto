@@ -13,7 +13,10 @@ doto
 import argparse
 import sys
 import task
+import util
 
+
+EXIT_CODES = util.enum(unknown_cmd=1)
 
 def add_new_task(args, store):
     tsk = task.Task(args.title, args.description)
@@ -46,7 +49,7 @@ def main():
     init_list_parser(subparsers)
     args = parser.parse_args()
     print args
-    sys.exit(1)
+    sys.exit(EXIT_CODES.unknown_cmd)
 
 if __name__ == "__main__":
     main()
