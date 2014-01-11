@@ -11,7 +11,13 @@ doto
 """
 
 import argparse
+import sys
 import task
+
+
+def add_new_task(args, store):
+    tsk = task.Task(args.title, args.description)
+    print tsk
 
 
 def init_add_parser(subparsers):
@@ -36,8 +42,11 @@ def main():
     parser = argparse.ArgumentParser(prog='doto', description="The Done!Tools are a collection of tools to handle task and events.", epilog="")
     subparsers = parser.add_subparsers(help='command', dest="cmd")
     init_add_parser(subparsers)
+    init_del_parser(subparsers)
+    init_list_parser(subparsers)
     args = parser.parse_args()
     print args
+    sys.exit(1)
 
 if __name__ == "__main__":
     main()

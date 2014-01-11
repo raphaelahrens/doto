@@ -14,23 +14,10 @@ import sqlite3
 
 import serializer
 import statemachine
+import util
 
 
-def enum(*sequential, **named):
-    """
-    A simple enum implementation.
-
-    @return a enum object
-
-    """
-    enums = dict(zip(sequential, range(len(sequential))), **named)
-    keys = list(value for value in enums.iterkeys())
-    ident = enums.copy()
-    enums['keys'] = keys
-    enums['ident'] = ident.get
-    return type('Enum', (), enums)
-
-DIFFICULTY = enum("unknown", "simple", "easy", "medium", "hard")
+DIFFICULTY = util.enum("unknown", "simple", "easy", "medium", "hard")
 
 
 def _add_new_state(states, key, name=None):
@@ -497,6 +484,10 @@ class Task(serializer.JSONSerialize):
     @property
     def task_id(self):
         return self._task_id
+
+    @task_id.setter
+    def task_id(self, obj):
+        self._task_id = obj
 
     @property
     def title(self):
