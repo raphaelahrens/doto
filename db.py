@@ -37,16 +37,18 @@ class DBStore(object):
         fd.close()
 
     def get_tasks(self):
+        select_str = "SELECT * FROM tasks;"
         cur = self.__con.cursor()
-        cur.execute("SELECT * FROM tasks;")
+        cur.execute(select_str)
         rows = cur.fetchall()
         cur.close()
         tasks = [DBStore.task_from_row(row) for row in rows]
         return tasks
 
     def store_new(self, tsk):
+        insert_str = "INSERT INTO tasks VALUES(NULL,?,?,?,?,?,?,?,?,?,?);"
         cur = self.__con.cursor()
-        cur.execute("INSERT INTO tasks VALUES(NULL,?,?,?,?,?,?,?,?,?,?);",
+        cur.execute(insert_str,
                     (tsk.title, tsk.description, tsk.state, tsk.difficulty, tsk.category,
                      None, tsk.due, tsk.created, tsk.scheduled, tsk.real_schedule)
                     )
