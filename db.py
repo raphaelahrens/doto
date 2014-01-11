@@ -69,10 +69,11 @@ class DBStore(object):
         cur.close()
 
     def delete(self, tsk):
+        delete_str = "DELETE FROM tasks WHERE id = ?"
         if not tsk.task_id:
             return False
         cur = self.__con.cursor()
-        cur.execute("DELETE FROM tasks WHERE id = ?", (tsk.task_id,))
+        cur.execute(delete_str, (tsk.task_id,))
         cur.close()
         return cur.rowcount == 1
 
