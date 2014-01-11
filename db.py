@@ -44,19 +44,35 @@ class DBStore(object):
         tasks = [DBStore.task_from_row(row) for row in rows]
         return tasks
 
-    def add(self, tsk):
+    def store_new(self, tsk):
         cur = self.__con.cursor()
         cur.execute("INSERT INTO tasks VALUES(NULL,?,?,?,?,?,?,?,?,?,?);",
                     (tsk.title, tsk.description, tsk.state, tsk.difficulty, tsk.category,
-                     0, tsk.due, tsk.created, tsk.scheduled, tsk.real_schedule)
+                     None, tsk.due, tsk.created, tsk.scheduled, tsk.real_schedule)
+                    )
+        tsk.task_id = cur.lastrowid
+        cur.close()
+
+    def update(self, tsk):
+        updatate_str = """UPDATE tasks SET
+        title=?, description=?, state=?, difficulty=?, category=?,
+        source=?, due=?, created=?, scheduled=?, real=?
+        WHERE id=?;
+        """
+        cur = self.__con.cursor()
+        cur.execute(updatate_str,
+                    (tsk.title, tsk.description, tsk.state, tsk.difficulty, tsk.category,
+                     None, tsk.due, tsk.created, tsk.scheduled, tsk.real_schedule, tsk.task_id)
                     )
         cur.close()
 
-    def update(self, task):
-        pass
-
-    def remove(self, task):
-        pass
+    def delete(self, tsk):
+        if not tsk.task_id:
+            return False
+        cur = self.__con.cursor()
+        cur.execute("DELETE FROM tasks WHERE id = ?", (tsk.task_id,))
+        cur.close()
+        return cur.rowcount == 1
 
     def close(self):
         self.__con.close()
