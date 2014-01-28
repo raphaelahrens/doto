@@ -17,7 +17,7 @@ class TestDate(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """ Setup of datetime object for comparisons."""
-        cls.d1 = datetime(2011, 12, 13, 14, 15, 16, tzinfo=task.Date.local_tz)
+        cls.d1 = datetime(2011, 12, 13, 14, 15, tzinfo=task.Date.local_tz)
         cls.d2 = cls.d1.astimezone(pytz.utc)
         cls.d_gt = datetime(2012, 12, 13, 14, 15, 16, tzinfo=task.Date.local_tz)
         cls.d_lt = datetime(2010, 12, 13, 14, 15, 16, tzinfo=task.Date.local_tz)
@@ -28,10 +28,18 @@ class TestDate(unittest.TestCase):
         self.assertEqual(local, self.d1)
         self.assertEqual(local, self.d2)
 
+    def test_local_constructor(self):
+        """Test the local constructor of Date."""
+        import config
+        local_str = self.d1.strftime(config.DATE_INPUT_STR)
+        local = task.Date.local_from_str(local_str)
+        self.assertEqual(local, self.d1)
+        self.assertEqual(local, self.d2)
+
     def test_eq(self):
         """."""
-        local1 = task.Date.local(2011, 12, 13, 14, 15, 16)
-        local2 = task.Date.local(2011, 12, 13, 14, 15, 16)
+        local1 = task.Date.local(2011, 12, 13, 14, 15)
+        local2 = task.Date.local(2011, 12, 13, 14, 15)
         self.assertEqual(local1, local2)
         self.assertEqual(local1, self.d1)
         self.assertEqual(local1, self.d2)

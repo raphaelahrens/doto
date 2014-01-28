@@ -14,10 +14,28 @@ import sqlite3
 
 import serializer
 import statemachine
-import util
 
 
-DIFFICULTY = util.enum(unknown=0, simple=1, easy=2, medium=3, hard=4)
+def create_difficulties(**difficulties):
+    keys = []
+    names = {}
+    local_names = {}
+    for name, (d_id, local) in difficulties.iteritems():
+        names[name] = d_id
+        local_names[d_id] = local
+        keys.append(d_id)
+    keys.sort()
+    names["keys"] = keys
+    names["local_names"] = local_names
+    return type("Difficulty", (), names)
+
+
+DIFFICULTY = create_difficulties(unknown=(0, "not set"),
+                                 simple=(1, "simple"),
+                                 easy=(2, "easy"),
+                                 medium=(3, "medium"),
+                                 hard=(4, "hard")
+                                 )
 
 
 def _add_new_state(states, key, name=None):
@@ -245,6 +263,9 @@ class Date(serializer.JSONSerialize):
     def __add__(self, obj):
         return self._date + Date._ret_date_or_obj(obj)
 
+    def __str__(self):
+        return str(self._date)
+
     def isoformat(self):
         return self._date.isoformat()
 
@@ -314,7 +335,7 @@ class Date(serializer.JSONSerialize):
         @return the new Date object
 
         """
-        date = datetime.datetime.strftime(date_str, config.DATE_INPUT_STR)
+        date = datetime.datetime.strptime(date_str, config.DATE_INPUT_STR)
 
         return Date(date, local_tz=Date.local_tz)
 
@@ -471,7 +492,7 @@ class Task(serializer.JSONSerialize):
         self._title = title
         self._description = description
         self._state = state
-        self._difficulty = difficulty
+        self.difficulty = difficulty
         self._category = category
         self._source = source
         self._due = due
@@ -515,7 +536,10 @@ class Task(serializer.JSONSerialize):
 
     @difficulty.setter
     def difficulty(self, obj):
-        self._difficulty = obj
+        if obj in DIFFICULTY.keys:
+            self._difficulty = obj
+        else:
+            raise
 
     @property
     def category(self):
