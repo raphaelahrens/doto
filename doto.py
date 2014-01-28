@@ -12,44 +12,35 @@ doto
 
 import argparse
 import sys
-import task
 import util
+import config
+import db
+import cli
+import cli.ls
+import cli.add
+import cli.delete
 
 
 EXIT_CODES = util.enum(unknown_cmd=1)
-
-def add_new_task(args, store):
-    tsk = task.Task(args.title, args.description)
-    print tsk
-
-
-def init_add_parser(subparsers):
-    parser = subparsers.add_parser("add", help="Add a new task to the task list")
-    parser.add_argument("title", type=str, help="The title of the new task")
-    parser.add_argument("description", type=str, help=" of the new task")
-    parser.add_argument("--due", type=task.Date.local_str, help="the estimated completion date.")
-    parser.add_argument("--difficulty", type=int, choices=range(0, 4), help="the estimated difficulty of the task.")
-
-
-def init_del_parser(subparsers):
-    parser = subparsers.add_parser('del', help='delete a task from the list.')
-    parser.add_argument("id", type=int, help="the id of the task which should be deleted.")
-
-
-def init_list_parser(subparsers):
-    parser = subparsers.add_parser('list', help='list tasks.')
-    parser.add_argument("--all", type=int, help="list all tasks.")
 
 
 def main():
     parser = argparse.ArgumentParser(prog='doto', description="The Done!Tools are a collection of tools to handle task and events.", epilog="")
     subparsers = parser.add_subparsers(help='command', dest="cmd")
-    init_add_parser(subparsers)
-    init_del_parser(subparsers)
-    init_list_parser(subparsers)
+    cli.add.init_parser(subparsers)
+    cli.delete.init_parser(subparsers)
+    cli.ls.init_parser(subparsers)
     args = parser.parse_args()
-    print args
-    sys.exit(EXIT_CODES.unknown_cmd)
+    store = db.DBStore(config.TASK_STORE)
+    if args.cmd == "ls":
+        cli.ls.list_tasks(store, args)
+    elif args.cmd == "add":
+        cli.add.add_new_task(store, args)
+    elif args.cmd == "add":
+        cli.add.add_new_task(store, args)
+    else:
+        sys.exit(EXIT_CODES.unknown_cmd)
+    store
 
 if __name__ == "__main__":
     main()
