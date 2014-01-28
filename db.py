@@ -1,9 +1,14 @@
 import sqlite3
+import os.path
 import task
 
 sqlite3.register_converter("DDate", task.Date.from_sqlite)
 sqlite3.register_converter("TimeSpan", task.TimeSpan.from_sqlite)
 sqlite3.register_converter("StateHolder", task.StateHolder.from_sqlite)
+
+
+class DBException(Exception):
+    pass
 
 
 class DBStore(object):
@@ -23,17 +28,32 @@ class DBStore(object):
                          real_schedule=row["real"]
                          )
 
-    def __init__(self, db_name, create=False):
+    def __init__(self, db_name):
+        create_tbls = not os.path.isfile(db_name)
+        if db_name != ":memory:":
+            self.__create_dir(db_name)
+        else:
+            create_tbls = True
         self.__con = sqlite3.connect(db_name, detect_types=sqlite3.PARSE_DECLTYPES)
         self.__con.row_factory = sqlite3.Row
-        if create:
-            self.create()
+        if create_tbls:
+            self.create_tables()
 
-    def create(self):
+    def __create_dir(self, db_name):
+        import errno
+        dir_path = os.path.dirname(db_name)
+        try:
+            os.makedirs(dir_path)
+        except OSError as exception:
+            if exception.errno != errno.EEXIST:
+                raise DBException("The file " + db_name + " couldn't be created.")
+
+    def create_tables(self):
         fd = open("./db_schema.sql", "r")
-        cur = self.__con.cursor()
-        cur.executescript(fd.read())
-        cur.close()
+        with self.__con:
+            cur = self.__con.cursor()
+            cur.executescript(fd.read())
+            cur.close()
         fd.close()
 
     def get_tasks(self):
@@ -45,15 +65,18 @@ class DBStore(object):
         tasks = [DBStore.task_from_row(row) for row in rows]
         return tasks
 
-    def store_new(self, tsk):
+    def save_new(self, tsk):
         insert_str = "INSERT INTO tasks VALUES(NULL,?,?,?,?,?,?,?,?,?,?);"
-        cur = self.__con.cursor()
-        cur.execute(insert_str,
-                    (tsk.title, tsk.description, tsk.state, tsk.difficulty, tsk.category,
-                     None, tsk.due, tsk.created, tsk.scheduled, tsk.real_schedule)
-                    )
-        tsk.task_id = cur.lastrowid
-        cur.close()
+        with self.__con:
+            cur = self.__con.cursor()
+            cur.execute(insert_str,
+                        (tsk.title, tsk.description, tsk.state, tsk.difficulty, tsk.category,
+                         None, tsk.due, tsk.created, tsk.scheduled, tsk.real_schedule)
+                        )
+            tsk.task_id = cur.lastrowid
+            cur.close()
+            return True
+        return False
 
     def update(self, tsk):
         updatate_str = """UPDATE tasks SET
@@ -61,26 +84,26 @@ class DBStore(object):
         source=?, due=?, created=?, scheduled=?, real=?
         WHERE id=?;
         """
-        cur = self.__con.cursor()
-        cur.execute(updatate_str,
-                    (tsk.title, tsk.description, tsk.state, tsk.difficulty, tsk.category,
-                     None, tsk.due, tsk.created, tsk.scheduled, tsk.real_schedule, tsk.task_id)
-                    )
-        cur.close()
+        with self.__con:
+            cur = self.__con.cursor()
+            cur.execute(updatate_str,
+                        (tsk.title, tsk.description, tsk.state, tsk.difficulty, tsk.category,
+                         None, tsk.due, tsk.created, tsk.scheduled, tsk.real_schedule, tsk.task_id)
+                        )
+            cur.close()
+            return True
+        return False
 
     def delete(self, tsk):
-        delete_str = "DELETE FROM tasks WHERE id = ?"
-        if not tsk.task_id:
+        delete_str = "DELETE FROM tasks WHERE id = ?;"
+        if tsk.task_id is None:
             return False
-        cur = self.__con.cursor()
-        cur.execute(delete_str, (tsk.task_id,))
-        cur.close()
-        return cur.rowcount == 1
+        with self.__con:
+            cur = self.__con.cursor()
+            cur.execute(delete_str, (tsk.task_id,))
+            cur.close()
+            return cur.rowcount == 1
+        return False
 
     def close(self):
         self.__con.close()
-
-
-def create_tables(db_file):
-    print ("""INSERT INTO tasks VALUES (Null, "Title", "Description", "STATE", 3, 4, 5, ?, ?, "TIME_SPAN", "TIME_SPAN2"); """, (task.Date.now(), task.Date.now()))
-    print ("SELECT * FROM tasks;")
