@@ -6,5 +6,5 @@ def init_parser(subparsers):
     parser.add_argument("id", type=int, help="the id of the task which should be deleted.")
 
 
-def delete(store, args):
+def main(store, args):
     cli.util.uprint("try to delete")

@@ -7,7 +7,7 @@ def init_parser(subparsers):
     parser.add_argument("--all", action="store_true", help="list all tasks.")
 
 
-def list_tasks(store, args):
+def main(store, args):
     tasks = store.get_tasks()
     headers = [("ID", 4), ("Title", 20), ("Diff", 4), ("Due", 10)]
 

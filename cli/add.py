@@ -1,10 +1,8 @@
-import cli.util
 import task
 
 
-def add_new_task(store, args):
+def main(store, args):
     tsk = task.Task(args.title, args.description, due=args.due)
-    cli.util.uprint(tsk)
     store.save_new(tsk)
 
 

@@ -33,14 +33,14 @@ def main():
     args = parser.parse_args()
     store = db.DBStore(config.TASK_STORE)
     if args.cmd == "ls":
-        cli.ls.list_tasks(store, args)
+        cli.ls.main(store, args)
     elif args.cmd == "add":
-        cli.add.add_new_task(store, args)
-    elif args.cmd == "add":
-        cli.add.add_new_task(store, args)
+        cli.add.main(store, args)
+    elif args.cmd == "del":
+        cli.delete.main(store, args)
     else:
         sys.exit(EXIT_CODES.unknown_cmd)
-    store
+    store.close()
 
 if __name__ == "__main__":
     main()
