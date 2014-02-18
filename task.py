@@ -265,7 +265,7 @@ class Date(serializer.JSONSerialize):
         return self._date + Date._ret_date_or_obj(obj)
 
     def __str__(self):
-        return str(self._date)
+        return self.local_str()
 
     def isoformat(self):
         return self._date.isoformat()
@@ -279,14 +279,14 @@ class Date(serializer.JSONSerialize):
         import dateutil.parser
         return Date(dateutil.parser.parse(text))
 
-    def local_str(self):
+    def local_str(self, format_str=config.DATE_OUT_STR):
         """
         Return the date as a string.
 
         @return the date as a localized string
 
         """
-        return self.get_local().strftime(config.DATE_OUT_STR)
+        return self.get_local().strftime(format_str)
 
     @classmethod
     def from_json(cls, d):

@@ -1,4 +1,5 @@
 #!/usr/bin/env python2
+# -*- coding: utf-8 -*-
 
 """
 The Done!Tools are a collection of tools to handle task and events.
@@ -14,32 +15,41 @@ import argparse
 import sys
 import util
 import config
+import importlib
+import pkgutil
 import db
 import cli
-import cli.ls
-import cli.add
-import cli.delete
+import cli.cmd
 
 
 EXIT_CODES = util.enum(unknown_cmd=1)
 
+def import_commands():
+    commands = {}
+    for __, modname, ispkg in pkgutil.iter_modules(cli.cmd.__path__, cli.cmd.__name__ + "."):
+        if ispkg is False:
+            module = importlib.import_module(modname)
+            commands[module.COMMAND] = module
+    return commands
 
-def main():
+
+def init_parser(commands):
     parser = argparse.ArgumentParser(prog='doto', description="The Done!Tools are a collection of tools to handle task and events.", epilog="")
     subparsers = parser.add_subparsers(help='command', dest="cmd")
-    cli.add.init_parser(subparsers)
-    cli.delete.init_parser(subparsers)
-    cli.ls.init_parser(subparsers)
+    for cmd in commands:
+        cmd.init_parser(subparsers)
+    return parser
+
+
+def main():
+    # Init phase
+    cmds = import_commands()
+    parser = init_parser(cmds.values())
     args = parser.parse_args()
     store = db.DBStore(config.TASK_STORE)
-    if args.cmd == "ls":
-        cli.ls.main(store, args)
-    elif args.cmd == "add":
-        cli.add.main(store, args)
-    elif args.cmd == "del":
-        cli.delete.main(store, args)
-    else:
-        sys.exit(EXIT_CODES.unknown_cmd)
+
+    # execute command
+    cmds[args.cmd].main(store, args)
     store.close()
 
 if __name__ == "__main__":
