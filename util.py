@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 def enum(*sequential, **named):
     """
     A simple enum implementation.

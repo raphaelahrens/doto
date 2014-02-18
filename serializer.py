@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 This module holds all classes to serialize a class into a JSON encoded string.
 

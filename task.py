@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 This module implements the all base classes for a task of the Done!Tools.
 

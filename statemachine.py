@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 The state module deifnes a small state machine.
 
