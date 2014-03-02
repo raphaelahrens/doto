@@ -9,8 +9,6 @@ It's a base for all future plug-ins.
 
 import datetime
 import pytz
-import subprocess
-import config
 import sqlite3
 
 import serializer
@@ -18,6 +16,11 @@ import statemachine
 
 
 def create_difficulties(**difficulties):
+    """
+    Create the difficulty values for the task evaluation.
+
+    @return a enum like type
+    """
     keys = []
     names = {}
     local_names = {}
@@ -196,8 +199,17 @@ class Date(serializer.JSONSerialize):
 
     """
 
-    utc_id = "utc"
-    local_tz = pytz.timezone(config.LOCAL_TZ)
+    _utc_id = "utc"
+    _local_tz = pytz.timezone(_utc_id)
+    _local_input_str = "%Y.%m.%d-%H:%M"
+
+    @classmethod
+    def set_local_tz(cls, timezone):
+        cls._local_tz = pytz.timezone(timezone)
+
+    @classmethod
+    def set_local_input_str(cls, input_format):
+        cls._local_input_str = input_format
 
     def __init__(self, date, local_tz=False):
         self._date = date
@@ -206,7 +218,7 @@ class Date(serializer.JSONSerialize):
             self._date = self._date.astimezone(pytz.utc)
         elif local_tz:
             # _date has no timezone letz use the given timezone
-            self._date = Date.local_tz.localize(self._date)
+            self._date = Date._local_tz.localize(self._date)
         else:
             raise AttributeError("The given date had no timezone data")
 
@@ -229,7 +241,7 @@ class Date(serializer.JSONSerialize):
         @return a datetime object with the current time zone
 
         """
-        return self._date.astimezone(Date.local_tz)
+        return self._date.astimezone(Date._local_tz)
 
     def json_serialize(self):
         """
@@ -241,7 +253,7 @@ class Date(serializer.JSONSerialize):
         @return the dictionary created
 
         """
-        return Date.create_dict({Date.utc_id: self.__get_tuple()})
+        return Date.create_dict({Date._utc_id: self.__get_tuple()})
 
     def __lt__(self, obj):
         return self._date <= Date._ret_date_or_obj(obj)
@@ -264,9 +276,6 @@ class Date(serializer.JSONSerialize):
     def __add__(self, obj):
         return self._date + Date._ret_date_or_obj(obj)
 
-    def __str__(self):
-        return self.local_str()
-
     def isoformat(self):
         return self._date.isoformat()
 
@@ -279,7 +288,7 @@ class Date(serializer.JSONSerialize):
         import dateutil.parser
         return Date(dateutil.parser.parse(text))
 
-    def local_str(self, format_str=config.DATE_OUT_STR):
+    def local_str(self, format_str):
         """
         Return the date as a string.
 
@@ -300,7 +309,7 @@ class Date(serializer.JSONSerialize):
         @return the Date object created from the dictionary
 
         """
-        year, month, day, hour, minute, second, microsecs = d[Date.utc_id]
+        year, month, day, hour, minute, second, microsecs = d[Date._utc_id]
         date = datetime.datetime(year, month, day,
                                  hour, minute, second, microsecs, pytz.utc)
         return Date(date)
@@ -322,26 +331,26 @@ class Date(serializer.JSONSerialize):
 
         """
         return Date(datetime.datetime(year, month, day, hour, minute, second,
-                                      microsecond, tzinfo=Date.local_tz))
+                                      microsecond, tzinfo=Date._local_tz))
 
     @classmethod
-    def local_from_str(cls, date_str):
+    def local_from_str(cls, date_str, local_format=_local_input_str):
         """
         Create a Date object from a string.
 
-        The string needs to follow the format in config.DATE_INPUT_STR.
+        The string needs to follow the format in the format argument.
 
         @param date_str the string which will be parsed infor a date
 
         @return the new Date object
 
         """
-        date = datetime.datetime.strptime(date_str, config.DATE_INPUT_STR)
+        date = datetime.datetime.strptime(date_str, local_format)
 
-        return Date(date, local_tz=Date.local_tz)
+        return Date(date, local_tz=Date._local_tz)
 
     @classmethod
-    def now(cls, timezone=local_tz):
+    def now(cls, timezone=_local_tz):
         """
         Return a Date object that has the current time.
 
@@ -493,7 +502,7 @@ class Task(serializer.JSONSerialize):
         self._title = title
         self._description = description
         self._state = state
-        self.difficulty = difficulty
+        self._difficulty = difficulty
         self._category = category
         self._source = source
         self._due = due
@@ -631,70 +640,3 @@ class Store(object):
     @property
     def saved(self):
         return len(self._new_tasks) == 0
-
-
-class TWTask(Task):
-
-    """A first taskwarrior task."""
-
-    def __init__(self, task_dict):
-        def get_attr(string, default):
-            """Return the element at string if there of default."""
-            if str in task_dict:
-                return task_dict[string]
-            else:
-                return default
-
-        def parse_time(s, d):
-            """Parse the time stamp of a task warrior task."""
-            return Date(datetime.datetime.strptime(d[s], "%Y%m%dT%H%M%SZ"), local_tz=True) if s in d else None
-
-        _description = "description"
-        Task.__init__(self, task_dict[_description][0:10], task_dict[_description],
-                      created=parse_time("entry", task_dict),
-                      due=parse_time("due", task_dict),
-                      started=parse_time("start", task_dict)
-                      )
-        if "depends" in task_dict:
-            self.depends = task_dict["depends"].split(",")
-        else:
-            self.depends = []
-
-        self._id = task_dict["id"]
-        self.uuid = task_dict["uuid"]
-        self.urgency = task_dict["urgency"]
-
-        self.end = get_attr("end", None)
-        self.recur = get_attr("recur", None)
-        self.tags = get_attr("tags", None)
-        self.modified = get_attr("modified", None)
-        self.project = get_attr("project", None)
-
-        self.data = task_dict
-
-    def __str__(self):
-        return unicode("uuid: %s\n Name: %s \n(%s)\n\n %s" % (self.uuid, self.description, self.state, self.data))
-
-    def __repr__(self):
-        return "(%s, %s)" % (self.uuid, self.description)
-
-
-class TaskwarrioirStore(object):
-
-    """This class imports taskwarrior tasks."""
-
-    def __init__(self):
-        import json
-        output = subprocess.check_output(["task", "export"])
-        items = [TWTask(x) for x in json.loads("[" + output + "]")]
-        self.index = dict((x.uuid, x) for x in items)
-        self.pending = [x for x in items if x.state == "pending"]
-
-    def get_tasks(self):
-        """
-        return the pending tasks.
-
-        @return the pending task
-
-        """
-        return self.pending

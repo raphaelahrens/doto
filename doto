@@ -6,50 +6,90 @@ The Done!Tools are a collection of tools to handle task and events.
 
 
 doto add  "Title" "descripton"
-doto list
+doto ls
 doto
 
 """
 
 import argparse
-import sys
 import util
-import config
+import simpleconf
 import importlib
 import pkgutil
 import db
 import cli
 import cli.cmd
+import os
+import os.path
 
+USER_PATH = os.path.expanduser("~") + "/.doto/"
+
+CONFIG_FILE = USER_PATH + "dotorc"
 
 EXIT_CODES = util.enum(unknown_cmd=1)
 
+CONF_DEF = {"path": {"icons": "/home/tant/pomodoro/",
+                     "user": USER_PATH,
+                     "store": USER_PATH + "store.db"
+                     },
+            "date": {"gui_out_str": "%d. %b. %Y",
+                     "cli_out_str": "%d.%m.%Y-%H:%M",
+                     "cli_input_str": "%Y.%m.%d-%H:%M",
+                     "local_tz": "Europe/Berlin"
+                     }
+            }
+
+
 def import_commands():
+    """Import all commands dynamicylly from cli.cmd."""
     commands = {}
-    for __, modname, ispkg in pkgutil.iter_modules(cli.cmd.__path__, cli.cmd.__name__ + "."):
+    for _, modname, ispkg in pkgutil.iter_modules(cli.cmd.__path__, cli.cmd.__name__ + "."):
         if ispkg is False:
             module = importlib.import_module(modname)
             commands[module.COMMAND] = module
     return commands
 
 
-def init_parser(commands):
-    parser = argparse.ArgumentParser(prog='doto', description="The Done!Tools are a collection of tools to handle task and events.", epilog="")
+def init_env(commands):
+    """
+    Initialize the enviroment.
+
+    This includes
+        - the config and it default values,
+        - the parser and subpurser,
+        - and the enviroment variables.
+
+    @param commands the modules of the cli commands
+
+    """
+    for cmd in commands:
+        CONF_DEF[cmd.COMMAND] = cmd.CONF_DEF
+    config = simple_conf.Config(os.getenv("DOTO_CONFIG", CONFIG_FILE), CONF_DEF)
+    parser = argparse.ArgumentParser(prog="doto", description="The Done!Tools are a collection of tools to handle task and events.")
     subparsers = parser.add_subparsers(help='command', dest="cmd")
     for cmd in commands:
         cmd.init_parser(subparsers)
-    return parser
+    args = parser.parse_args()
+
+    return args, config
 
 
 def main():
+    """
+    The main function.
+
+    It initialises the eviroment,
+    parses the command line arguments,
+    and executes the gvien command.
+
+    """
     # Init phase
     cmds = import_commands()
-    parser = init_parser(cmds.values())
-    args = parser.parse_args()
-    store = db.DBStore(config.TASK_STORE)
+    args, config = init_env(cmds.values())
+    store = db.DBStore(config.path.store)
 
     # execute command
-    cmds[args.cmd].main(store, args)
+    cmds[args.cmd].main(store, args, config)
     store.close()
 
 if __name__ == "__main__":
