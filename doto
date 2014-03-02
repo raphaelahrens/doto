@@ -64,7 +64,7 @@ def init_env(commands):
     """
     for cmd in commands:
         CONF_DEF[cmd.COMMAND] = cmd.CONF_DEF
-    config = simple_conf.Config(os.getenv("DOTO_CONFIG", CONFIG_FILE), CONF_DEF)
+    config = simpleconf.Config(os.getenv("DOTO_CONFIG", CONFIG_FILE), CONF_DEF)
     parser = argparse.ArgumentParser(prog="doto", description="The Done!Tools are a collection of tools to handle task and events.")
     subparsers = parser.add_subparsers(help='command', dest="cmd")
     for cmd in commands:
