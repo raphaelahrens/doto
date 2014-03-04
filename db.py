@@ -17,16 +17,15 @@ class DBStore(object):
     @staticmethod
     def task_from_row(row):
         schedule = task.Schedule(row["planned_sch"], row["real_sch"])
-        return task.Task(task_id=row["id"],
-                         title=row["title"],
-                         description=row["description"],
-                         state=row["state"],
-                         difficulty=row["difficulty"],
-                         category=row["category"],
-                         due=row["due"],
-                         created=row["created"],
-                         schedule=schedule,
-                         )
+        tsk = task.Task(title=row["title"],
+                        description=row["description"],
+                        difficulty=row["difficulty"],
+                        category=row["category"],
+                        due=row["due"],
+                        )
+        tsk.set_internals(row["state"], row["created"], schedule)
+        tsk.task_id = row["id"]
+        return tsk
 
     def __init__(self, db_name):
         create_tbls = not os.path.isfile(db_name)

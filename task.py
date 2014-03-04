@@ -510,16 +510,21 @@ class Task(serializer.JSONSerialize):
 
     """
 
-    def __init__(self, title, description, task_id=None, created=Date.now(),
+    def __init__(self, title, description, task_id=None,
                  due=None, difficulty=DIFFICULTY.unknown, category=None,
-                 state=StateHolder(), schedule=Schedule()):
+                 ):
         self._task_id = task_id
         self._title = title
         self._description = description
-        self._state = state
+        self._state = StateHolder()
         self._difficulty = difficulty
         self._category = category
         self._due = due
+        self._created = Date.now()
+        self._schedule = Schedule()
+
+    def set_internals(self, state, created, schedule):
+        self._state = state
         self._created = created
         self._schedule = schedule
 
@@ -593,7 +598,7 @@ class Task(serializer.JSONSerialize):
         return repr(self)
 
     def __repr__(self):
-        return repr((self.title, self.description, self.state, self.difficulty, self.due, self.category, self.schedule, self.real_schedule))
+        return repr((self.title, self.description, self.state, self.difficulty, self.due, self.category, self.schedule))
 
 
 class Store(object):
