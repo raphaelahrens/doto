@@ -8,6 +8,8 @@
 # `describe` the plan meaningfully.
 describe "Test the functionality of the doto CLI."
 
+export DOTO_CONFIG=./test/configs/dotorc.1
+
 # Add a new task
 it_runs_add() {
     doto add "title" "description"
