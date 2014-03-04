@@ -491,10 +491,6 @@ class Task(serializer.JSONSerialize):
 
     """
 
-    @staticmethod
-    def create_table():
-        return
-
     def __init__(self, title, description, task_id=None, created=Date.now(),
                  due=None, difficulty=DIFFICULTY.unknown, category=None, source=None,
                  state=StateHolder(), scheduled=TimeSpan(), real_schedule=TimeSpan()):
@@ -549,7 +545,7 @@ class Task(serializer.JSONSerialize):
         if obj in DIFFICULTY.keys:
             self._difficulty = obj
         else:
-            raise
+            raise AttributeError("The given Difficulty is not in the range %s" % (str(DIFFICULTY.keys)))
 
     @property
     def category(self):
