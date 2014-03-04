@@ -42,10 +42,6 @@ it_runs_ls_all() {
     doto ls --all
 }
 
-it_runs_ls_with_config() {
-    DOTO_CONFIG=test/config/dotorc.1 doto ls 
-}
-
 it_runs_del() {
     doto del 1    
 }
