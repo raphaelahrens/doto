@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS tasks(
   source INTEGER,
   due DDate,
   created DDate,
-  scheduled TimeSpan,
-  real TimeSpan,
+  planned_sch TimeSpan,
+  real_sch TimeSpan,
   FOREIGN KEY(source) REFERENCES sources(source_id),
   FOREIGN KEY(category) REFERENCES categories(cat_id)
 );

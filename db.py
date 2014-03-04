@@ -16,17 +16,16 @@ class DBStore(object):
 
     @staticmethod
     def task_from_row(row):
+        schedule = task.Schedule(row["planned_sch"], row["real_sch"])
         return task.Task(task_id=row["id"],
                          title=row["title"],
                          description=row["description"],
                          state=row["state"],
                          difficulty=row["difficulty"],
                          category=row["category"],
-                         source=row["source"],
                          due=row["due"],
                          created=row["created"],
-                         scheduled=row["scheduled"],
-                         real_schedule=row["real"]
+                         schedule=schedule,
                          )
 
     def __init__(self, db_name):
@@ -72,7 +71,7 @@ class DBStore(object):
             cur = self.__con.cursor()
             cur.execute(insert_str,
                         (tsk.title, tsk.description, tsk.state, tsk.difficulty, tsk.category,
-                         None, tsk.due, tsk.created, tsk.scheduled, tsk.real_schedule)
+                         None, tsk.due, tsk.created, tsk.schedule.planned, tsk.schedule.real)
                         )
             tsk.task_id = cur.lastrowid
             cur.close()
@@ -82,14 +81,14 @@ class DBStore(object):
     def update(self, tsk):
         updatate_str = """UPDATE tasks SET
         title=?, description=?, state=?, difficulty=?, category=?,
-        source=?, due=?, created=?, scheduled=?, real=?
+        source=?, due=?, created=?, planned_sch=?, real_sch=?
         WHERE id=?;
         """
         with self.__con:
             cur = self.__con.cursor()
             cur.execute(updatate_str,
                         (tsk.title, tsk.description, tsk.state, tsk.difficulty, tsk.category,
-                         None, tsk.due, tsk.created, tsk.scheduled, tsk.real_schedule, tsk.task_id)
+                         None, tsk.due, tsk.created, tsk.schedule.planned, tsk.schedule.real, tsk.task_id)
                         )
             cur.close()
             return True

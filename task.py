@@ -482,6 +482,25 @@ class TimeSpan(serializer.JSONSerialize):
         return cls(start=start, end=end)
 
 
+class Schedule(serializer.JSONSerialize):
+    def __init__(self, planned=TimeSpan(), real=TimeSpan()):
+        self._planned = planned
+        self._real = real
+
+    @property
+    def planned(self):
+        return self._planned
+
+    @property
+    def real(self):
+        return self._real
+
+    def __eq__(self, obj):
+        return (isinstance(obj, self.__class__)
+                and self.planned == obj.planned
+                and self.real == obj.real)
+
+
 class Task(serializer.JSONSerialize):
 
     """
@@ -492,21 +511,17 @@ class Task(serializer.JSONSerialize):
     """
 
     def __init__(self, title, description, task_id=None, created=Date.now(),
-                 due=None, difficulty=DIFFICULTY.unknown, category=None, source=None,
-                 state=StateHolder(), scheduled=TimeSpan(), real_schedule=TimeSpan()):
+                 due=None, difficulty=DIFFICULTY.unknown, category=None,
+                 state=StateHolder(), schedule=Schedule()):
         self._task_id = task_id
         self._title = title
         self._description = description
         self._state = state
         self._difficulty = difficulty
         self._category = category
-        self._source = source
         self._due = due
         self._created = created
-        # Planned schedule holds the planned start and end
-        self._scheduled = scheduled
-        # In the real schedule the actual start and end time are stored
-        self._real_schedule = real_schedule
+        self._schedule = schedule
 
     @property
     def task_id(self):
@@ -552,10 +567,6 @@ class Task(serializer.JSONSerialize):
         return self._category
 
     @property
-    def source(self):
-        return self._source
-
-    @property
     def due(self):
         return self._due
 
@@ -564,12 +575,8 @@ class Task(serializer.JSONSerialize):
         return self._created
 
     @property
-    def scheduled(self):
-        return self._scheduled
-
-    @property
-    def real_schedule(self):
-        return self._real_schedule
+    def schedule(self):
+        return self._schedule
 
     def __eq__(self, obj):
         return (isinstance(obj, Task)
@@ -580,15 +587,13 @@ class Task(serializer.JSONSerialize):
                 and self.due == obj.due
                 and self.created == obj.created
                 and self.category == obj.category
-                and self.source == obj.source
-                and self.scheduled == obj.scheduled
-                and self.real_schedule == obj.real_schedule)
+                and self.schedule == obj.schedule)
 
     def __str__(self):
         return repr(self)
 
     def __repr__(self):
-        return repr((self.title, self.description, self.state, self.difficulty, self.due, self.category, self.source, self.scheduled, self.real_schedule))
+        return repr((self.title, self.description, self.state, self.difficulty, self.due, self.category, self.schedule, self.real_schedule))
 
 
 class Store(object):
