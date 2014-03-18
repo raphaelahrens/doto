@@ -203,14 +203,6 @@ class Date(serializer.JSONSerialize):
     _local_tz = pytz.timezone(_utc_id)
     _local_input_str = "%Y.%m.%d-%H:%M"
 
-    @classmethod
-    def set_local_tz(cls, timezone):
-        cls._local_tz = pytz.timezone(timezone)
-
-    @classmethod
-    def set_local_input_str(cls, input_format):
-        cls._local_input_str = input_format
-
     def __init__(self, date, local_tz=False):
         self._date = date
         if self._date.tzinfo:
@@ -223,6 +215,7 @@ class Date(serializer.JSONSerialize):
             raise AttributeError("The given date had no timezone data")
 
     def __get_tuple(self):
+        """ Return a tuple with  the year, month, day, hour, minute, second, mircosecond."""
         return (self._date.year,
                 self._date.month,
                 self._date.day,
@@ -277,6 +270,7 @@ class Date(serializer.JSONSerialize):
         return self._date + Date._ret_date_or_obj(obj)
 
     def isoformat(self):
+        """ Return the ISO-Format """
         return self._date.isoformat()
 
     def __conform__(self, protocol):
@@ -285,6 +279,7 @@ class Date(serializer.JSONSerialize):
 
     @classmethod
     def from_sqlite(cls, text):
+        """Create a new Date objet from an sql-string."""
         import dateutil.parser
         return Date(dateutil.parser.parse(text))
 
@@ -476,6 +471,7 @@ class TimeSpan(serializer.JSONSerialize):
 
     @classmethod
     def from_sqlite(cls, text):
+        """ Create a TimeSpan instacne form the given string. """
         start_str, end_str = text.split(";")
         start = Date.from_sqlite(start_str) if start_str != "" else None
         end = Date.from_sqlite(end_str) if end_str != "" else None
@@ -483,22 +479,48 @@ class TimeSpan(serializer.JSONSerialize):
 
 
 class Schedule(serializer.JSONSerialize):
-    def __init__(self, planned=TimeSpan(), real=TimeSpan()):
+    """
+    Schedule holds all time components of a task.
+
+    This includes the planned start and finishing point in time,
+    the real start and finish point,
+    and the due date, which tells us when the task must be done.
+    """
+    def __init__(self, planned=TimeSpan(), real=TimeSpan(), due=None):
         self._planned = planned
         self._real = real
+        self._due = due
 
     @property
     def planned(self):
+        """
+        Return the planned schedule.
+
+        The planned schedule is of type TimeSpan and defines the planned start and end of a task.
+
+        @return the planned schedule
+
+        """
         return self._planned
 
     @property
     def real(self):
         return self._real
 
+    @property
+    def due(self):
+        return self._due
+
+    @due.setter
+    def due(self, obj):
+        self._due = obj
+
     def __eq__(self, obj):
         return (isinstance(obj, self.__class__)
                 and self.planned == obj.planned
-                and self.real == obj.real)
+                and self.real == obj.real
+                and self.due == obj.due
+                )
 
 
 class Task(serializer.JSONSerialize):
@@ -511,7 +533,7 @@ class Task(serializer.JSONSerialize):
     """
 
     def __init__(self, title, description, task_id=None,
-                 due=None, difficulty=DIFFICULTY.unknown, category=None,
+                 difficulty=DIFFICULTY.unknown, category=None,
                  ):
         self._task_id = task_id
         self._title = title
@@ -519,49 +541,77 @@ class Task(serializer.JSONSerialize):
         self._state = StateHolder()
         self._difficulty = difficulty
         self._category = category
-        self._due = due
         self._created = Date.now()
         self._schedule = Schedule()
 
     def set_internals(self, state, created, schedule):
+        """
+        Set the state, the date of creation and the schedule.
+
+        All these members are only important when we load a task from file.
+        For a new task these values are set by the constructor.
+
+        @param state the state of the task
+        @param created the date of creation of tis task
+        @param schedule the schedule instance of this task
+
+        """
         self._state = state
         self._created = created
         self._schedule = schedule
 
     @property
     def task_id(self):
+        """ Returns the task_id for this task. """
         return self._task_id
 
     @task_id.setter
     def task_id(self, obj):
+        """ Setter for the task_id. """
         self._task_id = obj
 
     @property
     def title(self):
+        """ Returns the title string of the . """
         return self._title
 
     @title.setter
     def title(self, obj):
+        """ The setter for the title string of this task. """
         self._title = obj
 
     @property
     def description(self):
+        """ Return the description string of this task. """
         return self._description
 
     @description.setter
     def description(self, obj):
+        """ Setter for the description string. """
         self._description = obj
 
     @property
     def state(self):
+        """ Return the state of this task. """
         return self._state
 
     @property
     def difficulty(self):
+        """ Return the difficulty of this task. """
         return self._difficulty
 
     @difficulty.setter
     def difficulty(self, obj):
+        """
+        Setter for the difficulty.
+
+        The setter checks if the atribute obj is in DIFFICULTY.keys.
+
+        @param obj a value in the range of DIFFICULTY.keys
+        @throws AttributeError
+        @return the difficulty of this task
+
+        """
         if obj in DIFFICULTY.keys:
             self._difficulty = obj
         else:
@@ -569,18 +619,17 @@ class Task(serializer.JSONSerialize):
 
     @property
     def category(self):
+        """ Returns the category of this task. """
         return self._category
 
     @property
-    def due(self):
-        return self._due
-
-    @property
     def created(self):
+        """ Returns the date when this task was created. """
         return self._created
 
     @property
     def schedule(self):
+        """ Return the schedule of this task. """
         return self._schedule
 
     def __eq__(self, obj):
@@ -589,7 +638,6 @@ class Task(serializer.JSONSerialize):
                 and self.description == obj.description
                 and self.state == obj.state
                 and self.difficulty == obj.difficulty
-                and self.due == obj.due
                 and self.created == obj.created
                 and self.category == obj.category
                 and self.schedule == obj.schedule)
@@ -598,7 +646,7 @@ class Task(serializer.JSONSerialize):
         return repr(self)
 
     def __repr__(self):
-        return repr((self.title, self.description, self.state, self.difficulty, self.due, self.category, self.schedule))
+        return repr((self.title, self.description, self.state, self.difficulty, self.category, self.schedule))
 
 
 class Store(object):
@@ -606,7 +654,7 @@ class Store(object):
     """
     The Store class holds the list of tasks and is responsible for loading and saving them to a file.
 
-    In addition the store can search throu the tasks and manage the tasks
+    In addition the store can search through the tasks and manage the tasks
     """
 
     version = "version"
@@ -624,25 +672,29 @@ class Store(object):
             self.load()
 
     def load(self):
-        fd = open(self._filename, "r")
-        header = self._decoder.decode(fd.readline())
-        self._tasks = self._decoder.decode(fd.read())
+        """ Load task from the file. """
+        file_handle = open(self._filename, "r")
+        header = self._decoder.decode(file_handle.readline())
+        self._tasks = self._decoder.decode(file_handle.read())
         self._version = header[Store.version]
 
     def save(self):
+        """ Save all changes to file. """
         new_header_str = self._encoder.encode({Store.version: self._version})
         self._tasks += self._new_tasks
         self._new_tasks = []
         new_task_str = self._encoder.encode(self._tasks)
-        fd = open(self._filename, "w+", 4096)
-        fd.write(new_header_str + "\n")
-        fd.write(new_task_str)
-        fd.close()
+        file_handle = open(self._filename, "w+", 4096)
+        file_handle.write(new_header_str + "\n")
+        file_handle.write(new_task_str)
+        file_handle.close()
         self._saved = True
 
     def add(self, task):
+        """ Add a new task to the store. """
         self._new_tasks.append(task)
 
     @property
     def saved(self):
+        """Return True if all values were saved."""
         return len(self._new_tasks) == 0

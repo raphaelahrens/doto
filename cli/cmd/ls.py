@@ -29,7 +29,7 @@ def extract_task_data(tsk, config):
     return (tsk.task_id,
             tsk.title,
             tsk.difficulty,
-            "" if tsk.due is None else tsk.due.local_str(config.date.cli_out_str))
+            "" if tsk.schedule.due is None else tsk.schedule.due.local_str(config.date.cli_out_str))
 
 
 def main(store, args, config):

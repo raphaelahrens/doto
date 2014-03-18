@@ -16,12 +16,13 @@ class DBStore(object):
 
     @staticmethod
     def task_from_row(row):
-        schedule = task.Schedule(row["planned_sch"], row["real_sch"])
+        schedule = task.Schedule(row["planned_sch"],
+                                 row["real_sch"],
+                                 due=row["due"])
         tsk = task.Task(title=row["title"],
                         description=row["description"],
                         difficulty=row["difficulty"],
                         category=row["category"],
-                        due=row["due"],
                         )
         tsk.set_internals(row["state"], row["created"], schedule)
         tsk.task_id = row["id"]
@@ -70,7 +71,7 @@ class DBStore(object):
             cur = self.__con.cursor()
             cur.execute(insert_str,
                         (tsk.title, tsk.description, tsk.state, tsk.difficulty, tsk.category,
-                         None, tsk.due, tsk.created, tsk.schedule.planned, tsk.schedule.real)
+                         None, tsk.schedule.due, tsk.created, tsk.schedule.planned, tsk.schedule.real)
                         )
             tsk.task_id = cur.lastrowid
             cur.close()
@@ -87,7 +88,7 @@ class DBStore(object):
             cur = self.__con.cursor()
             cur.execute(updatate_str,
                         (tsk.title, tsk.description, tsk.state, tsk.difficulty, tsk.category,
-                         None, tsk.due, tsk.created, tsk.schedule.planned, tsk.schedule.real, tsk.task_id)
+                         None, tsk.schedule.due, tsk.created, tsk.schedule.planned, tsk.schedule.real, tsk.task_id)
                         )
             cur.close()
             return True

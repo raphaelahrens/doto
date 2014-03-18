@@ -42,7 +42,8 @@ class TestDBStore(unittest.TestCase):
         test_task = task.Task("title", "description")
         self.assertTrue(self.db_store.save_new(test_task))
         print test_task.task_id
-        test_task2 = task.Task(task_id=test_task.task_id, title="newTitle", description="new description", due=task.Date.now())
+        test_task2 = task.Task(task_id=test_task.task_id, title="newTitle", description="new description")
+        test_task2.schedule.due = task.Date.now()
         self.assertTrue(self.db_store.update(test_task2))
         tasks = self.db_store.get_tasks()
         self.assertEqual(tasks, [test_task2])

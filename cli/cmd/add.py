@@ -24,9 +24,7 @@ def init_parser(subparsers):
 
 def main(store, args, config):
     """Add a new task with the given args"""
-    if args.due is None:
-        due_date = None
-    else:
-        due_date = task.Date.local_from_str(args.due, config.date.cli_input_str)
-    tsk = task.Task(args.title, args.description, due=due_date)
+    tsk = task.Task(args.title, args.description)
+    if args.due is not None:
+        tsk.schedule.due = task.Date.local_from_str(args.due, config.date.cli_input_str)
     store.save_new(tsk)
