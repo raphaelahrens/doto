@@ -15,7 +15,7 @@ it_runs_add() {
     doto add "title" "description"
 }
 
-it_runs_addi_with_due() {
+it_runs_add_with_due() {
     doto add "title" "description" --due 2013.10.15-20:15
 }
 
