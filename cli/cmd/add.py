@@ -27,4 +27,5 @@ def main(store, args, config):
     tsk = task.Task(args.title, args.description)
     if args.due is not None:
         tsk.schedule.due = task.Date.local_from_str(args.due, config.date.cli_input_str)
-    store.save_new(tsk)
+    store.add_new_task(tsk)
+    store.save()

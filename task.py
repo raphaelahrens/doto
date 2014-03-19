@@ -650,12 +650,45 @@ class Task(serializer.JSONSerialize):
 
 
 class Store(object):
-
     """
     The Store class holds the list of tasks and is responsible for loading and saving them to a file.
 
     In addition the store can search through the tasks and manage the tasks
     """
+
+    def __init__(self, manager):
+        self.__manager = manager
+        self.__new_tasks = []
+        self.__modified_tasks = []
+
+    def get_tasks(self):
+        return self.__manager.get_tasks()
+
+    def add_new_task(self, tsk):
+        self.__new_tasks.append(tsk)
+
+    def modified_task(self, tsk):
+        self.__modified_tasks.append(tsk)
+
+    def is_saved(self):
+        return not (self.__new_tasks or self.__modified_tasks)
+
+    def save(self):
+        if self.__manager.save_new(self.__new_tasks):
+            del self.__new_tasks[:]
+        if self.__manager.update(self.__modified_tasks):
+            del self.__modified_tasks[:]
+
+        return self.is_saved()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.__manager.close()
+
+
+class JSONManager(object):
 
     version = "version"
 
@@ -676,11 +709,11 @@ class Store(object):
         file_handle = open(self._filename, "r")
         header = self._decoder.decode(file_handle.readline())
         self._tasks = self._decoder.decode(file_handle.read())
-        self._version = header[Store.version]
+        self._version = header[JSONManager.version]
 
     def save(self):
         """ Save all changes to file. """
-        new_header_str = self._encoder.encode({Store.version: self._version})
+        new_header_str = self._encoder.encode({JSONManager.version: self._version})
         self._tasks += self._new_tasks
         self._new_tasks = []
         new_task_str = self._encoder.encode(self._tasks)

@@ -43,5 +43,3 @@ def main(store, args, config):
     headers = [("ID", 4), ("Title", 20), ("Diff", 4), ("Due", 15)]
 
     cli.util.print_table(headers, [extract_task_data(tsk, config) for tsk in tasks])
-
-    store.close()

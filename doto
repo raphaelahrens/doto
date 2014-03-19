@@ -12,15 +12,16 @@ doto
 """
 
 import argparse
-import util
-import simpleconf
-import importlib
-import pkgutil
-import db
 import cli
 import cli.cmd
+import db
+import importlib
 import os
 import os.path
+import pkgutil
+import simpleconf
+import task
+import util
 
 USER_PATH = os.path.expanduser("~") + "/.doto/"
 
@@ -86,11 +87,9 @@ def main():
     # Init phase
     cmds = import_commands()
     args, config = init_env(cmds.values())
-    store = db.DBStore(config.path.store)
-
-    # execute command
-    cmds[args.cmd].main(store, args, config)
-    store.close()
+    with task.Store(db.DBManager(config.path.store)) as store:
+        # execute command
+        cmds[args.cmd].main(store, args, config)
 
 if __name__ == "__main__":
     main()

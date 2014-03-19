@@ -12,7 +12,7 @@ class DBException(Exception):
     pass
 
 
-class DBStore(object):
+class DBManager(object):
 
     @staticmethod
     def task_from_row(row):
@@ -62,23 +62,24 @@ class DBStore(object):
         cur.execute(select_str)
         rows = cur.fetchall()
         cur.close()
-        tasks = [DBStore.task_from_row(row) for row in rows]
+        tasks = [DBManager.task_from_row(row) for row in rows]
         return tasks
 
-    def save_new(self, tsk):
+    def save_new(self, tasks):
         insert_str = "INSERT INTO tasks VALUES(NULL,?,?,?,?,?,?,?,?,?,?);"
         with self.__con:
             cur = self.__con.cursor()
-            cur.execute(insert_str,
-                        (tsk.title, tsk.description, tsk.state, tsk.difficulty, tsk.category,
-                         None, tsk.schedule.due, tsk.created, tsk.schedule.planned, tsk.schedule.real)
-                        )
-            tsk.task_id = cur.lastrowid
+            for tsk in tasks:
+                cur.execute(insert_str,
+                            (tsk.title, tsk.description, tsk.state, tsk.difficulty, tsk.category,
+                             None, tsk.schedule.due, tsk.created, tsk.schedule.planned, tsk.schedule.real)
+                            )
+                tsk.task_id = cur.lastrowid
             cur.close()
             return True
         return False
 
-    def update(self, tsk):
+    def update(self, tasks):
         updatate_str = """UPDATE tasks SET
         title=?, description=?, state=?, difficulty=?, category=?,
         source=?, due=?, created=?, planned_sch=?, real_sch=?
@@ -86,21 +87,23 @@ class DBStore(object):
         """
         with self.__con:
             cur = self.__con.cursor()
-            cur.execute(updatate_str,
-                        (tsk.title, tsk.description, tsk.state, tsk.difficulty, tsk.category,
-                         None, tsk.schedule.due, tsk.created, tsk.schedule.planned, tsk.schedule.real, tsk.task_id)
-                        )
+            for tsk in tasks:
+                cur.execute(updatate_str,
+                            (tsk.title, tsk.description, tsk.state, tsk.difficulty, tsk.category,
+                             None, tsk.schedule.due, tsk.created, tsk.schedule.planned, tsk.schedule.real, tsk.task_id)
+                            )
             cur.close()
             return True
         return False
 
-    def delete(self, tsk):
+    def delete(self, tasks):
         delete_str = "DELETE FROM tasks WHERE id = ?;"
-        if tsk.task_id is None:
-            return False
         with self.__con:
             cur = self.__con.cursor()
-            cur.execute(delete_str, (tsk.task_id,))
+            for tsk in tasks:
+                if tsk.task_id is None:
+                    return False
+                cur.execute(delete_str, (tsk.task_id,))
             cur.close()
             return cur.rowcount == 1
         return False
