@@ -24,3 +24,8 @@ CREATE TABLE IF NOT EXISTS tasks(
   FOREIGN KEY(source) REFERENCES sources(source_id),
   FOREIGN KEY(category) REFERENCES categories(cat_id)
 );
+CREATE TABLE IF NOT EXISTS task_cache(
+  id INTEGER PRIMARY KEY,
+  task_id INTEGER,
+  FOREIGN KEY(task_id) REFERENCES tasks(id)
+);

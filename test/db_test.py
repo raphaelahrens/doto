@@ -20,14 +20,22 @@ class TestDBManager(unittest.TestCase):
         self.db_store.close()
 
     def test_init(self):
-        tasks = self.db_store.get_tasks()
+        tasks = self.db_store.get_tasks(False)
         self.assertEqual(tasks, [])
 
     def test_store(self):
         test_task = task.Task("title", "description")
         self.assertTrue(self.db_store.save_new([test_task]))
-        tasks = self.db_store.get_tasks()
+        tasks = self.db_store.get_tasks(False)
         self.assertEqual(tasks, [test_task])
+
+    def test_get_tasks_with_cache(self):
+        test_task = task.Task("title", "description")
+        self.assertTrue(self.db_store.save_new([test_task]))
+        tasks = self.db_store.get_tasks(True)
+        self.assertEqual(tasks, [test_task])
+        cache = self.db_store.get_cache()
+        self.assertEqual(cache, [(i, tsk.task_id) for i, tsk in zip(range(len(tasks)), tasks)])
 
     def test_store_10(self):
         test_task = task.Task("title", "description")
@@ -35,7 +43,7 @@ class TestDBManager(unittest.TestCase):
         for _ in range(10):
             self.db_store.save_new([test_task])
             ref_list.append(test_task)
-        tasks = self.db_store.get_tasks()
+        tasks = self.db_store.get_tasks(False)
         self.assertEqual(tasks, ref_list)
 
     def test_update(self):
@@ -45,14 +53,14 @@ class TestDBManager(unittest.TestCase):
         test_task2 = task.Task(task_id=test_task.task_id, title="newTitle", description="new description")
         test_task2.schedule.due = task.Date.now()
         self.assertTrue(self.db_store.update([test_task2]))
-        tasks = self.db_store.get_tasks()
+        tasks = self.db_store.get_tasks(False)
         self.assertEqual(tasks, [test_task2])
 
     def test_delete(self):
         test_task = task.Task("title", "description")
         self.assertTrue(self.db_store.save_new([test_task]))
         self.assertTrue(self.db_store.delete([test_task]))
-        tasks = self.db_store.get_tasks()
+        tasks = self.db_store.get_tasks(False)
         self.assertEqual(tasks, [])
 
     def test_fail_delete(self):
@@ -77,11 +85,11 @@ class TestDBFiles(unittest.TestCase):
         test_task = task.Task("create a file and read it", "We want a new db file and read this task from it.")
         self.db_store = db.DBManager(test_file)
         self.db_store.save_new([test_task])
-        self.assertEqual(self.db_store.get_tasks(), [test_task])
+        self.assertEqual(self.db_store.get_tasks(False), [test_task])
         self.db_store.close()
         self.assertTrue(os.path.isfile(test_file))
         self.db_store = db.DBManager(test_file)
-        self.assertEqual(self.db_store.get_tasks(), [test_task])
+        self.assertEqual(self.db_store.get_tasks(False), [test_task])
         self.db_store.close()
 
     @classmethod

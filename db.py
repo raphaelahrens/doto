@@ -54,13 +54,25 @@ class DBManager(object):
                 cur = self.__con.cursor()
                 cur.executescript(fd.read())
 
-    def get_tasks(self):
+    def get_tasks(self, cache):
         select_str = "SELECT * FROM tasks;"
         cur = self.__con.cursor()
         cur.execute(select_str)
         rows = cur.fetchall()
         tasks = [DBManager.task_from_row(row) for row in rows]
+        if cache:
+            # clear the task cache
+            cur.execute("DELETE FROM task_cache;")
+            cur.executemany("INSERT INTO task_cache VALUES (?,?);",
+                            ((i, tsk.task_id) for i, tsk in zip(range(len(tasks)), tasks)))
         return tasks
+
+    def get_cache(self):
+        select_str = "SELECT * FROM task_cache;"
+        cur = self.__con.cursor()
+        cur.execute(select_str)
+        rows = cur.fetchall()
+        return [(row["id"], row["task_id"]) for row in rows]
 
     def save_new(self, tasks):
         insert_str = "INSERT INTO tasks VALUES(NULL,?,?,?,?,?,?,?,?,?,?);"

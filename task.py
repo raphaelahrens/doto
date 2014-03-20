@@ -661,8 +661,8 @@ class Store(object):
         self.__modified_tasks = []
         self.__deleted_tasks = []
 
-    def get_tasks(self):
-        return self.__manager.get_tasks()
+    def get_tasks(self, cache=False):
+        return self.__manager.get_tasks(cache)
 
     def add_new_task(self, tsk):
         self.__new_tasks.append(tsk)
