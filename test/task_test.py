@@ -218,10 +218,25 @@ class TestState(unittest.TestCase):
         self.assertEqual(state.state, task.StateHolder.completed)
 
     def test_fail_on_final(self):
-        """Test if next_state fail when called on a FinalState."""
+        """ Test if next_state fail when called on a FinalState. """
         from statemachine import FinalStateException
         state = task.StateHolder(task.StateHolder.completed)
-        self.assertRaises(FinalStateException, state.next_state, ("test"))
+        self.assertRaises(FinalStateException, state.next_state, "test")
+
+    def test_get_actions(self):
+        """ Test if all state return a list of actions. """
+        for state in task.StateHolder.states.itervalues():
+            actions = state.get_actions()
+            if state.is_final():
+                self.assertEqual(actions, [])
+            else:
+                self.assertGreater(len(actions), 0)
+
+    def test_actions(self):
+        for state in task.StateHolder.states.itervalues():
+            for action in state.get_actions():
+                next_state = state.next_state(action)
+                self.assertIsNotNone(next_state)
 
     def test_fail_wrong_action(self):
         """Test if next_state fails on wrong input."""

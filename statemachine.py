@@ -72,6 +72,15 @@ class AbstractState(object):
         """
         raise NotImplementedError()
 
+    def is_final(self):
+        """
+        Returns True if this state is a final state.
+
+        @return False since this state is not a final state
+
+        """
+        return False
+
 
 class State(AbstractState):
 
@@ -125,7 +134,7 @@ class FinalState(AbstractState):
     """
 
     def __init__(self, key, name):
-        AbstractState.__init__(self, name, key)
+        AbstractState.__init__(self, key, name)
 
     def add_neighbor(self, **arg):
         """
@@ -136,7 +145,7 @@ class FinalState(AbstractState):
         @throws FinalStateException
 
         """
-        raise FinalStateException()
+        raise FinalStateException("A final state has no neigbors since it is final.")
 
     def next_state(self, action):
         """
@@ -147,7 +156,7 @@ class FinalState(AbstractState):
         @throws FinalStateException
 
         """
-        raise FinalStateException()
+        raise FinalStateException("This is a final state. There is no next state.")
 
     def get_actions(self):
         """
@@ -158,7 +167,15 @@ class FinalState(AbstractState):
         @throws FinalStateException
 
         """
-        raise FinalStateException()
+        return []
+
+    def is_final(self):
+        """
+        Returns True if this is a final state.
+
+        @returns True since this is a final state
+        """
+        return True
 
 
 class FinalStateException(Exception):

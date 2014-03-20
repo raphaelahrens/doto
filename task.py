@@ -42,7 +42,7 @@ DIFFICULTY = create_difficulties(unknown=(0, "not set"),
                                  )
 
 
-def _add_new_state(states, key, name=None):
+def _add_new_state(states, key, name=None, cls=statemachine.State):
     """
     Add a new state to the dictionary and retrun the state.
 
@@ -53,7 +53,7 @@ def _add_new_state(states, key, name=None):
     @return the new state
 
     """
-    state = statemachine.State(key, name)
+    state = cls(key, name)
     states[key] = state
     return state
 
@@ -71,12 +71,11 @@ class StateHolder(serializer.JSONSerialize):
     """
 
     states = {}
-    completed = statemachine.FinalState(states, "completed")
-    states[completed.key] = completed
-    pending = _add_new_state(states, "pending")
-    started = _add_new_state(states, "started")
-    blocked = _add_new_state(states, "blocked")
-    interrupted = _add_new_state(states, "interrupted")
+    completed = _add_new_state(states, "c", "completed", statemachine.FinalState)
+    pending = _add_new_state(states, "p", "pending")
+    started = _add_new_state(states, "s", "started")
+    blocked = _add_new_state(states, "b", "blocked")
+    interrupted = _add_new_state(states, "i", "interrupted")
     pending.add_neighbor(started, "start")
     started.add_neighbor(completed, "complete")
     started.add_neighbor(blocked, "block")
@@ -660,6 +659,7 @@ class Store(object):
         self.__manager = manager
         self.__new_tasks = []
         self.__modified_tasks = []
+        self.__deleted_tasks = []
 
     def get_tasks(self):
         return self.__manager.get_tasks()
@@ -670,14 +670,19 @@ class Store(object):
     def modified_task(self, tsk):
         self.__modified_tasks.append(tsk)
 
+    def delete_task(self, tsk):
+        self.__modified_tasks.append(tsk)
+
     def is_saved(self):
-        return not (self.__new_tasks or self.__modified_tasks)
+        return not (self.__new_tasks or self.__modified_tasks or self.__deleted_tasks)
 
     def save(self):
         if self.__manager.save_new(self.__new_tasks):
             del self.__new_tasks[:]
         if self.__manager.update(self.__modified_tasks):
             del self.__modified_tasks[:]
+        if self.__manager.delete(self.__modified_tasks):
+            del self.__deleted_tasks[:]
 
         return self.is_saved()
 
