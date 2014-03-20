@@ -49,19 +49,16 @@ class DBManager(object):
                 raise DBException("The file " + db_name + " couldn't be created.")
 
     def create_tables(self):
-        fd = open("./db_schema.sql", "r")
-        with self.__con:
-            cur = self.__con.cursor()
-            cur.executescript(fd.read())
-            cur.close()
-        fd.close()
+        with open("./db_schema.sql", "r") as fd:
+            with self.__con:
+                cur = self.__con.cursor()
+                cur.executescript(fd.read())
 
     def get_tasks(self):
         select_str = "SELECT * FROM tasks;"
         cur = self.__con.cursor()
         cur.execute(select_str)
         rows = cur.fetchall()
-        cur.close()
         tasks = [DBManager.task_from_row(row) for row in rows]
         return tasks
 
@@ -75,7 +72,6 @@ class DBManager(object):
                              None, tsk.schedule.due, tsk.created, tsk.schedule.planned, tsk.schedule.real)
                             )
                 tsk.task_id = cur.lastrowid
-            cur.close()
             return True
         return False
 
@@ -92,7 +88,6 @@ class DBManager(object):
                             (tsk.title, tsk.description, tsk.state, tsk.difficulty, tsk.category,
                              None, tsk.schedule.due, tsk.created, tsk.schedule.planned, tsk.schedule.real, tsk.task_id)
                             )
-            cur.close()
             return True
         return False
 
@@ -104,7 +99,6 @@ class DBManager(object):
                 if tsk.task_id is None:
                     return False
                 cur.execute(delete_str, (tsk.task_id,))
-            cur.close()
             return cur.rowcount == 1
         return False
 
