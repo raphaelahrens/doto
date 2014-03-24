@@ -108,14 +108,16 @@ class DBManager(object):
     def delete(self, tasks):
         delete_task_str = "DELETE FROM tasks WHERE task_id = ?;"
         delete_cache_str = "DELETE FROM task_cache WHERE task_id = ?;"
+        delete_tasks = 0
         with self.__con:
             cur = self.__con.cursor()
             for tsk in tasks:
                 if tsk.task_id is None:
                     return False
                 cur.execute(delete_task_str, (tsk.task_id,))
+                delete_tasks += cur.rowcount
                 cur.execute(delete_cache_str, (tsk.task_id,))
-            return cur.rowcount == 1
+            return delete_tasks == len(tasks)
         return False
 
     def close(self):
