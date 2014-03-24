@@ -39,7 +39,7 @@ def main(store, args, config):
     If args.all is given show all the tasks.
 
     """
-    tasks = store.get_tasks()
+    tasks = store.get_tasks(True)
     headers = [("ID", 4), ("Title", 20), ("Diff", 4), ("Due", 15)]
-
     cli.util.print_table(headers, [extract_task_data(tsk, config) for tsk in tasks])
+    return 0

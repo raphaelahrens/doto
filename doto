@@ -20,6 +20,7 @@ import os
 import os.path
 import pkgutil
 import simpleconf
+import sys
 import task
 import util
 
@@ -89,7 +90,8 @@ def main():
     args, config = init_env(cmds.values())
     with task.Store(db.DBManager(config.path.store)) as store:
         # execute command
-        cmds[args.cmd].main(store, args, config)
+        exit_code = cmds[args.cmd].main(store, args, config)
+    sys.exit(exit_code)
 
 if __name__ == "__main__":
     main()
