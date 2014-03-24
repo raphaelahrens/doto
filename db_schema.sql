@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS sources(
 );
 
 CREATE TABLE IF NOT EXISTS tasks(
-  id INTEGER PRIMARY KEY,
+  task_id INTEGER PRIMARY KEY,
   title TEXT,
   description TEXT,
   state StateHolder,
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS tasks(
   FOREIGN KEY(category) REFERENCES categories(cat_id)
 );
 CREATE TABLE IF NOT EXISTS task_cache(
-  id INTEGER PRIMARY KEY,
+  cache_id INTEGER PRIMARY KEY,
   task_id INTEGER,
-  FOREIGN KEY(task_id) REFERENCES tasks(id)
+  FOREIGN KEY(task_id) REFERENCES tasks(task_id)
 );

@@ -645,7 +645,7 @@ class Task(serializer.JSONSerialize):
         return repr(self)
 
     def __repr__(self):
-        return repr((self.title, self.description, self.state, self.difficulty, self.category, self.schedule))
+        return repr((self.task_id, self.title, self.description, self.state, self.difficulty, self.category, self.schedule))
 
 
 class Store(object):
@@ -661,17 +661,20 @@ class Store(object):
         self.__modified_tasks = []
         self.__deleted_tasks = []
 
-    def get_tasks(self, cache=False):
-        return self.__manager.get_tasks(cache)
+    def get_tasks(self, cache=False, limit=10):
+        return self.__manager.get_tasks(cache, limit=limit)
 
-    def add_new_task(self, tsk):
+    def get_cache(self):
+        return self.__manager.get_cache()
+
+    def add_new(self, tsk):
         self.__new_tasks.append(tsk)
 
-    def modified_task(self, tsk):
+    def modified(self, tsk):
         self.__modified_tasks.append(tsk)
 
-    def delete_task(self, tsk):
-        self.__modified_tasks.append(tsk)
+    def delete(self, tsk):
+        self.__deleted_tasks.append(tsk)
 
     def is_saved(self):
         return not (self.__new_tasks or self.__modified_tasks or self.__deleted_tasks)
@@ -681,7 +684,7 @@ class Store(object):
             del self.__new_tasks[:]
         if self.__manager.update(self.__modified_tasks):
             del self.__modified_tasks[:]
-        if self.__manager.delete(self.__modified_tasks):
+        if self.__manager.delete(self.__deleted_tasks):
             del self.__deleted_tasks[:]
 
         return self.is_saved()

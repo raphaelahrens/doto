@@ -25,7 +25,7 @@ class DBManager(object):
                         category=row["category"],
                         )
         tsk.set_internals(row["state"], row["created"], schedule)
-        tsk.task_id = row["id"]
+        tsk.task_id = row["task_id"]
         return tsk
 
     def __init__(self, db_name):
@@ -54,25 +54,27 @@ class DBManager(object):
                 cur = self.__con.cursor()
                 cur.executescript(fd.read())
 
-    def get_tasks(self, cache):
-        select_str = "SELECT * FROM tasks;"
-        cur = self.__con.cursor()
-        cur.execute(select_str)
-        rows = cur.fetchall()
-        tasks = [DBManager.task_from_row(row) for row in rows]
-        if cache:
-            # clear the task cache
-            cur.execute("DELETE FROM task_cache;")
-            cur.executemany("INSERT INTO task_cache VALUES (?,?);",
-                            ((i, tsk.task_id) for i, tsk in zip(range(len(tasks)), tasks)))
-        return tasks
+    def get_tasks(self, cache, limit):
+        select_str = "SELECT * FROM tasks LIMIT ?;"
+        with self.__con:
+            cur = self.__con.cursor()
+            cur.execute(select_str, (limit,))
+            rows = cur.fetchall()
+            tasks = [DBManager.task_from_row(row) for row in rows]
+            if cache:
+                # clear the task cache
+                cur.execute("DELETE FROM task_cache;")
+                cur.executemany("INSERT INTO task_cache VALUES (?,?);",
+                                ((i, tsk.task_id) for i, tsk in zip(range(len(tasks)), tasks)))
+            return tasks
 
     def get_cache(self):
-        select_str = "SELECT * FROM task_cache;"
+        select_str = "SELECT * FROM task_cache NATURAL JOIN tasks;"
         cur = self.__con.cursor()
         cur.execute(select_str)
         rows = cur.fetchall()
-        return [(row["id"], row["task_id"]) for row in rows]
+
+        return {row["cache_id"]: DBManager.task_from_row(row) for row in rows}
 
     def save_new(self, tasks):
         insert_str = "INSERT INTO tasks VALUES(NULL,?,?,?,?,?,?,?,?,?,?);"
@@ -91,7 +93,7 @@ class DBManager(object):
         updatate_str = """UPDATE tasks SET
         title=?, description=?, state=?, difficulty=?, category=?,
         source=?, due=?, created=?, planned_sch=?, real_sch=?
-        WHERE id=?;
+        WHERE task_id=?;
         """
         with self.__con:
             cur = self.__con.cursor()
@@ -104,13 +106,15 @@ class DBManager(object):
         return False
 
     def delete(self, tasks):
-        delete_str = "DELETE FROM tasks WHERE id = ?;"
+        delete_task_str = "DELETE FROM tasks WHERE task_id = ?;"
+        delete_cache_str = "DELETE FROM task_cache WHERE task_id = ?;"
         with self.__con:
             cur = self.__con.cursor()
             for tsk in tasks:
                 if tsk.task_id is None:
                     return False
-                cur.execute(delete_str, (tsk.task_id,))
+                cur.execute(delete_task_str, (tsk.task_id,))
+                cur.execute(delete_cache_str, (tsk.task_id,))
             return cur.rowcount == 1
         return False
 
