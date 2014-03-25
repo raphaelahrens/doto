@@ -54,8 +54,11 @@ class DBManager(object):
                 cur = self.__con.cursor()
                 cur.executescript(fd.read())
 
-    def get_tasks(self, cache, limit):
-        select_str = "SELECT * FROM tasks LIMIT ?;"
+    def get_tasks(self, cache, limit, only_undone=False):
+        if only_undone:
+            select_str = "SELECT * FROM tasks WHERE state IS NOT \"" + task.StateHolder.completed.key + "\" LIMIT ?;"
+        else:
+            select_str = "SELECT * FROM tasks LIMIT ?;"
         with self.__con:
             cur = self.__con.cursor()
             cur.execute(select_str, (limit,))

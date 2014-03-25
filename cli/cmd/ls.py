@@ -19,15 +19,16 @@ def init_parser(subparsers):
     parser.add_argument("--all", action="store_true", help="list all tasks.")
 
 
-def extract_task_data(tsk, config):
+def extract_task_data(cache_id, tsk, config):
     """
     Create a tuple with all the values that shall be printed in the new table
 
     @param tsk the task that will be printed
     @param config the configuration
     """
-    return (tsk.task_id,
+    return (cache_id,
             tsk.title,
+            tsk.state,
             tsk.difficulty,
             "" if tsk.schedule.due is None else tsk.schedule.due.local_str(config.date.cli_out_str))
 
@@ -39,7 +40,10 @@ def main(store, args, config):
     If args.all is given show all the tasks.
 
     """
-    tasks = store.get_tasks(True)
-    headers = [("ID", 4), ("Title", 20), ("Diff", 4), ("Due", 15)]
-    cli.util.print_table(headers, [extract_task_data(tsk, config) for tsk in tasks])
+    if args.all:
+        tasks = store.get_tasks(True, limit=-1)
+    else:
+        tasks = store.get_open_tasks(True)
+    headers = [("ID", 4), ("Title", 20), ("State", 9), ("Difficulty", 4), ("Due", 15)]
+    cli.util.print_table(headers, (extract_task_data(cache_id, tsk, config) for cache_id, tsk in zip(range(len(tasks)), tasks)))
     return 0

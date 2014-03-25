@@ -127,6 +127,9 @@ class StateHolder(serializer.JSONSerialize):
             return self._state.key == obj.state.key
         return self._state.key == obj
 
+    def __str__(self):
+        return self._state.name
+
     @classmethod
     def from_json(cls, d):
         """
@@ -664,13 +667,16 @@ class Store(object):
     def get_tasks(self, cache=False, limit=10):
         return self.__manager.get_tasks(cache, limit=limit)
 
+    def get_open_tasks(self, cache=False, limit=10):
+        return self.__manager.get_tasks(cache, limit=limit, only_undone=True)
+
     def get_cache(self):
         return self.__manager.get_cache()
 
     def add_new(self, tsk):
         self.__new_tasks.append(tsk)
 
-    def modified(self, tsk):
+    def modify(self, tsk):
         self.__modified_tasks.append(tsk)
 
     def delete(self, tsk):
