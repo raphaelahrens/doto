@@ -91,6 +91,12 @@ class StateHolder(serializer.JSONSerialize):
         """ Return the current state."""
         return self._state
 
+    def jump_to_state(self, state):
+        """ """
+        if not isinstance(state, statemachine.AbstractState):
+            raise AttributeError("The Parameter state is not of type statemachine.AbstractState.")
+        self._state = state
+
     def next_state(self, action):
         """Set the next state according to the given action."""
         self._state = self._state.next_state(action)
@@ -524,6 +530,12 @@ class Schedule(serializer.JSONSerialize):
                 and self.due == obj.due
                 )
 
+    def finished_now(self):
+        now = Date.now()
+        self._real.end = now
+        if not self._real.start:
+            self._real.start = now
+
 
 class Task(serializer.JSONSerialize):
 
@@ -633,6 +645,18 @@ class Task(serializer.JSONSerialize):
     def schedule(self):
         """ Return the schedule of this task. """
         return self._schedule
+
+    def done(self):
+        """
+        Finish the task.
+
+        This method marks the task as completed and also sets the
+        """
+        if self._state.state.is_final():
+            return False
+        self._state.jump_to_state(StateHolder.completed)
+        self._schedule.finished_now()
+        return True
 
     def __eq__(self, obj):
         return (isinstance(obj, Task)

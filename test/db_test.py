@@ -29,6 +29,14 @@ class TestDBManager(unittest.TestCase):
         tasks = self.db_store.get_tasks(False, 10)
         self.assertEqual(tasks, [test_task])
 
+    def test_get_tasks_with_undone_only(self):
+        test_done = task.Task("title", "description")
+        test_done.done()
+        test_open = task.Task("title", "description")
+        self.assertTrue(self.db_store.save_new([test_done, test_open]))
+        tasks = self.db_store.get_tasks(False, 10, True)
+        self.assertEqual(tasks, [test_open])
+
     def test_get_tasks_with_cache(self):
         test_task = task.Task("title", "description")
         self.assertTrue(self.db_store.save_new([test_task]))
