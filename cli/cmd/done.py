@@ -29,7 +29,7 @@ def main(store, args, config):
     if not done_task:
         return error
     if not done_task.done():
-        cli.util.uprint(("The task with the Id: " + cli.util.ID_FORMAT + "was already finished!r") % (args.id, done_task.task_id))
+        cli.util.uprint(("The task with the Id: " + cli.util.ID_FORMAT + "was already finished!") % (args.id, done_task.task_id))
         return 5
     store.modify(done_task)
     if not store.save():
