@@ -261,6 +261,17 @@ class TestTask(unittest.TestCase):
         self.assertEqual(t.title, title)
         self.assertEqual(t.description, description)
 
+    def test_done(self):
+        t = task.Task(title=title, description=description)
+        self.assertTrue(t.done())
+        self.assertEqual(t.state.state, task.StateHolder.completed)
+
+    def test_start(self):
+        t = task.Task(title=title, description=description)
+        print t.schedule.real.end
+        self.assertTrue(t.start())
+        self.assertEqual(t.state.state, task.StateHolder.started)
+
 
 class TestJSONManager(unittest.TestCase):
 

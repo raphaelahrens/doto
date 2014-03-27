@@ -45,10 +45,19 @@ it_runs_ls() {
     doto ls
 }
 
+it_runs_start() {
+    doto start 3
+}
+
+#Finish task 0
+it_runs_start_and_done() {
+    doto start 2
+    doto done 2
+}
+
 #Finish task 0
 it_runs_done() {
     doto done 0
-    doto done 2
 }
 
 it_runs_del() {

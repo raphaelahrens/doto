@@ -673,6 +673,17 @@ class Task(serializer.JSONSerialize):
         self._schedule.finished_now()
         return True
 
+    def start(self):
+        """
+        Start the task.
+
+        This method marks the task as started and also sets the start date
+        """
+        if not self._state.start():
+            return False
+        self._schedule.start_now()
+        return True
+
     def __eq__(self, obj):
         return (isinstance(obj, Task)
                 and self.title == obj.title
