@@ -36,5 +36,5 @@ def main(store, args, config):
         cli.util.uprint(("It was not possible to finish the task with id " + cli.util.ID_FORMAT + ":\n\t %r") % (args.id, start_task.task_id))
         return 4
 
-    cli.util.uprint(("Good you finished:\n\t(" + cli.util.ID_FORMAT + ") %s") % (args.id, start_task.task_id, start_task.title))
+    cli.util.uprint(("You started :\n\t(" + cli.util.ID_FORMAT + ") %s") % (args.id, start_task.task_id, start_task.title))
     return 0
