@@ -11,7 +11,7 @@ class Value(object):
     can return parsed version of that value.
 
     """
-    def __init__(self, value, parser_fn=str):
+    def __init__(self, value, parser_fn=unicode):
         self.__parser = parser_fn
         self.__value = parser_fn(value)
 
@@ -48,7 +48,7 @@ class Section(object):
 
             """
             name, value = self.__iterator.next()
-            return name, str(value.value)
+            return name, unicode(value.value)
 
         def __iter__(self):
             return self

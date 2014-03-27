@@ -4,6 +4,13 @@ Small utilities for the cli commands.
 """
 __all__ = ["uprint", "print_table", ]
 
+import locale
+LOCAL_ENCODING = locale.getdefaultlocale()[1]
+
+
+def to_unicode(string):
+    return string.decode(LOCAL_ENCODING)
+
 
 def uprint(string):
     """
@@ -14,7 +21,7 @@ def uprint(string):
     @param string the string that will be printed and encoded to UTF-8
 
     """
-    print unicode(string).encode("utf-8")
+    print unicode(string).encode(LOCAL_ENCODING)
 
 
 def uprint_list(strings):
@@ -40,8 +47,8 @@ def to_str(obj):
 
     """
     if obj is None:
-        return ""
-    return str(obj)
+        return u""
+    return unicode(obj)
 
 
 LINES = {"v": unichr(0x2502),

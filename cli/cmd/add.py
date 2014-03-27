@@ -7,6 +7,7 @@ An example of its use would be
 
 """
 import task
+import cli.util
 
 
 COMMAND = "add"
@@ -16,9 +17,9 @@ CONF_DEF = {}
 def init_parser(subparsers):
     """Initalise the subparser for Add"""
     parser = subparsers.add_parser(COMMAND, help="Add a new task to the task list")
-    parser.add_argument("title", type=str, help="The title of the new task")
-    parser.add_argument("description", type=str, help=" of the new task")
-    parser.add_argument("--due", type=str, help="the estimated completion date.")
+    parser.add_argument("title", type=cli.util.to_unicode, help="The title of the new task")
+    parser.add_argument("description", type=cli.util.to_unicode, help=" of the new task")
+    parser.add_argument("--due", type=cli.util.to_unicode, help="the estimated completion date.")
     parser.add_argument("--difficulty", type=int, choices=task.DIFFICULTY.keys, help="the estimated difficulty of the task.")
 
 

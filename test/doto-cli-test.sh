@@ -29,6 +29,10 @@ it_runs_add_with_difficulty() {
     doto add "title" "description" --difficulty 4
 }
 
+it_runs_add_with_UTF() {
+    doto add "äöüß@ł€¶ŧ←↓→øþæſðæſðđŋħ" "öäüßµ”“đŋŧ←↓→øĸħððŋđŧ" --difficulty 0
+}
+
 it_fails_with_wrong_difficulty() {
     test 2 -eq $(doto add "title" "description" --difficulty 5; echo $?)
     test 2 -eq $(doto add "title" "description" --difficulty 1235; echo $?)
