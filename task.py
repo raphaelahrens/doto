@@ -84,6 +84,7 @@ class StateHolder(serializer.JSONSerialize):
     interrupted.add_neighbor(started, "restart")
 
     def __init__(self, state=pending):
+        assert state.key in StateHolder.states
         self._state = state
 
     @property
@@ -91,11 +92,23 @@ class StateHolder(serializer.JSONSerialize):
         """ Return the current state."""
         return self._state
 
-    def jump_to_state(self, state):
+    def __jump_to_state(self, state):
         """ """
         if not isinstance(state, statemachine.AbstractState):
             raise AttributeError("The Parameter state is not of type statemachine.AbstractState.")
         self._state = state
+
+    def complete(self):
+        if self._state is StateHolder.completed:
+            return False
+        self._state = StateHolder.completed
+        return True
+
+    def start(self):
+        if self.state is not StateHolder.pending:
+            return False
+        self._state = StateHolder.started
+        return True
 
     def next_state(self, action):
         """Set the next state according to the given action."""
@@ -494,9 +507,9 @@ class Schedule(serializer.JSONSerialize):
     the real start and finish point,
     and the due date, which tells us when the task must be done.
     """
-    def __init__(self, planned=TimeSpan(), real=TimeSpan(), due=None):
-        self._planned = planned
-        self._real = real
+    def __init__(self, planned=None, real=None, due=None):
+        self._planned = planned if planned else TimeSpan()
+        self._real = real if real else TimeSpan()
         self._due = due
 
     @property
@@ -535,6 +548,9 @@ class Schedule(serializer.JSONSerialize):
         self._real.end = now
         if not self._real.start:
             self._real.start = now
+
+    def start_now(self):
+        self._real.start = Date.now()
 
 
 class Task(serializer.JSONSerialize):
@@ -650,11 +666,10 @@ class Task(serializer.JSONSerialize):
         """
         Finish the task.
 
-        This method marks the task as completed and also sets the
+        This method marks the task as completed and also sets the end date
         """
-        if self._state.state.is_final():
+        if not self._state.complete():
             return False
-        self._state.jump_to_state(StateHolder.completed)
         self._schedule.finished_now()
         return True
 
