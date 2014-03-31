@@ -2,7 +2,7 @@
 """
 Small utilities for the cli commands.
 """
-__all__ = ["uprint", "print_table", ]
+__all__ = ["uprint"]
 
 import locale
 LOCAL_ENCODING = locale.getdefaultlocale()[1]
@@ -57,49 +57,6 @@ LINES = {"v": unichr(0x2502),
          }
 
 ID_FORMAT = "%d [%08x]"
-
-
-def print_table(columns, data):
-    """
-    Print a table to standard out with the given columns and the given data.
-
-    A column item needs to have a name of type string and a width of type int.
-    The function first prints the column and then for each item in data it
-    prints a row in the table. Therefor the length of each data tuple needs to
-    be equal to the number of columns.
-
-    @param columns a list of tuples with (str, int) values
-    @param data a list of tuples
-           where len(data[x]) == len(columns) with 0 <= x < len(data)
-
-    """
-    table = Table(columns)
-    table.print_multiple_rows(data)
-
-
-class Table(object):
-    def __init__(self, columns):
-        self._column_count = len(columns)
-        header = []
-        divider = []
-        row_format = []
-        for name, width in columns:
-            if width < len(name):
-                width = len(name)
-            header.append(("{:%s%d}" % ("^", width)).format(name))
-            divider.append(LINES["h"] * width)
-            row_format.append("{:%s%d}" % ("<", width))
-        uprint(LINES["v"].join(header))
-        uprint(LINES["+"].join(divider))
-        self._row_format = LINES["v"].join(row_format)
-
-    def print_row(self, data):
-        assert len(data) == self._column_count
-        uprint(self._row_format.format(*data))
-
-    def print_multiple_rows(self, data_list):
-        for data in data_list:
-            self.print_row(data)
 
 
 def get_cached_task(store, task_id):

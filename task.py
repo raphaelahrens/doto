@@ -23,22 +23,19 @@ def create_difficulties(**difficulties):
     """
     keys = []
     names = {}
-    local_names = {}
-    for name, (d_id, local) in difficulties.iteritems():
+    for name, d_id in difficulties.iteritems():
         names[name] = d_id
-        local_names[d_id] = local
         keys.append(d_id)
     keys.sort()
     names["keys"] = keys
-    names["local_names"] = local_names
     return type("Difficulty", (), names)
 
 
-DIFFICULTY = create_difficulties(unknown=(0, "not set"),
-                                 simple=(1, "simple"),
-                                 easy=(2, "easy"),
-                                 medium=(3, "medium"),
-                                 hard=(4, "hard")
+DIFFICULTY = create_difficulties(unknown=0,
+                                 simple=1,
+                                 easy=2,
+                                 medium=3,
+                                 hard=4
                                  )
 
 
@@ -92,6 +89,9 @@ class StateHolder(serializer.JSONSerialize):
         """ Return the current state."""
         return self._state
 
+    def key(self):
+        return self._state.key
+
     def __jump_to_state(self, state):
         """ """
         if not isinstance(state, statemachine.AbstractState):
@@ -135,16 +135,16 @@ class StateHolder(serializer.JSONSerialize):
         @return the dictionary created
 
         """
-        return StateHolder.create_dict({"state": self._state.key})
+        return StateHolder.create_dict({"state": self.key()})
 
     def __conform__(self, protocol):
         if protocol is sqlite3.PrepareProtocol:
-            return self._state.key
+            return self.key()
 
     def __eq__(self, obj):
         if isinstance(obj, StateHolder):
-            return self._state.key == obj.state.key
-        return self._state.key == obj
+            return self.key() == obj.key()
+        return self.key() == obj
 
     def __str__(self):
         return self._state.name
@@ -169,46 +169,6 @@ class StateHolder(serializer.JSONSerialize):
         @return the new StateHolder
         """
         return cls(state=StateHolder.states[text])
-
-
-def one_or_more(amount, single_str, multiple_str):
-    """
-    Return a string which uses either the single or the multiple form.
-
-    @param amount the amount to be displayed
-    @param single_str the string for a single element
-    @param multiple_str the string for multiple elements
-
-    @return the string representation
-
-    """
-    if amount == 1:
-        ret_str = single_str
-    else:
-        ret_str = multiple_str
-    return ret_str % amount
-
-
-def str_from_time_span(t_span):
-    """
-    Create a pretty string representation of a Time span.
-
-    The function returns a string that is a natural representation
-    of the time span. For example "1 day", "2 days", "3 hours", ...
-
-
-    @return the string
-
-    """
-    if t_span.days < 0:
-        raise
-    if t_span.days > 0:
-        return one_or_more(t_span.days, "%d day", "%d days")
-    if t_span.seconds > 3600:
-        return one_or_more(t_span.seconds // 3600, "%d hour", "%d hours")
-    if t_span.seconds > 60:
-        return one_or_more(t_span.seconds // 60, "%d minute", "%d minutes")
-    return one_or_more(t_span.seconds, "%d second", "%d seconds")
 
 
 class Date(serializer.JSONSerialize):
@@ -698,7 +658,15 @@ class Task(serializer.JSONSerialize):
         return repr(self)
 
     def __repr__(self):
-        return repr((self.task_id, self.title, self.description, self.state, self.difficulty, self.category, self.schedule))
+        return repr((self.task_id,
+                     self.title,
+                     self.description,
+                     self.state,
+                     self.difficulty,
+                     self.category,
+                     self.schedule
+                     )
+                    )
 
 
 class Store(object):

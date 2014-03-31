@@ -12,11 +12,9 @@ doto
 """
 
 import argparse
-import cli
 import cli.cmd
 import db
 import importlib
-import os
 import os.path
 import pkgutil
 import simpleconf
@@ -34,8 +32,8 @@ CONF_DEF = {"path": {"icons": "/home/tant/pomodoro/",
                      "user": USER_PATH,
                      "store": USER_PATH + "store.db"
                      },
-            "date": {"gui_out_str": "%d. %b. %Y",
-                     "cli_out_str": "%d.%m.%Y-%H:%M",
+            "date": {"short_out_str": "%d. %b. %Y",
+                     "full_out_str": "%d.%m.%Y-%H:%M",
                      "cli_input_str": "%Y.%m.%d-%H:%M",
                      "local_tz": "Europe/Berlin"
                      }
