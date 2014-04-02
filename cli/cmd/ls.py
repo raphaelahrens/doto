@@ -88,11 +88,6 @@ class LineIterator(object):
 
 
 class Table(object):
-    lines = {"v": unichr(0x2502),
-             "+": unichr(0x253c),
-             "h": unichr(0x2500)
-             }
-
     def __init__(self, columns):
         self._columns = columns
         header = []
@@ -100,11 +95,11 @@ class Table(object):
         row_format = []
         for each in columns:
             header.append(("{:%s%d}" % ("^", each.width)).format(each.name))
-            divider.append(Table.lines["h"] * each.width)
+            divider.append(u"─" * each.width)
             row_format.append("{:%s%d}" % (each.align, each.width))
         cli.util.uprint(u" ".join(header))
-        cli.util.uprint(Table.lines["+"].join(divider))
-        self._row_format = Table.lines["v"].join(row_format)
+        cli.util.uprint(u"┼".join(divider))
+        self._row_format = u"│".join(row_format)
 
     def print_rows(self, data_list):
         for line_data in LineIterator(self._columns, data_list):
