@@ -23,7 +23,7 @@ def init_parser(subparsers):
     parser.add_argument("id", type=int, help="the id of the task which should be finished.")
 
 
-def main(store, args, config):
+def main(store, args, config, term):
     """ The Main method of start."""
     start_task, error = cli.util.get_cached_task(store, args.id)
     if not start_task:

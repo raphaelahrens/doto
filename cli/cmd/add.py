@@ -23,7 +23,7 @@ def init_parser(subparsers):
     parser.add_argument("--difficulty", type=int, choices=task.DIFFICULTY.keys, help="the estimated difficulty of the task.")
 
 
-def main(store, args, config):
+def main(store, args, config, term):
     """Add a new task with the given args"""
     tsk = task.Task(args.title, args.description)
     if args.due is not None:

@@ -125,12 +125,12 @@ class View(object):
 
 
 class Overview(View):
-    def __init__(self, config):
+    def __init__(self, config, width):
         columns = [CutColumn("ID", 4, "right"),
-                   Column("S", 1, "center", cli.printing.state_to_str),
+                   Column("S", 1, "center", cli.printing.state_to_symbol),
                    Column("D", 1, "center", cli.printing.diff_to_str),
                    Column("Due", 13, "center", cli.printing.get_due_to_str(config)),
-                   WrapColumn("Title", 59, "left")
+                   WrapColumn("Title", max(0, width - 23), "left")
                    ]
         View.__init__(self, config, columns)
 
@@ -144,7 +144,7 @@ class Overview(View):
                 for cache_id, tsk in zip(range(len(tasks)), tasks))
 
 
-def main(store, args, config):
+def main(store, args, config, term):
     """
     List all open tasks.
 
@@ -156,6 +156,6 @@ def main(store, args, config):
     else:
         tasks = store.get_open_tasks(True)
 
-    view = Overview(config)
+    view = Overview(config, term.width)
     view.print_view(tasks)
     return 0

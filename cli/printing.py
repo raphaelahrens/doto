@@ -13,6 +13,13 @@ __state_symbols = {task.StateHolder.completed.key: u"✓",
                    task.StateHolder.started.key: u"▶"
                    }
 
+__state_strings = {task.StateHolder.completed.key: u"completed",
+                   task.StateHolder.blocked.key: u"blocked",
+                   task.StateHolder.interrupted.key: u"interrupted",
+                   task.StateHolder.pending.key: u"pending",
+                   task.StateHolder.started.key: u"started"
+                   }
+
 __difficulty_symbols = {task.DIFFICULTY.unknown: u" ",
                         task.DIFFICULTY.simple: u"Ⅰ",
                         task.DIFFICULTY.easy: u"Ⅱ",
@@ -21,8 +28,12 @@ __difficulty_symbols = {task.DIFFICULTY.unknown: u" ",
                         }
 
 
-def state_to_str(state):
+def state_to_symbol(state):
     return __state_symbols[state.key()]
+
+
+def state_to_str(state):
+    return __state_strings[state.key()]
 
 
 def diff_to_str(difficulty):
@@ -70,14 +81,18 @@ def str_from_time_span(t_span):
 
 
 def get_due_to_str(config):
-    def due_to_str(due_date):
+    def due_to_str(due_date, default=u""):
         if due_date is None:
-            return u""
+            return default
         t_span = due_date - due_date.now()
         if t_span.days < 0:
+            # the time span is negativ so the time is over due
             return u"over due"
         if t_span.days < 7:
+            # if the time span is smaller than one week
+            # return the time span string
             return u"in " + str_from_time_span(t_span)
+        # return the string if it is over one week
         return u"to " + due_date.local_str(config.date.short_out_str)
     return due_to_str
 

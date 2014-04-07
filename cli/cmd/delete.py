@@ -18,7 +18,7 @@ def init_parser(subparsers):
     parser.add_argument("id", type=int, help="the id of the task which should be deleted.")
 
 
-def main(store, args, config):
+def main(store, args, config, term):
     """ Delete the given task in args.id. """
 
     del_task, error = cli.util.get_cached_task(store, args.id)

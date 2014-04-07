@@ -12,6 +12,7 @@ doto
 """
 
 import argparse
+import blessings
 import cli.cmd
 import db
 import importlib
@@ -89,7 +90,11 @@ def main():
     task.Date.set_local_tz(config.date.local_tz)
     with task.Store(db.DBManager(config.path.store)) as store:
         # execute command
-        exit_code = cmds[args.cmd].main(store, args, config)
+        exit_code = cmds[args.cmd].main(store,
+                                        args,
+                                        config,
+                                        blessings.Terminal()
+                                        )
     sys.exit(exit_code)
 
 if __name__ == "__main__":
