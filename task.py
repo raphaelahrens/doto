@@ -184,6 +184,10 @@ class Date(serializer.JSONSerialize):
     _local_tz = pytz.timezone(_utc_id)
     _local_input_str = "%Y.%m.%d-%H:%M"
 
+    @staticmethod
+    def set_local_tz(tz_str):
+        Date._local_tz = pytz.timezone(tz_str)
+
     def __init__(self, date, local_tz=False):
         self._date = date
         if self._date.tzinfo:
