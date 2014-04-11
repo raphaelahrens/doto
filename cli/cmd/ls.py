@@ -156,6 +156,6 @@ def main(store, args, config, term):
     else:
         tasks = store.get_open_tasks(True)
 
-    view = Overview(config, term.width)
+    view = Overview(config, term.width if term.width else 80)
     view.print_view(tasks)
     return 0

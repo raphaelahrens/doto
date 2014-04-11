@@ -59,6 +59,11 @@ it_runs_start_and_done() {
     doto done 2
 }
 
+it_runs_show() {
+    doto show 1
+    doto show 2
+}
+
 #Finish task 0
 it_runs_done() {
     doto done 0
