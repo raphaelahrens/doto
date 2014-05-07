@@ -14,68 +14,74 @@ init() {
 
 # Add a new task
 it_runs_add() {
-    doto add "title" "description"
+    $COVERAGE doto add "title" "description"
 }
 
 it_runs_add_with_due() {
-    doto add "title" "description" --due 2013.10.15-20:15
+    $COVERAGE doto add "title" "description" --due 2013.10.15-20:15
 }
 
 it_runs_add_with_difficulty() {
-    doto add "title" "description" --difficulty 0
-    doto add "title" "description" --difficulty 1
-    doto add "title" "description" --difficulty 2
-    doto add "title" "description" --difficulty 3
-    doto add "title" "description" --difficulty 4
+    $COVERAGE doto add "title" "description" --difficulty 0
+    $COVERAGE doto add "title" "description" --difficulty 1
+    $COVERAGE doto add "title" "description" --difficulty 2
+    $COVERAGE doto add "title" "description" --difficulty 3
+    $COVERAGE doto add "title" "description" --difficulty 4
 }
 
 it_runs_add_with_UTF() {
-    doto add "äöüß@ł€¶ŧ←↓→øþæſðæſðđŋħ" "öäüßµ”“đŋŧ←↓→øĸħððŋđŧ" --difficulty 0
+    $COVERAGE doto add "äöüß@ł€¶ŧ←↓→øþæſðæſðđŋħ" "öäüßµ”“đŋŧ←↓→øĸħððŋđŧ" --difficulty 0
 }
 
 it_fails_with_wrong_difficulty() {
-    test 2 -eq $(doto add "title" "description" --difficulty 5; echo $?)
-    test 2 -eq $(doto add "title" "description" --difficulty 1235; echo $?)
-    test 2 -eq $(doto add "title" "description" --difficulty -1; echo $?)
+    test 2 -eq $($COVERAGE doto add "title" "description" --difficulty 5; echo $?)
+    test 2 -eq $($COVERAGE doto add "title" "description" --difficulty 1235; echo $?)
+    test 2 -eq $($COVERAGE doto add "title" "description" --difficulty -1; echo $?)
 }
 
 # List all tasks
 it_runs_ls_all() {
-    doto ls --all
+    $COVERAGE doto ls --all
 }
 
 # List all open tasks
 it_runs_ls() {
-    doto ls
+    $COVERAGE doto ls
 }
 
 it_runs_start() {
-    doto start 3
+    $COVERAGE doto start 3
 }
 
 #Finish task 0
 it_runs_start_and_done() {
-    doto start 2
-    doto done 2
+    $COVERAGE doto start 2
+    $COVERAGE doto done 2
 }
 
 it_runs_show() {
-    doto show 1
-    doto show 2
+    $COVERAGE doto show 1
+    $COVERAGE doto show 2
+}
+
+it_runs_modify() {
+    $COVERAGE doto modify 1 --title "LOL"
+    $COVERAGE doto modify 2 --description "A description"
+    $COVERAGE doto modify 2 --description "A description"
 }
 
 #Finish task 0
 it_runs_done() {
-    doto done 0
+    $COVERAGE doto done 0
 }
 
 it_runs_del() {
-    doto del 1    
+    $COVERAGE doto del 1    
 }
 
 it_fails_done_with_wrong_id() {
-    test 1 -eq $(doto done -1 > /dev/null; echo $?)
+    test 1 -eq $($COVERAGE doto done -1 > /dev/null; echo $?)
 }
 it_fails_done_with_already_done() {
-    test 5 -eq $(doto done 0 > /dev/null; echo $?)
+    test 5 -eq $($COVERAGE doto done 0 > /dev/null; echo $?)
 }

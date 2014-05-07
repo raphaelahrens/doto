@@ -1,0 +1,22 @@
+#!/bin/sh
+
+print_headline() {
+    printf "###################\n"
+    printf "%s\n" "$1"
+    printf "###################\n"
+}
+
+
+print_headline "Running unit tests"
+
+COVERAGE_FILE=".coverage.nose" nosetests --with-coverage --cover-package=.
+
+print_headline "Running functional tests"
+export COVERAGE="coverage run -a"
+COVERAGE_FILE=".coverage.roundup" roundup test/doto-cli-test.sh
+
+print_headline "Running functional tests"
+unset COVERAGE
+coverage combine
+coverage report --show-missing --fail-under=90
+

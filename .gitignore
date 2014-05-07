@@ -2,6 +2,7 @@
 *.pyo
 *.swp
 .ropeproject/
+.coverage*
 avatars/
 avatars/*
 doc/*
