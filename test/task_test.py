@@ -268,7 +268,6 @@ class TestTask(unittest.TestCase):
 
     def test_start(self):
         t = task.Task(title=title, description=description)
-        print t.schedule.real.end
         self.assertTrue(t.start())
         self.assertEqual(t.state.state, task.StateHolder.started)
 
