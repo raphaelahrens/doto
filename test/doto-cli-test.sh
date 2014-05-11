@@ -68,6 +68,13 @@ it_runs_modify() {
     $COVERAGE doto modify 1 --title "LOL"
     $COVERAGE doto modify 2 --description "A description"
     $COVERAGE doto modify 2 --description "A description"
+    $COVERAGE doto modify 2 --due "2020.12.12-11:30"
+    $COVERAGE doto modify 2 --difficulty 0
+}
+
+it_runs_modify_RESET() {
+    $COVERAGE doto modify 2 --due RESET
+    $COVERAGE doto modify 2 --difficulty 0
 }
 
 #Finish task 0

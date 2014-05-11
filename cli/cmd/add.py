@@ -8,6 +8,7 @@ An example of its use would be
 """
 import task
 import cli.util
+import cli.parser
 
 
 COMMAND = "add"
@@ -18,18 +19,19 @@ def init_parser(subparsers):
     """Initalise the subparser for Add"""
     parser = subparsers.add_parser(COMMAND, help="Add a new task to the task list")
     parser.add_argument("title", type=cli.util.to_unicode, help="The title of the new task")
-    parser.add_argument("description", type=cli.util.to_unicode, help=" of the new task")
-    parser.add_argument("--due", type=cli.util.to_unicode, help="the estimated completion date.")
-    parser.add_argument("--difficulty", type=int, choices=task.DIFFICULTY.keys, help="the estimated difficulty of the task.")
+    parser.add_argument("description", type=cli.util.to_unicode, help="The description of the new task")
+    cli.parser.init_task_flags(parser)
 
 
 def main(store, args, config, term):
     """Add a new task with the given args"""
-    tsk = task.Task(args.title, args.description)
+    new_task = task.Task(args.title, args.description)
     if args.due is not None:
-        tsk.schedule.due = task.Date.local_from_str(args.due, config.date.cli_input_str)
+        new_task.schedule.due = task.Date.local_from_str(args.due, config.date.cli_input_str)
     if args.difficulty is not None:
-        tsk.difficulty = args.difficulty
-    store.add_new(tsk)
-    store.save()
+        new_task.difficulty = args.difficulty
+    store.add_new(new_task)
+    if not store.save():
+        cli.util.uprint(("It was not possible to save the new task with id " + cli.util.ID_FORMAT + ":\n\t %r") % (args.id, new_task.task_id))
+        return 4
     return 0
