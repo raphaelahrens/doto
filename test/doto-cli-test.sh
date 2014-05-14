@@ -53,10 +53,15 @@ it_runs_start() {
     $COVERAGE doto start 3
 }
 
+it_runs_reset() {
+    $COVERAGE doto reset 3
+}
+
 #Finish task 0
-it_runs_start_and_done() {
+it_runs_start_done_reset() {
     $COVERAGE doto start 2
     $COVERAGE doto done 2
+    $COVERAGE doto reset 2
 }
 
 it_runs_show() {
@@ -86,9 +91,14 @@ it_runs_del() {
     $COVERAGE doto del 1    
 }
 
-it_fails_done_with_wrong_id() {
+it_fails_with_wrong_id() {
     test 1 -eq $($COVERAGE doto done -1 > /dev/null; echo $?)
+    test 1 -eq $($COVERAGE doto start -1 > /dev/null; echo $?)
+    test 1 -eq $($COVERAGE doto reset -1 > /dev/null; echo $?)
+    test 1 -eq $($COVERAGE doto del -1 > /dev/null; echo $?)
+    test 1 -eq $($COVERAGE doto show -1 > /dev/null; echo $?)
 }
 it_fails_done_with_already_done() {
     test 5 -eq $($COVERAGE doto done 0 > /dev/null; echo $?)
+    test 5 -eq $($COVERAGE doto start 0 > /dev/null; echo $?)
 }

@@ -110,6 +110,10 @@ class StateHolder(serializer.JSONSerialize):
         self._state = StateHolder.started
         return True
 
+    def reset(self):
+        self._state = StateHolder.pending
+        return True
+
     def next_state(self, action):
         """Set the next state according to the given action."""
         self._state = self._state.next_state(action)
@@ -516,6 +520,9 @@ class Schedule(serializer.JSONSerialize):
     def start_now(self):
         self._real.start = Date.now()
 
+    def reset_now(self):
+        self._real = TimeSpan()
+
 
 class Task(serializer.JSONSerialize):
 
@@ -646,6 +653,17 @@ class Task(serializer.JSONSerialize):
         if not self._state.start():
             return False
         self._schedule.start_now()
+        return True
+
+    def reset(self):
+        """
+        Reset the tasks state.
+
+        Set the state of the task to pending.
+        """
+        if not self._state.reset():
+            return False
+        self._schedule.reset_now()
         return True
 
     def __eq__(self, obj):
