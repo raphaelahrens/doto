@@ -175,6 +175,10 @@ class TestTimeSpan(unittest.TestCase):
         span_copy = task.TimeSpan.from_sqlite(sql_str)
         self.assertEqual(span_org, span_copy)
 
+    def test_span(self):
+        time_span = task.TimeSpan(start=self.start, end=self.end)
+        self.assertEqual(time_span.time_span(), timedelta(1))
+
 
 class TestState(unittest.TestCase):
 
@@ -270,6 +274,22 @@ class TestTask(unittest.TestCase):
         t = task.Task(title=title, description=description)
         self.assertTrue(t.start())
         self.assertEqual(t.state.state, task.StateHolder.started)
+
+    def test_reset(self):
+        t = task.Task(title=title, description=description)
+        self.assertTrue(t.start())
+        self.assertTrue(t.reset())
+        self.assertEqual(t.state.state, task.StateHolder.pending)
+
+    def test_set_difficulty(self):
+        t = task.Task(title=title, description=description)
+        t.difficulty = task.DIFFICULTY.simple
+        self.assertEqual(t.difficulty, task.DIFFICULTY.simple)
+
+    def test_set_false_difficulty(self):
+        t = task.Task(title=title, description=description)
+        with self.assertRaises(AttributeError):
+            t.difficulty = 100
 
 
 class TestJSONManager(unittest.TestCase):

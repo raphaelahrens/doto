@@ -34,3 +34,7 @@ class TestConfig(unittest.TestCase):
 
         conf.parse_config("test/configs/testrc.2")
         self.assertEqual(conf.abc.b, "5")
+
+    def test_print_config(self):
+        conf = simpleconf.Config("test/configs/testrc.1", TestConfig.defaults)
+        conf.print_config()

@@ -92,12 +92,6 @@ class StateHolder(serializer.JSONSerialize):
     def key(self):
         return self._state.key
 
-    def __jump_to_state(self, state):
-        """ """
-        if not isinstance(state, statemachine.AbstractState):
-            raise AttributeError("The Parameter state is not of type statemachine.AbstractState.")
-        self._state = state
-
     def complete(self):
         if self._state is StateHolder.completed:
             return False
