@@ -21,8 +21,7 @@ def init_parser(subparsers):
 
 class TaskPrinter(object):
     def __init__(self, config):
-        self.date_to_str = cli.printing.get_date_to_str(config)
-        self.due_to_str = cli.printing.get_due_to_str(config)
+        self.__date_printer = cli.printing.DatePrinter(config)
 
     def show(self, tsk, width):
         title_header = u"Title"
@@ -55,8 +54,8 @@ class TaskPrinter(object):
                                            date_width=date_width
                                            )
                         )
-        cli.util.uprint(date_format.format(self.date_to_str(tsk.created),
-                                           self.due_to_str(tsk.schedule.due, default="--"),
+        cli.util.uprint(date_format.format(self.__date_printer.date_to_str(tsk.created),
+                                           self.__date_printer.due_to_str(tsk.schedule.due, default="--"),
                                            date_width=date_width
                                            )
                         )

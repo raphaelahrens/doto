@@ -126,10 +126,11 @@ class View(object):
 
 class Overview(View):
     def __init__(self, config, width):
+        date_printer = cli.printing.DatePrinter(config)
         columns = [CutColumn("ID", 4, "right"),
                    Column("S", 1, "center", cli.printing.state_to_symbol),
                    Column("D", 1, "center", cli.printing.diff_to_str),
-                   Column("Due", 13, "center", cli.printing.get_due_to_str(config)),
+                   Column("Due", date_printer.max_due_len, "center", date_printer.due_to_str),
                    WrapColumn("Title", max(0, width - 23), "left")
                    ]
         View.__init__(self, config, columns)

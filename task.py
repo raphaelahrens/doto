@@ -110,6 +110,7 @@ class StateHolder(serializer.JSONSerialize):
 
     def next_state(self, action):
         """Set the next state according to the given action."""
+        # TODO: unused in cli
         self._state = self._state.next_state(action)
 
     def get_actions(self):
@@ -119,6 +120,7 @@ class StateHolder(serializer.JSONSerialize):
         @return a list of the action for the current state.
 
         """
+        # TODO: unused in cli
         return self._state.get_actions()
 
     def json_serialize(self):
@@ -133,6 +135,7 @@ class StateHolder(serializer.JSONSerialize):
         @return the dictionary created
 
         """
+        # TODO: unused in cli
         return StateHolder.create_dict({"state": self.key()})
 
     def __conform__(self, protocol):
@@ -741,6 +744,7 @@ class JSONManager(object):
     version = "version"
 
     def __init__(self, filename, create=False):
+        # TODO: unused in cli
         self._tasks = []
         self._new_tasks = []
         self._filename = filename
@@ -754,6 +758,7 @@ class JSONManager(object):
 
     def load(self):
         """ Load task from the file. """
+        # TODO: unused in cli
         file_handle = open(self._filename, "r")
         header = self._decoder.decode(file_handle.readline())
         self._tasks = self._decoder.decode(file_handle.read())
@@ -773,9 +778,11 @@ class JSONManager(object):
 
     def add(self, task):
         """ Add a new task to the store. """
+        # TODO: unused in cli
         self._new_tasks.append(task)
 
     @property
     def saved(self):
         """Return True if all values were saved."""
+        # TODO: unused in cli
         return len(self._new_tasks) == 0
