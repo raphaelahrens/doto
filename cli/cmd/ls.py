@@ -10,6 +10,7 @@ import cli.util
 import cli.printing
 import textwrap
 import itertools
+import util
 
 
 COMMAND = "ls"
@@ -17,9 +18,9 @@ CONF_DEF = {}
 
 
 class Column(object):
-    def __init__(self, name, width, align, display_fn=unicode):
+    def __init__(self, name, width, align, display_fn=unicode, expand=None):
         self._name = name
-        len_name = len(name)
+        len_name = len(self._name)
         self._width = width if width >= len_name else len_name
         self._display_fn = display_fn
         self.__align = "<"
@@ -27,6 +28,8 @@ class Column(object):
             self.__align = "^"
         elif align == "right":
             self.__align = ">"
+
+        self.__expand = expand
 
     @property
     def align(self):
@@ -40,13 +43,20 @@ class Column(object):
     def width(self):
         return self._width
 
+    @property
+    def expand(self):
+        return self.__expand
+
     def pack(self, data):
         return [self._display_fn(data)]
 
+    def set_width(self, width):
+        self._width = width if width > self._width else self._width
+
 
 class WrapColumn(Column):
-    def __init__(self, name, width, align, display_fn=unicode):
-        Column.__init__(self, name, width, align, display_fn)
+    def __init__(self, name, width, align, display_fn=unicode, expand=None):
+        Column.__init__(self, name, width, align, display_fn, expand=expand)
         self._wrapper = textwrap.TextWrapper(width=self._width,
                                              expand_tabs=False,
                                              subsequent_indent=u"  "
@@ -55,10 +65,14 @@ class WrapColumn(Column):
     def pack(self, data):
         return self._wrapper.wrap(self._display_fn(data))
 
+    def set_width(self, width):
+        Column.set_width(self, width)
+        self._wrapper.width = self._width
+
 
 class CutColumn(Column):
-    def __init__(self, name, width, align, display_fn=unicode):
-        Column.__init__(self, name, width, align,  display_fn)
+    def __init__(self, name, width, align, display_fn=unicode, expand=None):
+        Column.__init__(self, name, width, align,  display_fn, expand=expand)
 
     def pack(self, data):
         return [self._display_fn(data)[:self._width]]
@@ -114,7 +128,14 @@ def init_parser(subparsers):
 
 class View(object):
 
-    def __init__(self, config, columns):
+    def __init__(self, config, width, columns):
+        fixed_columns, expanding_columns = util.partition(lambda x: x.expand is None, columns)
+        fix_size = sum((column.width for column in fixed_columns))
+        expand_sum = sum(column.expand for column in expanding_columns)
+        rest_size = max(0, width - fix_size - len(columns))
+        for column in expanding_columns:
+            column.set_width((rest_size * column.expand) // expand_sum)
+
         self._table = Table(columns)
 
     def print_view(self, tasks):
@@ -131,9 +152,9 @@ class Overview(View):
                    Column("S", 1, "center", cli.printing.state_to_symbol),
                    Column("D", 1, "center", cli.printing.diff_to_str),
                    Column("Due", date_printer.max_due_len, "center", date_printer.due_to_str),
-                   WrapColumn("Title", max(0, width - 23), "left")
+                   WrapColumn("Title", 10, "left", expand=1)
                    ]
-        View.__init__(self, config, columns)
+        View.__init__(self, config, width, columns)
 
     def _get_data(self, tasks):
         return ((cache_id,
