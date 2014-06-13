@@ -30,21 +30,31 @@ def init_parser(subparsers):
 
 
 def set_or_reset(value, fnc=lambda x: x):
+    """
+    Check if a value is should be set or reset
+
+    If the given value is equal to "RESET" the set the value to None
+    else use the function fnc to set it to the return value of fnc.
+
+    @param value the value that schould be tested
+    @param fnc a function that can be used to convert the value. Default=identity function
+    """
     if value == RESET:
         return None
     return fnc(value)
 
 
-def main(store, args, config, term):
+def main(store, args, config, _):
     """ The Main method of start."""
 
     def get_local_date(date_str):
+        """ Get a string with the local represantation of the date. """
         return task.Date.local_from_str(date_str, config.date.cli_input_str)
 
     modify_task, error = cli.util.get_cached_task(store, args.id)
     if not modify_task:
         return error
-    cli.util.uprint(("Changing task " + cli.util.ID_FORMAT + ":\n\t %s") % (args.id, modify_task.task_id, modify_task.title))
+    cli.util.uprint(("Changing task " + cli.util.ID_FORMAT + ":\n\t %s") % (args.id, modify_task.event_id, modify_task.title))
     if args.title is not None:
         modify_task.title = args.title
     if args.description is not None:
@@ -54,11 +64,10 @@ def main(store, args, config, term):
     if args.difficulty is not None:
         modify_task.difficulty = args.difficulty
 
-
     store.modify(modify_task)
     if not store.save():
-        cli.util.uprint(("It was not possible to modify the task with id " + cli.util.ID_FORMAT + ":\n\t %r") % (args.id, modify_task.task_id))
+        cli.util.uprint(("It was not possible to modify the task with id " + cli.util.ID_FORMAT + ":\n\t %r") % (args.id, modify_task.event_id))
         return 4
 
-    cli.util.uprint(("You modified:\n\t(" + cli.util.ID_FORMAT + ") %s") % (args.id, modify_task.task_id, modify_task.title))
+    cli.util.uprint(("You modified:\n\t(" + cli.util.ID_FORMAT + ") %s") % (args.id, modify_task.event_id, modify_task.title))
     return 0

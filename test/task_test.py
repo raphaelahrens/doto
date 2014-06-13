@@ -6,8 +6,8 @@ from datetime import datetime, timedelta
 import pytz
 import sqlite3
 
-title = "important task"
-description = "long description of this task \n"
+TITLE = "important task"
+DESCRIPTION = "long description of this task \n"
 
 
 class TestDate(unittest.TestCase):
@@ -83,17 +83,17 @@ class TestDate(unittest.TestCase):
 
     def test_sub(self):
         """Test if the subtraction operator works."""
-        a = task.Date.local(2010, 12, 13, 14, 15, 16)
-        b = task.Date.local(2010, 12, 13, 14, 14, 16)
+        date_a = task.Date.local(2010, 12, 13, 14, 15, 16)
+        date_b = task.Date.local(2010, 12, 13, 14, 14, 16)
         delta = timedelta(0, 60, 0)
-        self.assertEqual(a - b, delta)
+        self.assertEqual(date_a - date_b, delta)
 
     def test_add(self):
         """Test if the add operator works."""
-        a = task.Date.local(2010, 12, 13, 14, 15, 16)
-        b = timedelta(0, 60, 0)
-        x = task.Date.local(2010, 12, 13, 14, 16, 16)
-        self.assertEqual(x, a + b)
+        date_a = task.Date.local(2010, 12, 13, 14, 15, 16)
+        delta_b = timedelta(0, 60, 0)
+        date_x = task.Date.local(2010, 12, 13, 14, 16, 16)
+        self.assertEqual(date_x, date_a + delta_b)
 
     def test_conform(self):
         """Test if it is possible to create and retrieve a Date Object."""
@@ -153,19 +153,19 @@ class TestTimeSpan(unittest.TestCase):
         """Test if the start setter fails if start > end."""
         span = task.TimeSpan()
         span.end = self.start
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             span.start = self.end
 
     def test_fail_on_start_greater_end(self):
         """Test if the end setter fails if start > end."""
         span = task.TimeSpan()
         span.start = self.end
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             span.end = self.start
 
     def test_fail_2_start_greater_end(self):
         """Test if the contructor fails if start > end."""
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             task.TimeSpan(self.end, self.start)
 
     def test_conform(self):
@@ -176,6 +176,7 @@ class TestTimeSpan(unittest.TestCase):
         self.assertEqual(span_org, span_copy)
 
     def test_span(self):
+        """ Test if the result of time span is correct. """
         time_span = task.TimeSpan(start=self.start, end=self.end)
         self.assertEqual(time_span.time_span(), timedelta(1))
 
@@ -191,9 +192,9 @@ class TestState(unittest.TestCase):
 
     def test_contructor2(self):
         """Test if the constructor works properly with arguments."""
-        for v in task.StateHolder.states.itervalues():
-            state = task.StateHolder(v)
-            self.assertEqual(state.state, v)
+        for value in task.StateHolder.states.itervalues():
+            state = task.StateHolder(value)
+            self.assertEqual(state.state, value)
 
     def test_next(self):
         """Test if the next_state method gives us the next state."""
@@ -237,6 +238,9 @@ class TestState(unittest.TestCase):
                 self.assertGreater(len(actions), 0)
 
     def test_actions(self):
+        """
+        Test the action of the State holder and if we can go through them
+        """
         for state in task.StateHolder.states.itervalues():
             for action in state.get_actions():
                 next_state = state.next_state(action)
@@ -261,35 +265,112 @@ class TestTask(unittest.TestCase):
 
     def test_constructor(self):
         """Test the constructor of the Task."""
-        t = task.Task(title=title, description=description)
-        self.assertEqual(t.title, title)
-        self.assertEqual(t.description, description)
+        tsk = task.Task(title=TITLE, description=DESCRIPTION)
+        self.assertEqual(tsk.title, TITLE)
+        self.assertEqual(tsk.description, DESCRIPTION)
 
     def test_done(self):
-        t = task.Task(title=title, description=description)
-        self.assertTrue(t.done())
-        self.assertEqual(t.state.state, task.StateHolder.completed)
+        """ Test if we can finish a task """
+        tsk = task.Task(title=TITLE, description=DESCRIPTION)
+        self.assertTrue(tsk.done())
+        self.assertEqual(tsk.state.state, task.StateHolder.completed)
 
     def test_start(self):
-        t = task.Task(title=title, description=description)
-        self.assertTrue(t.start())
-        self.assertEqual(t.state.state, task.StateHolder.started)
+        """ Test if a Task can be started """
+        tsk = task.Task(title=TITLE, description=DESCRIPTION)
+        self.assertTrue(tsk.start())
+        self.assertEqual(tsk.state.state, task.StateHolder.started)
 
     def test_reset(self):
-        t = task.Task(title=title, description=description)
-        self.assertTrue(t.start())
-        self.assertTrue(t.reset())
-        self.assertEqual(t.state.state, task.StateHolder.pending)
+        """ Test if a Task can be reset to it pending state """
+        tsk = task.Task(title=TITLE, description=DESCRIPTION)
+        self.assertTrue(tsk.start())
+        self.assertTrue(tsk.reset())
+        self.assertEqual(tsk.state.state, task.StateHolder.pending)
 
     def test_set_difficulty(self):
-        t = task.Task(title=title, description=description)
-        t.difficulty = task.DIFFICULTY.simple
-        self.assertEqual(t.difficulty, task.DIFFICULTY.simple)
+        """ Test If it is possible to set the difficulty """
+        tsk = task.Task(title=TITLE, description=DESCRIPTION)
+        tsk.difficulty = task.DIFFICULTY.simple
+        self.assertEqual(tsk.difficulty, task.DIFFICULTY.simple)
 
     def test_set_false_difficulty(self):
-        t = task.Task(title=title, description=description)
-        with self.assertRaises(AttributeError):
-            t.difficulty = 100
+        """ Test if a difficulty which is put of range  fails """
+        tsk = task.Task(title=TITLE, description=DESCRIPTION)
+        with self.assertRaises(ValueError):
+            tsk.difficulty = 100
+
+
+class TestAppointment(unittest.TestCase):
+
+    """Test for the Appointments."""
+
+    def test_constructor(self):
+        """ Test the constructor of the Appointment class. """
+        start = task.Date.now()
+        apmt = task.Appointment(TITLE, start)
+
+        self.assertEqual(apmt.title, TITLE)
+        self.assertEqual(apmt.schedule.start, start)
+
+    def test_start_ge_end(self):
+        """ Test if the End of the Appointment can be set to a time smaller than the start time. """
+        start = task.Date.now()
+        apmt = task.Appointment(TITLE, start)
+        end = start - timedelta(24, 0, 0)
+
+        with self.assertRaises(ValueError):
+            apmt.schedule.end = end
+
+    def test_move(self):
+        """ Move the Appointment to a new time """
+        start = task.Date.now()
+        new_start = start + timedelta(24, 0, 0)
+        apmt = task.Appointment(TITLE, start)
+
+        self.assertTrue(apmt.move(new_start))
+
+        self.assertEqual(apmt.schedule.start, new_start)
+
+    def test_move_with_end(self):
+        """ Test if the End of the Appointment can be set to a time smaller than the start time. """
+        start = task.Date.now()
+        apmt = task.Appointment(TITLE, start)
+        new_start = task.Date.now()
+        new_end = start + timedelta(24, 0, 0)
+
+        self.assertTrue(apmt.move(new_start, new_end))
+
+        self.assertEqual(apmt.schedule.start, new_start)
+        self.assertEqual(apmt.schedule.end, new_end)
+
+    def test_move_with_start_ge_end(self):
+        """ Test if the End of the Appointment can be set to a time smaller than the start time. """
+        start = task.Date.now()
+        end = task.Date.now() + timedelta(1, 0, 0)
+        apmt = task.Appointment(TITLE, start, end=end)
+        new_start = task.Date.now() + timedelta(24, 0, 0)
+        new_end = new_start - timedelta(24, 0, 0)
+
+        self.assertFalse(apmt.move(new_start, new_end))
+
+        self.assertEqual(apmt.schedule.start, start)
+        self.assertEqual(apmt.schedule.end, end)
+
+    def test_setter(self):
+        """ Test the setter methodes of Appointment """
+        start = task.Date.now()
+        apmt = task.Appointment(TITLE, start)
+
+        self.assertEqual(apmt.description, None)
+
+        new_title = "new title"
+        new_description = "description one O one"
+
+        apmt.title = new_title
+        self.assertEqual(apmt.title, new_title)
+        apmt.description = new_description
+        self.assertEqual(apmt.description, new_description)
 
 
 class TestJSONManager(unittest.TestCase):
@@ -315,13 +396,13 @@ class TestJSONManager(unittest.TestCase):
 
     def test_save_load_100(self):
         """Test if we ca store 100 tasks and restore them."""
-        t = task.Task("title", "description")
+        tsk = task.Task("title", "description")
         save_store = task.JSONManager(TestJSONManager.path + "data_save_100.doto", create=True)
         for i in range(100):
-            save_store.add(t)
+            save_store.add(tsk)
         save_store.save()
         self.assertTrue(save_store.saved)
         load_store = task.JSONManager(TestJSONManager.path + "data_save_100.doto")
         for i in range(100):
-            self.assertEqual(load_store._tasks[i], t)
+            self.assertEqual(load_store._tasks[i], tsk)
         self.assertEqual(load_store._version, 0)

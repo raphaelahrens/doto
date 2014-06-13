@@ -11,7 +11,7 @@ import cli.util
 import cli.parser
 
 
-COMMAND = "add"
+COMMAND = "task"
 CONF_DEF = {}
 
 
@@ -23,7 +23,7 @@ def init_parser(subparsers):
     cli.parser.init_task_flags(parser)
 
 
-def main(store, args, config, term):
+def main(store, args, config, _):
     """Add a new task with the given args"""
     new_task = task.Task(args.title, args.description)
     if args.due is not None:
@@ -32,6 +32,6 @@ def main(store, args, config, term):
         new_task.difficulty = args.difficulty
     store.add_new(new_task)
     if not store.save():
-        cli.util.uprint(("It was not possible to save the new task with id " + cli.util.ID_FORMAT + ":\n\t %r") % (args.id, new_task.task_id))
+        cli.util.uprint(("It was not possible to save the new task with id " + cli.util.ID_FORMAT + ":\n\t %r") % (args.id, new_task.event_id))
         return 4
     return 0

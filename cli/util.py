@@ -9,6 +9,14 @@ LOCAL_ENCODING = locale.getdefaultlocale()[1]
 
 
 def to_unicode(string):
+    """
+    Turn the given string into a python unicode string.
+
+    This function uses the local encoding and turns the string a unicode string.
+
+    @param string the string that will recoded to unicode.
+
+    """
     return string.decode(LOCAL_ENCODING)
 
 
@@ -59,7 +67,13 @@ LINES = {"v": unichr(0x2502),
 ID_FORMAT = "%d [%08x]"
 
 
-def get_cached_task(store, task_id):
+def get_cached_task(store, cache_id):
+    """
+    Get the cached task with the cache_id from the given store.
+
+    @param store the store that stores all tasks
+    @param cache_id the id of the cached task
+    """
     cache = store.get_cache()
     if not cache:
         tasks = store.get_tasks()
@@ -69,8 +83,8 @@ def get_cached_task(store, task_id):
         uprint("There are no tasks.\nMaybe you would first like to add a new task with: \n\t doto add \"title\" \"description\" ")
         return None, 2
 
-    if task_id not in cache:
-        uprint("There is no task with the id %d" % task_id)
+    if cache_id not in cache:
+        uprint("There is no task with the id %d" % cache_id)
         return None, 1
-    cached_task = cache[task_id]
+    cached_task = cache[cache_id]
     return cached_task, 0

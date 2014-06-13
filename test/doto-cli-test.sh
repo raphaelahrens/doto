@@ -13,30 +13,40 @@ init() {
 }
 
 # Add a new task
-it_runs_add() {
-    $COVERAGE doto add "title" "description"
+it_runs_add_task() {
+    $COVERAGE doto task "title" "description"
 }
 
-it_runs_add_with_due() {
-    $COVERAGE doto add "title" "description" --due 2013.10.15-20:15
+it_runs_add_task_with_due() {
+    $COVERAGE doto task "title" "description" --due 2013.10.15-20:15
 }
 
-it_runs_add_with_difficulty() {
-    $COVERAGE doto add "title" "description" --difficulty 0
-    $COVERAGE doto add "title" "description" --difficulty 1
-    $COVERAGE doto add "title" "description" --difficulty 2
-    $COVERAGE doto add "title" "description" --difficulty 3
-    $COVERAGE doto add "title" "description" --difficulty 4
+it_runs_add_task_with_difficulty() {
+    $COVERAGE doto task "title" "description" --difficulty 0
+    $COVERAGE doto task "title" "description" --difficulty 1
+    $COVERAGE doto task "title" "description" --difficulty 2
+    $COVERAGE doto task "title" "description" --difficulty 3
+    $COVERAGE doto task "title" "description" --difficulty 4
 }
 
-it_runs_add_with_UTF() {
-    $COVERAGE doto add "äöüß@ł€¶ŧ←↓→øþæſðæſðđŋħ" "öäüßµ”“đŋŧ←↓→øĸħððŋđŧ" --difficulty 0
+it_runs_apmt() {
+    date_in_secs=$(bc <<< "$(date +%s) + 2*24*3600")
+    $COVERAGE doto apmt "Appointment made on $(date +%d.%m.%y-%H:%M)" "$(date -r $date_in_secs +%Y.%m.%d-%H:%M)"
+}
+
+it_runs_apmt_with_description() {
+    date_in_secs=$(bc <<< "$(date +%s) + 2*24*3600")
+    $COVERAGE doto apmt "Appointment made on $(date +%d.%m.%y-%H:%M)" "$(date -r $date_in_secs +%Y.%m.%d-%H:%M)" --description "long description"
+}
+
+it_runs_add_task_with_UTF() {
+    $COVERAGE doto task "äöüß@ł€¶ŧ←↓→øþæſðæſðđŋħ" "öäüßµ”“đŋŧ←↓→øĸħððŋđŧ" --difficulty 0
 }
 
 it_fails_with_wrong_difficulty() {
-    test 2 -eq $($COVERAGE doto add "title" "description" --difficulty 5; echo $?)
-    test 2 -eq $($COVERAGE doto add "title" "description" --difficulty 1235; echo $?)
-    test 2 -eq $($COVERAGE doto add "title" "description" --difficulty -1; echo $?)
+    test 2 -eq $($COVERAGE doto task "title" "description" --difficulty 5;    echo $?)
+    test 2 -eq $($COVERAGE doto task "title" "description" --difficulty 1235; echo $?)
+    test 2 -eq $($COVERAGE doto task "title" "description" --difficulty -1;   echo $?)
 }
 
 # List all tasks

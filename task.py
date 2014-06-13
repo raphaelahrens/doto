@@ -90,27 +90,31 @@ class StateHolder(serializer.JSONSerialize):
         return self._state
 
     def key(self):
+        """ Return the key of the state. """
         return self._state.key
 
     def complete(self):
+        """ Set the state to complete if itis not already complete. """
         if self._state is StateHolder.completed:
             return False
         self._state = StateHolder.completed
         return True
 
     def start(self):
+        """ Set the state to started if it is not already started.  """
         if self.state is not StateHolder.pending:
             return False
         self._state = StateHolder.started
         return True
 
     def reset(self):
+        """ Reset the state to pending. """
         self._state = StateHolder.pending
         return True
 
     def next_state(self, action):
         """Set the next state according to the given action."""
-        # TODO: unused in cli
+        # TODO: unused in cli maybe in gui
         self._state = self._state.next_state(action)
 
     def get_actions(self):
@@ -187,6 +191,13 @@ class Date(serializer.JSONSerialize):
 
     @staticmethod
     def set_local_tz(tz_str):
+        """
+        Sett the local time zone for all calls
+        which return a local represantation of a date
+
+        @param tz_str a string that identifies the time zone
+
+        """
         Date._local_tz = pytz.timezone(tz_str)
 
     def __init__(self, date, local_tz=False):
@@ -198,7 +209,7 @@ class Date(serializer.JSONSerialize):
             # _date has no timezone letz use the given timezone
             self._date = Date._local_tz.localize(self._date)
         else:
-            raise AttributeError("The given date had no timezone data")
+            raise ValueError("The given date had no timezone data")
 
     def __get_tuple(self):
         """ Return a tuple with  the year, month, day, hour, minute, second, mircosecond."""
@@ -235,7 +246,7 @@ class Date(serializer.JSONSerialize):
         return Date.create_dict({Date._utc_id: self.__get_tuple()})
 
     def __lt__(self, obj):
-        return self._date <= Date._ret_date_or_obj(obj)
+        return self._date < Date._ret_date_or_obj(obj)
 
     def __le__(self, obj):
         return self._date <= Date._ret_date_or_obj(obj)
@@ -250,10 +261,14 @@ class Date(serializer.JSONSerialize):
         return self._date > Date._ret_date_or_obj(obj)
 
     def __sub__(self, obj):
-        return self._date - Date._ret_date_or_obj(obj)
+        result = self._date - Date._ret_date_or_obj(obj)
+        try:
+            return Date(result)
+        except AttributeError:
+            return result
 
     def __add__(self, obj):
-        return self._date + Date._ret_date_or_obj(obj)
+        return Date(self._date + Date._ret_date_or_obj(obj))
 
     def isoformat(self):
         """ Return the ISO-Format """
@@ -407,9 +422,8 @@ class TimeSpan(serializer.JSONSerialize):
         @param start is a Date object
 
         """
-        if start is not None:
-            assert isinstance(start, Date), "The argument start is of type %r and not task.Date." % type(start)
-            assert self._end is None or self._end >= start, "The start date must be older then the start date."
+        if start is not None and self._end is not None and self._end < start:
+            raise ValueError("The start date is older then start date")
         self._start = start
 
     @property
@@ -430,9 +444,8 @@ class TimeSpan(serializer.JSONSerialize):
         @param end the end of the time span
 
         """
-        if end is not None:
-            assert end is None or isinstance(end, Date), "The argument end is of type %r and not task.Date." % type(end)
-            assert self._start is None or self._start <= end, "The end date must be newer then the start date."
+        if end is not None and self._start is not None and self._start > end:
+            raise ValueError("The end date must be newer then the start date.")
         self._end = end
 
     def time_span(self):
@@ -491,14 +504,17 @@ class Schedule(serializer.JSONSerialize):
 
     @property
     def real(self):
+        """ Get the real time span of this schedule. """
         return self._real
 
     @property
     def due(self):
+        """ Get the due date of this schedule. """
         return self._due
 
     @due.setter
     def due(self, obj):
+        """ Set the due date of this schedule. """
         self._due = obj
 
     def __eq__(self, obj):
@@ -509,37 +525,116 @@ class Schedule(serializer.JSONSerialize):
                 )
 
     def finished_now(self):
+        """ Sets the end time to the current time. """
         now = Date.now()
         self._real.end = now
-        if not self._real.start:
+        if self._real.start is None:
             self._real.start = now
 
     def start_now(self):
+        """ Sets the start time to the current time. """
         self._real.start = Date.now()
 
     def reset_now(self):
+        """ Reset the Schedule by setting the started and ended date to none"""
         self._real = TimeSpan()
 
 
-class Task(serializer.JSONSerialize):
+class Event(serializer.JSONSerialize):
+    """
+    An event everything that can beplanned with Done!Tools
+
+    It is the superclass of Task and Appointment.
+
+    """
+    @staticmethod
+    def get_handler():
+        """
+        Get the handler with which an event can be stored.
+
+        All sub classes must over wright this method.
+        """
+        raise NotImplementedError()
+
+    def __init__(self, title, description):
+        self.__title = title
+        self.__description = description
+        self.__created = Date.now()
+        self.__id = None
+
+    def set_internal(self, created):
+        """
+        Setter for the internals of the Event
+
+        @param created the date of the creation of the event
+
+        """
+        self.__created = created
+
+    @property
+    def created(self):
+        """ Returns the date when this task was created. """
+        return self.__created
+
+    @property
+    def event_id(self):
+        """ Get the ID of this event"""
+        return self.__id
+
+    @event_id.setter
+    def event_id(self, obj):
+        """ Set the ID of this event"""
+        self.__id = obj
+
+    @property
+    def title(self):
+        """ Returns the title string of the Event. """
+        return self.__title
+
+    @title.setter
+    def title(self, obj):
+        """ Set the title of the event. """
+        self.__title = obj
+
+
+    @property
+    def description(self):
+        """ Returns the description string of the Event. """
+        return self.__description
+
+    @description.setter
+    def description(self, obj):
+        """ Set the description of the event. """
+        self.__description = obj
+
+class Task(Event):
 
     """
     Super class of all tasks.
 
-    Task implements the basic functionalaty of a task.
+    Task implements the basic functionality of a task.
 
     """
 
-    def __init__(self, title, description, task_id=None,
-                 difficulty=DIFFICULTY.unknown, category=None,
+    __store_handler = None
+
+    @staticmethod
+    def set_handler(handler):
+        """ Set the handler that defines how a task is stored. """
+        Task.__store_handler = handler
+
+    @staticmethod
+    def get_handler():
+        """ Get the handler that defines how a task is stored. """
+        return Task.__store_handler
+
+    def __init__(self, title, description,
+                 difficulty=DIFFICULTY.unknown, category=None
                  ):
-        self._task_id = task_id
-        self._title = title
-        self._description = description
+        Event.__init__(self, title, description)
         self._state = StateHolder()
         self._difficulty = difficulty
         self._category = category
-        self._created = Date.now()
         self._schedule = Schedule()
 
     def set_internals(self, state, created, schedule):
@@ -554,39 +649,9 @@ class Task(serializer.JSONSerialize):
         @param schedule the schedule instance of this task
 
         """
+        Event.set_internal(self, created)
         self._state = state
-        self._created = created
         self._schedule = schedule
-
-    @property
-    def task_id(self):
-        """ Returns the task_id for this task. """
-        return self._task_id
-
-    @task_id.setter
-    def task_id(self, obj):
-        """ Setter for the task_id. """
-        self._task_id = obj
-
-    @property
-    def title(self):
-        """ Returns the title string of the . """
-        return self._title
-
-    @title.setter
-    def title(self, obj):
-        """ The setter for the title string of this task. """
-        self._title = obj
-
-    @property
-    def description(self):
-        """ Return the description string of this task. """
-        return self._description
-
-    @description.setter
-    def description(self, obj):
-        """ Setter for the description string. """
-        self._description = obj
 
     @property
     def state(self):
@@ -606,24 +671,19 @@ class Task(serializer.JSONSerialize):
         The setter checks if the atribute obj is in DIFFICULTY.keys.
 
         @param obj a value in the range of DIFFICULTY.keys
-        @throws AttributeError
+        @throws ValueError
         @return the difficulty of this task
 
         """
         if obj in DIFFICULTY.keys:
             self._difficulty = obj
         else:
-            raise AttributeError("The given Difficulty is not in the range %s" % (str(DIFFICULTY.keys)))
+            raise ValueError("The given Difficulty is not in the range %s" % (str(DIFFICULTY.keys)))
 
     @property
     def category(self):
         """ Returns the category of this task. """
         return self._category
-
-    @property
-    def created(self):
-        """ Returns the date when this task was created. """
-        return self._created
 
     @property
     def schedule(self):
@@ -677,7 +737,7 @@ class Task(serializer.JSONSerialize):
         return repr(self)
 
     def __repr__(self):
-        return repr((self.task_id,
+        return repr((self.event_id,
                      self.title,
                      self.description,
                      self.state,
@@ -688,58 +748,155 @@ class Task(serializer.JSONSerialize):
                     )
 
 
+class Appointment(Event):
+    """
+    An appointment (APMT) has a fixed starting date and cannot be started or finished.
+
+    """
+    __store_handler = None
+
+    @staticmethod
+    def set_handler(handler):
+        """ Set the handler that defines how an appointment is stored. """
+        Appointment.__store_handler = handler
+
+    @staticmethod
+    def get_handler():
+        """ Get the handler that defines how an appointment is stored. """
+        return Appointment.__store_handler
+
+    def __init__(self, title, start,
+                 description=None, end=None
+                 ):
+        Event.__init__(self, title, description)
+        self.__description = description
+        self.__schedule = TimeSpan(start, end)
+
+    @property
+    def schedule(self):
+        """ Get the schedule of the appointment. """
+        return self.__schedule
+
+    def move(self, start, end=None):
+        """
+        Move the appointment to a new start and/or end date
+
+
+        @param start the new starting date
+        @param end the new end of the appointment. Default=None
+
+        """
+        if end is not None and start >= end:
+            return False
+
+        self.schedule.start = start
+        self.schedule.end = end
+        return True
+
+
 class Store(object):
     """
-    The Store class holds the list of tasks and is responsible for loading and saving them to a file.
+    The Store class holds the list of events and is responsible for loading and saving.
 
     In addition the store can search through the tasks and manage the tasks
     """
 
     def __init__(self, manager):
         self.__manager = manager
-        self.__new_tasks = []
-        self.__modified_tasks = []
-        self.__deleted_tasks = []
+        self.__new_events = []
+        self.__modified_events = []
+        self.__deleted_events = []
 
     def get_tasks(self, cache=False, limit=10):
+        """
+        Get a list of all tasks.
+
+        @param cache if True the result will be stored in the cache
+                so a cache_id can be used. Default=False
+        @param limit Set the maximum number of returned items. Default=10
+                If limit is zero there is no limit
+
+        """
         return self.__manager.get_tasks(cache, limit=limit)
 
     def get_open_tasks(self, cache=False, limit=10):
+        """
+        Get all task which are not completed.
+
+        @param cache if True the result will be stored in the cache
+                so a cache_id can be used. Default=False
+        @param limit Set the maximum number of returned items. Default=10
+
+        """
         return self.__manager.get_tasks(cache, limit=limit, only_undone=True)
 
     def get_cache(self):
+        """
+        Get all elements in the cache.
+
+        This methode gets used by the cli commandsr
+        which can use the cahe_id.
+
+        """
         return self.__manager.get_cache()
 
-    def add_new(self, tsk):
-        self.__new_tasks.append(tsk)
+    def add_new(self, event):
+        """
+        Add a new event to the store
+        it will be saved when self.save gets called.
 
-    def modify(self, tsk):
-        self.__modified_tasks.append(tsk)
+        @param event the new event
+        """
+        self.__new_events.append(event)
 
-    def delete(self, tsk):
-        self.__deleted_tasks.append(tsk)
+    def modify(self, event):
+        """
+        The given event has been modified
+        and shall be save with the next call to save.
+
+        @param event the modfied event
+
+        """
+        self.__modified_events.append(event)
+
+    def delete(self, event):
+        """
+        Delete an event from the store
+
+        @param event the event that will be deleted
+        """
+        self.__deleted_events.append(event)
 
     def is_saved(self):
-        return not (self.__new_tasks or self.__modified_tasks or self.__deleted_tasks)
+        """ Return True if the was already saved. """
+        return not (self.__new_events or self.__modified_events or self.__deleted_events)
 
     def save(self):
-        if self.__manager.save_new(self.__new_tasks):
-            del self.__new_tasks[:]
-        if self.__manager.update(self.__modified_tasks):
-            del self.__modified_tasks[:]
-        if self.__manager.delete(self.__deleted_tasks):
-            del self.__deleted_tasks[:]
+        """
+        Save the store.
+
+        @returns True if the save worked flawless
+        """
+        if self.__manager.save_new(self.__new_events):
+            del self.__new_events[:]
+        if self.__manager.update(self.__modified_events):
+            del self.__modified_events[:]
+        if self.__manager.delete(self.__deleted_events):
+            del self.__deleted_events[:]
 
         return self.is_saved()
 
     def __enter__(self):
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, exit_type, value, traceback):
         self.__manager.close()
 
 
 class JSONManager(object):
+    """
+    This manager can store task in a JSON formated file.
+    """
 
     version = "version"
 
@@ -751,6 +908,7 @@ class JSONManager(object):
         self._decoder = serializer.TaskDecoder()
         self._encoder = serializer.TaskEncoder()
         self._version = 0
+        self._saved = True
         if create:
             self.save()
         else:

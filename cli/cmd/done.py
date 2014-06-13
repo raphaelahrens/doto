@@ -23,18 +23,18 @@ def init_parser(subparsers):
     parser.add_argument("id", type=int, help="the id of the task which should be finished.")
 
 
-def main(store, args, config, term):
+def main(store, args, *_):
     """ The Main method of done."""
     done_task, error = cli.util.get_cached_task(store, args.id)
     if not done_task:
         return error
     if not done_task.done():
-        cli.util.uprint(("The task with the Id: " + cli.util.ID_FORMAT + "was already finished!") % (args.id, done_task.task_id))
+        cli.util.uprint(("The task with the Id: " + cli.util.ID_FORMAT + "was already finished!") % (args.id, done_task.event_id))
         return 5
     store.modify(done_task)
     if not store.save():
-        cli.util.uprint(("It was not possible to finish the task with id " + cli.util.ID_FORMAT + ":\n\t %r") % (args.id, done_task.task_id))
+        cli.util.uprint(("It was not possible to finish the task with id " + cli.util.ID_FORMAT + ":\n\t %r") % (args.id, done_task.event_id))
         return 4
 
-    cli.util.uprint(("Good you finished:\n\t(" + cli.util.ID_FORMAT + ") %s") % (args.id, done_task.task_id, done_task.title))
+    cli.util.uprint(("Good you finished:\n\t(" + cli.util.ID_FORMAT + ") %s") % (args.id, done_task.event_id, done_task.title))
     return 0
