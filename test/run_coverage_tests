@@ -1,0 +1,45 @@
+#!/bin/sh
+
+print_headline() {
+    printf "###################\n"
+    printf "%s\n" "$1"
+    printf "###################\n"
+}
+
+coverage_file=".coverage"
+if [ -e $coverage_file ]; then
+    rm $coverage_file
+fi
+
+no_nose=0
+while getopts ":n" opt; do
+  case $opt in
+    n)
+      no_nose=1
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 1
+      ;;
+  esac
+done
+
+
+if [ $no_nose -ne 1 ]; then
+    print_headline "Running unit tests"
+    COVERAGE_FILE=".coverage.nose" nosetests --with-coverage --cover-package=.
+fi
+
+print_headline "Running functional tests"
+export COVERAGE="coverage run -a"
+COVERAGE_FILE=".coverage.roundup" roundup test/doto-cli-test.sh
+
+print_headline "Results"
+unset COVERAGE
+coverage combine
+coverage report --show-missing --fail-under=90
+

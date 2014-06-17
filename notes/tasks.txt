@@ -1,0 +1,36 @@
+What are the parts of a task?
+
+1. Information about the task
+1.1 Title (x)
+1.2 Description (x)
+1.3 State (d=Pending)
+1.4 Difficulty (d=Easy)
+1.5 Due date (o)
+1.6 Category (Bug, Feature, Chore, ...) (o)
+1.7 Comments (o)
+1.8 Files (o)
+1.8.1 Notes
+1.8.2 Images (screenshoots)
+1.8.3 Papers (articles, links
+
+2. Time metadata
+2.1 Creation date
+2.2 Date of the start
+2.3 Schedule dates
+2.3.1 Start
+2.3.2 End
+2.4 Real schedule
+2.4.1 Start
+2.4.2 End
+2.4.3 time it took (e.g. End - Start)
+2.5 Real time it took (pomodoro clock)
+
+3. Relationship with other tasks
+3.1 dependencies
+3.2 child tasks
+
+4. Source of the task
+4.1 Link to original source
+4.2 Name (Icon) of the source
+4.3 Extra view for additional information
+4.4 and dragons be here
