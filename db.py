@@ -276,26 +276,15 @@ def apmt_save_new(cur, apmt):
     apmt.apmt_id = cur.lastrowid
 
 
-class Handler(object):
-    """
-    A dummy class to hold the handler functions.
-    """
-    pass
-
-
 def init_handlers():
     """
     Set all handler for all the events that can be stored.
     """
-    apmt_handler = Handler()
-    apmt_handler.delete = apmt_delete
-    apmt_handler.update = apmt_update
-    apmt_handler.save_new = apmt_save_new
+    import collections
+    handler = collections.namedtuple("DBHandler", ["delete", "update", "save_new"])
+    apmt_handler = handler(apmt_delete, apmt_update, apmt_save_new)
+    task_handler = handler(task_delete, task_update, task_save_new)
     task.Appointment.set_handler(apmt_handler)
-    task_handler = Handler()
-    task_handler.delete = task_delete
-    task_handler.update = task_update
-    task_handler.save_new = task_save_new
     task.Task.set_handler(task_handler)
 
 
