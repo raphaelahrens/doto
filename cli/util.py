@@ -8,18 +8,6 @@ import locale
 LOCAL_ENCODING = locale.getdefaultlocale()[1]
 
 
-def to_unicode(string):
-    """
-    Turn the given string into a python unicode string.
-
-    This function uses the local encoding and turns the string a unicode string.
-
-    @param string the string that will recoded to unicode.
-
-    """
-    return string.decode(LOCAL_ENCODING)
-
-
 def uprint(string):
     """
     Print the given string to standard out.

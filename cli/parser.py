@@ -8,16 +8,28 @@ import pytz
 import datetime
 
 
+def to_unicode(string):
+    """
+    Turn the given string into a python unicode string.
+
+    This function uses the local encoding and turns the string a unicode string.
+
+    @param string the string that will recoded to unicode.
+
+    """
+    return string.decode(cli.util.LOCAL_ENCODING)
+
+
 def init_task_flags(parser):
     """
     Set the Flags for creating or modifing a task
     """
-    # parser.add_argument("--category", type=cli.util.to_unicode, help="Set the category of this task.")
-    # parser.add_argument("--planned-end", type=cli.util.to_unicode, help="The scheduled end of the task.")
-    # parser.add_argument("--planned-start", type=cli.util.to_unicode, help="The scheduled start of the task.")
-    # parser.add_argument("--project", type=cli.util.to_unicode, help="Set the project of this task.")
+    # parser.add_argument("--category", type=to_unicode, help="Set the category of this task.")
+    # parser.add_argument("--planned-end", type=to_unicode, help="The scheduled end of the task.")
+    # parser.add_argument("--planned-start", type=to_unicode, help="The scheduled start of the task.")
+    # parser.add_argument("--project", type=to_unicode, help="Set the project of this task.")
     parser.add_argument("--difficulty", type=int, choices=task.DIFFICULTY.keys, help="the estimated difficulty of the task.")
-    parser.add_argument("--due", type=cli.util.to_unicode, help="the estimated completion date.")
+    parser.add_argument("--due", type=to_unicode, help="the estimated completion date.")
 
 
 def init_id_flag(command, subparser):

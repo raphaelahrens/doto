@@ -18,10 +18,10 @@ CONF_DEF = {}
 def init_parser(subparsers):
     """Initalise the subparser for Add"""
     parser = subparsers.add_parser(COMMAND, help="Add a new task to the task list")
-    parser.add_argument("title", type=cli.util.to_unicode, help="The title of the new appointment")
-    parser.add_argument("start", type=cli.util.to_unicode, help="The date when the new appointment will start")
-    parser.add_argument("--description", type=cli.util.to_unicode, help="The description of the new task")
-    parser.add_argument("--end", type=cli.util.to_unicode, help="The date when the new appointment will end")
+    parser.add_argument("title", type=cli.parser.to_unicode, help="The title of the new appointment")
+    parser.add_argument("start", type=cli.parser.to_unicode, help="The date when the new appointment will start")
+    parser.add_argument("--description", type=cli.parser.to_unicode, help="The description of the new task")
+    parser.add_argument("--end", type=cli.parser.to_unicode, help="The date when the new appointment will end")
 
 
 def print_error(message, exc):

@@ -18,8 +18,8 @@ CONF_DEF = {}
 def init_parser(subparsers):
     """Initalise the subparser for Add"""
     parser = subparsers.add_parser(COMMAND, help="Add a new task to the task list")
-    parser.add_argument("title", type=cli.util.to_unicode, help="The title of the new task")
-    parser.add_argument("description", type=cli.util.to_unicode, help="The description of the new task")
+    parser.add_argument("title", type=cli.parser.to_unicode, help="The title of the new task")
+    parser.add_argument("description", type=cli.parser.to_unicode, help="The description of the new task")
     cli.parser.init_task_flags(parser)
 
 

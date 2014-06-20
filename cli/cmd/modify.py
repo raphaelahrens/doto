@@ -24,8 +24,8 @@ def init_parser(subparsers):
     """
     parser = subparsers.add_parser(COMMAND, help="")
     parser.add_argument("id", type=int, help="The id of the task which should be modified.")
-    parser.add_argument("--title", type=cli.util.to_unicode, help="Change the title of the task")
-    parser.add_argument("--description", type=cli.util.to_unicode, help="Change the description of the task")
+    parser.add_argument("--title", type=cli.parser.to_unicode, help="Change the title of the task")
+    parser.add_argument("--description", type=cli.parser.to_unicode, help="Change the description of the task")
     cli.parser.init_task_flags(parser)
 
 

@@ -120,12 +120,6 @@ class Table(object):
             cli.util.uprint(self._row_format.format(*line_data))
 
 
-def init_parser(subparsers):
-    """Initialize the subparser of ls."""
-    parser = subparsers.add_parser(COMMAND, help="list tasks.")
-    parser.add_argument("--all", action="store_true", help="list all tasks.")
-
-
 class View(object):
 
     def __init__(self, config, width, columns):
@@ -164,6 +158,57 @@ class Overview(View):
                  tsk.title
                  )
                 for cache_id, tsk in zip(range(len(tasks)), tasks))
+
+
+class ApmtOverview(View):
+    def __init__(self, config, width):
+        date_printer = cli.printing.DatePrinter(config)
+        columns = [CutColumn("ID", 4, "right"),
+                   Column("Starts", date_printer.max_due_len + 4, "center", date_printer.due_to_str),
+                   WrapColumn("Title", 10, "left", expand=1)
+                   ]
+        View.__init__(self, config, width, columns)
+
+    def _get_data(self, apmts):
+        return ((cache_id,
+                 tsk.schedule.due,
+                 tsk.title
+                 )
+                for cache_id, tsk in zip(range(len(apmts)), apmts))
+
+
+class EventOverview(object):
+    def __init__(self, config, width):
+        self.__head_line_format = "{:^%d}" % width
+        self.__task_view = TaskOverview(config, width)
+        self.__apmt_view = ApmtOverview(config, width)
+
+    def _print_headline(self, head_line):
+        cli.util.uprint(self.__head_line_format.format(head_line))
+
+    def print_view(self, tasks):
+        self._print_headline("Appointments:")
+        self.__apmt_view.print_view(tasks[:3])
+        self._print_headline("Tasks:")
+        self.__task_view.print_view(tasks)
+
+__default_view = "overview"
+
+
+__views = {__default_view: EventOverview,
+           "tasks": TaskOverview,
+           "apmts": None,
+           }
+
+
+def init_parser(subparsers):
+    """Initialize the subparser of ls."""
+
+    parser = subparsers.add_parser(COMMAND, help="list tasks.")
+    parser.add_argument("view", type=cli.parser.to_unicode, default=__default_view, nargs="?",
+                        choices=__views.keys())
+    parser.add_argument("--all", action="store_true", help="list all tasks.")
+    parser.add_argument("--limit", type=int, help="show a mximum of N tasks.", default=20)
 
 
 def main(store, args, config, term):
