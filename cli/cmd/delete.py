@@ -25,9 +25,11 @@ def main(store, args, *_):
     if not del_task:
         return error
     store.delete(del_task)
-    if not store.save():
+    try:
+        store.save()
+    except:
         cli.util.uprint(("It was not possible to delete the task with the id " + cli.util.ID_FORMAT + ":\n\t %r") % (args.id, del_task))
         return 4
 
-    cli.util.uprint(("Deleted task with id " + cli.util.ID_FORMAT + ":\n\t Title: %s") % (args.id, del_task.event_id, del_task.title))
+    cli.util.uprint(("Deleted event with id " + cli.util.ID_FORMAT + ":\n\t Title: %s") % (args.id, del_task.event_id, del_task.title))
     return 0

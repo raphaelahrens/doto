@@ -8,8 +8,18 @@
 # `describe` the plan meaningfully.
 describe "Test the functionality of the doto CLI."
 
-init() {
+date_in_secs() {
+    days=$1
+    hours=$2
+    minutes=$3
+    bc <<< "$(date +%s) + ((($days*24)+$hours)*60+$minutes)*60"
+}
+
+before() {
     export DOTO_CONFIG=./test/configs/dotorc.1
+    IN_TWO_DAYS=$(date -r $(date_in_secs 2 0 0) +%Y.%m.%d-%H:%M)
+    IN_ONE_WEEK=$(date -r $(date_in_secs 7 0 0) +%Y.%m.%d-%H:%M)
+    IN_ONE_HOUR=$(date -r $(date_in_secs 0 1 0) +%Y.%m.%d-%H:%M)
 }
 
 # Add a new task
@@ -18,7 +28,7 @@ it_runs_add_task() {
 }
 
 it_runs_add_task_with_due() {
-    $COVERAGE doto task "title" "description" --due 2013.10.15-20:15
+    $COVERAGE doto task "title" "description" --due $IN_TWO_DAYS
 }
 
 it_runs_add_task_with_difficulty() {
@@ -30,13 +40,19 @@ it_runs_add_task_with_difficulty() {
 }
 
 it_runs_apmt() {
-    date_in_secs=$(bc <<< "$(date +%s) + 2*24*3600")
-    $COVERAGE doto apmt "Appointment made on $(date +%d.%m.%y-%H:%M)" "$(date -r $date_in_secs +%Y.%m.%d-%H:%M)"
+    $COVERAGE doto apmt "Appointment made on $(date +%d.%m.%y-%H:%M)" "$IN_TWO_DAYS"
 }
 
 it_runs_apmt_with_description() {
-    date_in_secs=$(bc <<< "$(date +%s) + 2*24*3600")
-    $COVERAGE doto apmt "Appointment made on $(date +%d.%m.%y-%H:%M)" "$(date -r $date_in_secs +%Y.%m.%d-%H:%M)" --description "long description"
+    $COVERAGE doto apmt "Appointment made on $(date +%d.%m.%y-%H:%M)" "$IN_TWO_DAYS" --description "long description"
+}
+
+it_runs_apmt_with_end() {
+    $COVERAGE doto apmt "Appointment made on $(date +%d.%m.%y-%H:%M)" "$IN_TWO_DAYS" --end $IN_ONE_WEEK
+}
+
+it_fails_apmt_with_end_lt() {
+    test 5 -eq $($COVERAGE doto apmt "Appointment" "$IN_ONE_WEEK" --end $IN_TWO_DAYS > /dev/null; echo $?)
 }
 
 it_runs_add_task_with_UTF() {
@@ -111,4 +127,22 @@ it_fails_with_wrong_id() {
 it_fails_done_with_already_done() {
     test 5 -eq $($COVERAGE doto done 0 > /dev/null; echo $?)
     test 5 -eq $($COVERAGE doto start 0 > /dev/null; echo $?)
+}
+
+it_fails_with_has_no_cache() {
+    rm ./test/store/cache
+    test 3 -eq $($COVERAGE doto done  0 > /dev/null; echo $?)
+    test 3 -eq $($COVERAGE doto start 0 > /dev/null; echo $?)
+    test 3 -eq $($COVERAGE doto reset 0 > /dev/null; echo $?)
+    test 3 -eq $($COVERAGE doto show  0 > /dev/null; echo $?)
+    test 3 -eq $($COVERAGE doto del   0 > /dev/null; echo $?)
+}
+
+it_fails_with_has_no_tasks() {
+    export DOTO_CONFIG=./test/configs/dotorc.2
+    test 2 -eq $($COVERAGE doto done  0 > /dev/null; echo $?)
+    test 2 -eq $($COVERAGE doto start 0 > /dev/null; echo $?)
+    test 2 -eq $($COVERAGE doto reset 0 > /dev/null; echo $?)
+    test 2 -eq $($COVERAGE doto show  0 > /dev/null; echo $?)
+    test 2 -eq $($COVERAGE doto del   0 > /dev/null; echo $?)
 }

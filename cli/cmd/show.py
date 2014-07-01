@@ -55,7 +55,7 @@ class TaskPrinter(object):
                                            )
                         )
         cli.util.uprint(date_format.format(self.__date_printer.date_to_str(tsk.created),
-                                           self.__date_printer.due_to_str(tsk.schedule.due, default="--"),
+                                           self.__date_printer.due_to_str(tsk.due, default="--"),
                                            date_width=date_width
                                            )
                         )

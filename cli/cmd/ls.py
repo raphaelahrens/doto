@@ -160,7 +160,7 @@ class Overview(View):
         return ((cache_id,
                  tsk.state,
                  tsk.difficulty,
-                 tsk.schedule.due,
+                 tsk.due,
                  tsk.title
                  )
                 for cache_id, tsk in zip(range(len(tasks)), tasks))

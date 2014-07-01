@@ -74,17 +74,16 @@ def get_cached_task(store, cache_id):
     @param store the store that stores all tasks
     @param cache_id the id of the cached task
     """
-    cache = store.get_cache()
-    if not cache:
-        tasks = store.get_tasks()
-        if tasks:
+    cache_item, cache_error = store.get_cache_item(cache_id)
+    if not cache_item:
+        if not cache_error:
+            uprint("There is no task with the id %d" % cache_id)
+            return None, 1
+
+        if store.get_task_count() > 0:
             uprint("I don't know which task you want!\nYou should first run:\n\tdoto ls")
             return None, 3
         uprint("There are no tasks.\nMaybe you would first like to add a new task with: \n\t doto add \"title\" \"description\" ")
         return None, 2
 
-    if cache_id not in cache:
-        uprint("There is no task with the id %d" % cache_id)
-        return None, 1
-    cached_task = cache[cache_id]
-    return cached_task, 0
+    return cache_item, 0

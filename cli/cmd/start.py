@@ -23,11 +23,14 @@ def main(store, args, *_):
     start_task, error = cli.util.get_cached_task(store, args.id)
     if not start_task:
         return error
+    print "CLI START"
     if not start_task.start():
         cli.util.uprint(("The task with the Id: " + cli.util.ID_FORMAT + "was already started!") % (args.id, start_task.event_id))
         return 5
-    store.modify(start_task)
-    if not store.save():
+
+    try:
+        store.save()
+    except:
         cli.util.uprint(("It was not possible to finish the task with id " + cli.util.ID_FORMAT + ":\n\t %r") % (args.id, start_task.event_id))
         return 4
 

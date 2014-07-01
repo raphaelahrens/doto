@@ -27,11 +27,13 @@ def main(store, args, config, _):
     """Add a new task with the given args"""
     new_task = task.Task(args.title, args.description)
     if args.due is not None:
-        new_task.schedule.due = task.Date.local_from_str(args.due, config.date.cli_input_str)
+        new_task.due = cli.parser.date_parser(args.due)
     if args.difficulty is not None:
         new_task.difficulty = args.difficulty
     store.add_new(new_task)
-    if not store.save():
-        cli.util.uprint(("It was not possible to save the new task with id " + cli.util.ID_FORMAT + ":\n\t %r") % (args.id, new_task.event_id))
+    try:
+        store.save()
+    except Exception:
+        cli.util.uprint(u"It was not possible to save the new task. What are you doing Dave!")
         return 4
     return 0

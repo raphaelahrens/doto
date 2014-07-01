@@ -13,8 +13,8 @@ doto
 
 import argparse
 import blessings
+import cli
 import cli.cmd
-import db
 import importlib
 import os.path
 import pkgutil
@@ -31,7 +31,8 @@ EXIT_CODES = util.enum(unknown_cmd=1)
 
 CONF_DEF = {"path": {"icons": "/home/tant/pomodoro/",
                      "user": USER_PATH,
-                     "store": USER_PATH + "store.db"
+                     "store": USER_PATH + "store.db",
+                     "cache": USER_PATH + "cache"
                      },
             "date": {"short_out_str": "%d. %b. %Y",
                      "full_out_str": "%d.%m.%Y-%H:%M",
@@ -84,18 +85,15 @@ def main():
     and executes the gvien command.
 
     """
+
     # Init phase
     cmds = import_commands()
     args, config = init_env(cmds.values())
-    task.Date.set_local_tz(config.date.local_tz)
+    cli.parser.set_date_parser(config.date.local_tz, config.date.cli_input_str)
     term = blessings.Terminal()
-    with task.Store(db.DBManager(config.path.store)) as store:
+    with task.Store(config.path.store, config.path.cache) as store:
         # execute command
-        exit_code = cmds[args.cmd].main(store,
-                                        args,
-                                        config,
-                                        term
-                                        )
+        exit_code = cmds[args.cmd].main(store, args, config, term)
     sys.exit(exit_code)
 
 if __name__ == "__main__":

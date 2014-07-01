@@ -47,10 +47,6 @@ def set_or_reset(value, fnc=lambda x: x):
 def main(store, args, config, _):
     """ The Main method of start."""
 
-    def get_local_date(date_str):
-        """ Get a string with the local represantation of the date. """
-        return task.Date.local_from_str(date_str, config.date.cli_input_str)
-
     modify_task, error = cli.util.get_cached_task(store, args.id)
     if not modify_task:
         return error
@@ -60,12 +56,13 @@ def main(store, args, config, _):
     if args.description is not None:
         modify_task.description = args.description
     if args.due is not None:
-        modify_task.schedule.due = set_or_reset(args.due, get_local_date)
+        modify_task.due = set_or_reset(args.due, cli.parser.date_parser)
     if args.difficulty is not None:
         modify_task.difficulty = args.difficulty
 
-    store.modify(modify_task)
-    if not store.save():
+    try:
+        store.save()
+    except:
         cli.util.uprint(("It was not possible to modify the task with id " + cli.util.ID_FORMAT + ":\n\t %r") % (args.id, modify_task.event_id))
         return 4
 

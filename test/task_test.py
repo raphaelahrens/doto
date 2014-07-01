@@ -4,103 +4,9 @@ import unittest
 import task
 from datetime import datetime, timedelta
 import pytz
-import sqlite3
 
 TITLE = "important task"
 DESCRIPTION = "long description of this task \n"
-
-
-class TestDate(unittest.TestCase):
-
-    """Unittest for the Date class."""
-
-    @classmethod
-    def setUpClass(cls):
-        """ Setup of datetime object for comparisons."""
-        cls.d1 = datetime(2011, 12, 13, 14, 15, tzinfo=task.Date._local_tz)
-        cls.d2 = cls.d1.astimezone(pytz.utc)
-        cls.d_gt = datetime(2012, 12, 13, 14, 15, 16, tzinfo=task.Date._local_tz)
-        cls.d_lt = datetime(2010, 12, 13, 14, 15, 16, tzinfo=task.Date._local_tz)
-
-    def test_local_constructor(self):
-        """Test the local constructor of Date."""
-        local = task.Date.local(2011, 12, 13, 14, 15)
-        self.assertEqual(local, self.d1)
-        self.assertEqual(local, self.d2)
-
-    def test_local_constructor2(self):
-        """Test the local constructor of Date."""
-        local_str = self.d1.strftime(task.Date._local_input_str)
-        local = task.Date.local_from_str(local_str)
-        self.assertEqual(local, self.d1)
-        self.assertEqual(local, self.d2)
-
-    def test_eq(self):
-        """."""
-        local1 = task.Date.local(2011, 12, 13, 14, 15)
-        local2 = task.Date.local(2011, 12, 13, 14, 15)
-        self.assertEqual(local1, local2)
-        self.assertEqual(local1, self.d1)
-        self.assertEqual(local1, self.d2)
-
-    def test_gt(self):
-        """Test if the greater operator works."""
-        big = task.Date.local(2012, 12, 13, 14, 15, 16)
-        small = task.Date.local(2011, 12, 13, 14, 15, 16)
-        self.assertGreater(big, small)
-        self.assertGreater(big, self.d1)
-        self.assertGreater(big, self.d2)
-
-    def test_ge(self):
-        """Test if the greater equal operator works."""
-        big = task.Date.local(2012, 12, 13, 14, 15, 16)
-        small = task.Date.local(2011, 12, 13, 14, 15, 16)
-        equal = task.Date.local(2012, 12, 13, 14, 15, 16)
-        self.assertGreaterEqual(big, small)
-        self.assertGreaterEqual(big, equal)
-        self.assertGreaterEqual(big, self.d1)
-        self.assertGreaterEqual(big, self.d2)
-        self.assertGreaterEqual(big, self.d_lt)
-
-    def test_lt(self):
-        """Test if the lesser operator works."""
-        small = task.Date.local(2010, 12, 13, 14, 15, 16)
-        big = task.Date.local(2012, 12, 13, 14, 15, 16)
-        self.assertLess(small, big)
-        self.assertLess(small, self.d1)
-        self.assertLess(small, self.d2)
-
-    def test_le(self):
-        """Test if the lesser equal operator works."""
-        small = task.Date.local(2010, 12, 13, 14, 15, 16)
-        big = task.Date.local(2011, 12, 13, 14, 15, 16)
-        equal = task.Date.local(2010, 12, 13, 14, 15, 16)
-        self.assertLessEqual(small, big)
-        self.assertLessEqual(small, equal)
-        self.assertLessEqual(small, self.d1)
-        self.assertLessEqual(small, self.d2)
-        self.assertLessEqual(small, self.d_lt)
-
-    def test_sub(self):
-        """Test if the subtraction operator works."""
-        date_a = task.Date.local(2010, 12, 13, 14, 15, 16)
-        date_b = task.Date.local(2010, 12, 13, 14, 14, 16)
-        delta = timedelta(0, 60, 0)
-        self.assertEqual(date_a - date_b, delta)
-
-    def test_add(self):
-        """Test if the add operator works."""
-        date_a = task.Date.local(2010, 12, 13, 14, 15, 16)
-        delta_b = timedelta(0, 60, 0)
-        date_x = task.Date.local(2010, 12, 13, 14, 16, 16)
-        self.assertEqual(date_x, date_a + delta_b)
-
-    def test_conform(self):
-        """Test if it is possible to create and retrieve a Date Object."""
-        d_org = task.Date.now()
-        sql_str = d_org.__conform__(sqlite3.PrepareProtocol)
-        d_copy = task.Date.from_sqlite(sql_str)
-        self.assertEqual(d_org, d_copy)
 
 
 class TestTimeSpan(unittest.TestCase):
@@ -110,8 +16,8 @@ class TestTimeSpan(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up the test data, start and end (start < end)."""
-        cls.start = task.Date.local(2011, 12, 13, 14, 15, 16)
-        cls.end = task.Date.local(2011, 12, 14, 14, 15, 16)
+        cls.start = datetime(2011, 12, 13, 14, 15, 16)
+        cls.end = datetime(2011, 12, 14, 14, 15, 16)
 
     def test_constructor(self):
         """Test for the constructor of TimeSpan."""
@@ -127,7 +33,7 @@ class TestTimeSpan(unittest.TestCase):
 
     def test_set_end(self):
         """Test the end setter."""
-        span = task.TimeSpan()
+        span = task.TimeSpan(self.start)
         span.end = self.end
         self.assertEqual(span.end, self.end)
 
@@ -151,10 +57,15 @@ class TestTimeSpan(unittest.TestCase):
 
     def test_fail_on_end_lesser_start(self):
         """Test if the start setter fails if start > end."""
-        span = task.TimeSpan()
-        span.end = self.start
+        span = task.TimeSpan(self.start, self.end)
         with self.assertRaises(ValueError):
-            span.start = self.end
+            span.start = self.end + timedelta(3)
+
+    def test_fail_on_start_null(self):
+        """Test if the start setter fails if start is None."""
+        span = task.TimeSpan()
+        with self.assertRaises(ValueError):
+            span.end = self.end
 
     def test_fail_on_start_greater_end(self):
         """Test if the end setter fails if start > end."""
@@ -168,17 +79,16 @@ class TestTimeSpan(unittest.TestCase):
         with self.assertRaises(ValueError):
             task.TimeSpan(self.end, self.start)
 
-    def test_conform(self):
-        """Test if it is possible to create and retrieve a TimeSpan object."""
-        span_org = task.TimeSpan(start=task.Date.now(), end=task.Date.now())
-        sql_str = span_org.__conform__(sqlite3.PrepareProtocol)
-        span_copy = task.TimeSpan.from_sqlite(sql_str)
-        self.assertEqual(span_org, span_copy)
-
     def test_span(self):
         """ Test if the result of time span is correct. """
         time_span = task.TimeSpan(start=self.start, end=self.end)
         self.assertEqual(time_span.time_span(), timedelta(1))
+
+    def test_repr(self):
+        """ Test if repr does not fail """
+        time_span = task.TimeSpan(start=self.start, end=self.end)
+        print repr(time_span)
+
 
 
 class TestState(unittest.TestCase):
@@ -251,12 +161,22 @@ class TestState(unittest.TestCase):
         state = task.StateHolder(task.StateHolder.started)
         self.assertRaises(KeyError, state.next_state, "test")
 
-    def test_conform(self):
-        """Test if it is possible to create and retrieve a TimeSpan object."""
-        state_org = task.StateHolder()
-        sql_str = state_org.__conform__(sqlite3.PrepareProtocol)
-        state_copy = task.StateHolder.from_sqlite(sql_str)
-        self.assertEqual(state_org, state_copy)
+
+    def test_operators(self):
+        """ Test if the equal and not eqaul operators work. """
+        state1 = task.StateHolder(task.StateHolder.pending)
+        state2 = task.StateHolder(task.StateHolder.blocked)
+        state3 = task.StateHolder(task.StateHolder.pending)
+
+        self.assertEqual(state1, state3)
+        self.assertEqual(state1, task.StateHolder.pending)
+        self.assertNotEqual(state1, state2)
+        self.assertNotEqual(state1, task.StateHolder.completed)
+
+    def test_repr(self):
+        """ Test if repr does not fail """
+        state = task.StateHolder(task.StateHolder.started)
+        print repr(state)
 
 
 class TestTask(unittest.TestCase):
@@ -300,6 +220,11 @@ class TestTask(unittest.TestCase):
         with self.assertRaises(ValueError):
             tsk.difficulty = 100
 
+    def test_repr(self):
+        """ Test if repr does not fail """
+        tsk = task.Task(title=TITLE, description=DESCRIPTION)
+        print repr(tsk)
+
 
 class TestAppointment(unittest.TestCase):
 
@@ -307,7 +232,7 @@ class TestAppointment(unittest.TestCase):
 
     def test_constructor(self):
         """ Test the constructor of the Appointment class. """
-        start = task.Date.now()
+        start = task.now_with_tz()
         apmt = task.Appointment(TITLE, start)
 
         self.assertEqual(apmt.title, TITLE)
@@ -315,7 +240,7 @@ class TestAppointment(unittest.TestCase):
 
     def test_start_ge_end(self):
         """ Test if the End of the Appointment can be set to a time smaller than the start time. """
-        start = task.Date.now()
+        start = task.now_with_tz()
         apmt = task.Appointment(TITLE, start)
         end = start - timedelta(24, 0, 0)
 
@@ -324,7 +249,7 @@ class TestAppointment(unittest.TestCase):
 
     def test_move(self):
         """ Move the Appointment to a new time """
-        start = task.Date.now()
+        start = task.now_with_tz()
         new_start = start + timedelta(24, 0, 0)
         apmt = task.Appointment(TITLE, start)
 
@@ -334,9 +259,9 @@ class TestAppointment(unittest.TestCase):
 
     def test_move_with_end(self):
         """ Test if the End of the Appointment can be set to a time smaller than the start time. """
-        start = task.Date.now()
+        start = task.now_with_tz()
         apmt = task.Appointment(TITLE, start)
-        new_start = task.Date.now()
+        new_start = task.now_with_tz()
         new_end = start + timedelta(24, 0, 0)
 
         self.assertTrue(apmt.move(new_start, new_end))
@@ -346,10 +271,10 @@ class TestAppointment(unittest.TestCase):
 
     def test_move_with_start_ge_end(self):
         """ Test if the End of the Appointment can be set to a time smaller than the start time. """
-        start = task.Date.now()
-        end = task.Date.now() + timedelta(1, 0, 0)
+        start = task.now_with_tz()
+        end = task.now_with_tz() + timedelta(1, 0, 0)
         apmt = task.Appointment(TITLE, start, end=end)
-        new_start = task.Date.now() + timedelta(24, 0, 0)
+        new_start = task.now_with_tz() + timedelta(24, 0, 0)
         new_end = new_start - timedelta(24, 0, 0)
 
         self.assertFalse(apmt.move(new_start, new_end))
@@ -359,7 +284,7 @@ class TestAppointment(unittest.TestCase):
 
     def test_setter(self):
         """ Test the setter methodes of Appointment """
-        start = task.Date.now()
+        start = task.now_with_tz()
         apmt = task.Appointment(TITLE, start)
 
         self.assertEqual(apmt.description, None)
@@ -372,37 +297,7 @@ class TestAppointment(unittest.TestCase):
         apmt.description = new_description
         self.assertEqual(apmt.description, new_description)
 
-
-class TestJSONManager(unittest.TestCase):
-
-    """Test if the task storing and loading data with the task store"""
-
-    path = "./test/data/"
-
-    def test_load_empty(self):
-        """Test if we can load the empty file data_load_empty.doto ."""
-        store = task.JSONManager(TestJSONManager.path + "data_load_empty.doto")
-        self.assertEquals(store._version, 9)
-        self.assertEquals(store._tasks, [])
-
-    def test_save_load_empty(self):
-        """Test if it is possible to load the saved data."""
-        store = task.JSONManager(TestJSONManager.path + "data_save.doto", create=True)
-        store.save()
-        self.assertTrue(store.saved)
-        store = task.JSONManager(TestJSONManager.path + "data_save.doto")
-        self.assertEqual(store._version, 0)
-        self.assertEqual(store._tasks, [])
-
-    def test_save_load_100(self):
-        """Test if we ca store 100 tasks and restore them."""
-        tsk = task.Task("title", "description")
-        save_store = task.JSONManager(TestJSONManager.path + "data_save_100.doto", create=True)
-        for i in range(100):
-            save_store.add(tsk)
-        save_store.save()
-        self.assertTrue(save_store.saved)
-        load_store = task.JSONManager(TestJSONManager.path + "data_save_100.doto")
-        for i in range(100):
-            self.assertEqual(load_store._tasks[i], tsk)
-        self.assertEqual(load_store._version, 0)
+    def test_repr(self):
+        """ Test if repr does not fail """
+        apmt = task.Appointment(TITLE, task.now_with_tz())
+        print repr(apmt)

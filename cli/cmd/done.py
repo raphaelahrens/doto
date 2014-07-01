@@ -31,8 +31,9 @@ def main(store, args, *_):
     if not done_task.done():
         cli.util.uprint(("The task with the Id: " + cli.util.ID_FORMAT + "was already finished!") % (args.id, done_task.event_id))
         return 5
-    store.modify(done_task)
-    if not store.save():
+    try:
+        store.save()
+    except:
         cli.util.uprint(("It was not possible to finish the task with id " + cli.util.ID_FORMAT + ":\n\t %r") % (args.id, done_task.event_id))
         return 4
 

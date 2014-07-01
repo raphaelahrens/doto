@@ -8,6 +8,7 @@ An example of its use would be
 """
 import task
 import cli.util
+import cli.parser
 
 
 COMMAND = "apmt"
@@ -23,17 +24,26 @@ def init_parser(subparsers):
     parser.add_argument("--end", type=cli.util.to_unicode, help="The date when the new appointment will end")
 
 
+def print_error(message, exc):
+    cli.util.uprint((message + "\n\t (Error: " + exc.message + ")"))
+
+
 def main(store, args, config, _):
     """Add a new task with the given args"""
-    start = task.Date.local_from_str(args.start, config.date.cli_input_str)
+    start = cli.parser.date_parser(args.start)
     new_apmt = task.Appointment(args.title, start)
     if args.end is not None:
-        new_apmt.schedule.end = task.Date.local_from_str(args.end, config.date.cli_input_str)
+        try:
+            new_apmt.schedule.end = cli.parser.date_parser(args.end)
+        except ValueError as e:
+            print_error("Mhh, looks like the the end date is wrong.", e)
+            return 5
     if args.description is not None:
         new_apmt.description = args.description
     store.add_new(new_apmt)
-    if not store.save():
-        cli.util.uprint(("It was not possible to save the new task with id "
-                         + cli.util.ID_FORMAT + ":\n\t %r") % (args.id, new_apmt.event_id))
+    try:
+        store.save()
+    except Exception as e:
+        print_error("It was not possible to save the new appointment", e)
         return 4
     return 0
