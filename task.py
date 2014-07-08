@@ -22,6 +22,11 @@ Base = sqlalchemy.ext.declarative.declarative_base()
 
 
 def now_with_tz():
+    """
+    Get the current time in UTC format.
+
+    @return the current time
+    """
     return datetime.datetime.now(tz=pytz.utc)
 
 
@@ -36,6 +41,7 @@ def create_difficulties(**difficulties):
     for name, d_id in difficulties.iteritems():
         names[name] = d_id
         keys.append(d_id)
+
     keys.sort()
     names["keys"] = keys
     return type("Difficulty", (), names)
@@ -106,6 +112,7 @@ class StateHolder(sqlalchemy.ext.mutable.MutableComposite):
 
     @state.setter
     def state(self, value):
+        """ Set the state of the task. """
         self._state = value
         self.changed()
 
@@ -162,41 +169,71 @@ class StateHolder(sqlalchemy.ext.mutable.MutableComposite):
 
 
 class StateHolderComp(sqlalchemy.orm.CompositeProperty.Comparator):
+    """ Comparator class for the state of a Task object. """
     def __eq__(self, other):
-        """redefine the 'greater than' operation"""
+        """redefine the 'equal' operator"""
 
-        import statemachine
         if isinstance(other, statemachine.AbstractState):
             return sqlalchemy.sql.and_(*[a == b for a, b in
                                        zip(self.__clause_element__().clauses,
                                            (other,))])
 
-        return sqlalchemy.sql.sql.and_(*[a == b for a, b in
-                                       zip(self.__clause_element__().clauses,
-                                           other.__composite_values__())])
+        return sqlalchemy.sql.and_(*[a == b for a, b in
+                                   zip(self.__clause_element__().clauses,
+                                       other.__composite_values__())])
 
 
 class StateType(sqlalchemy.TypeDecorator):
+    """
+    The Database type for the StateHolder objects.
+    """
     impl = sqlalchemy.Enum
 
-    def process_bind_param(self, value, engine):
+    def process_bind_param(self, value, _):
+        """
+        Store the key value of the State object so it wil be stre in the DB.
+        """
         return value.key
 
-    def process_result_value(self, value, engine):
+    def process_result_value(self, value, _):
+        """
+        Return the State object from StateHolder.states that matches the value.
+        """
         return StateHolder.states[value]
+
+    def python_type(self):
+        """
+        Return the Python type of this Database type.
+        """
+        return statemachine.State
 
 
 class UTCDateTime(sqlalchemy.types.TypeDecorator):
+    """
+    TypeDecorator for the DateTime type so all timestamps have the UTC timezone
+    """
 
     impl = sqlalchemy.DateTime
 
-    def process_bind_param(self, value, engine):
+    def process_bind_param(self, value, _):
+        """
+        Store timestamp in UTC.
+        """
         if value is not None:
             return value.astimezone(pytz.utc)
 
-    def process_result_value(self, value, engine):
+    def process_result_value(self, value, _):
+        """
+        Return timestamp in UTC.
+        """
         if value is not None:
             return pytz.utc.localize(value)
+
+    def python_type(self):
+        """
+        Return the implementation type.
+        """
+        return UTCDateTime.impl.python_type
 
 
 class TimeSpan(sqlalchemy.ext.mutable.MutableComposite):
@@ -210,12 +247,30 @@ class TimeSpan(sqlalchemy.ext.mutable.MutableComposite):
 
     """
 
-    def __init__(self, start=None, end=None):
+    def __init__(self, start=None, end=None, end_delta=None):
+        """
+        Create a TimeSpan object where the begin of the time span is `start`
+        and the end of it is either set with `end` or `end_delta`.
+
+        If `end` is `None` and `end_delta` isn't then the end of the time span
+        will be set to `start + end_delta`.
+
+                Code shitt bla
+
+        LOL
+
+        @param start The begin of the time span.
+        @param end The end of the time span.
+        @param end_delta Alternative set the end with timedelta.
+        """
         self._start = None
         self._end = None
         # call the setters of the properties (don't let it foul you)
         self.start = start
-        self.end = end
+        if end:
+            self.end = end
+        elif end_delta:
+            self.end = start + end_delta
 
     @property
     def start(self):
@@ -289,7 +344,7 @@ class TimeSpan(sqlalchemy.ext.mutable.MutableComposite):
         return "TimeSpan(start=%r, end=%r" % (self.start, self.end)
 
 
-class Event(sqlalchemy.ext.declarative.AbstractConcreteBase, Base):
+class Event(object):
     """
     An event everything that can beplanned with Done!Tools
 
@@ -306,6 +361,7 @@ class Event(sqlalchemy.ext.declarative.AbstractConcreteBase, Base):
         self.title = unicode(title)
         self.description = unicode(description) if description else None
         self.created = now_with_tz()
+        self.cache_id = None
 
     def __repr__(self):
         return ("%s(title=%r, description=%r)" %
@@ -316,7 +372,7 @@ class Event(sqlalchemy.ext.declarative.AbstractConcreteBase, Base):
                 )
 
 
-class Task(Event):
+class Task(Event, Base):
 
     """
     Super class of all tasks.
@@ -350,10 +406,12 @@ class Task(Event):
 
     @property
     def difficulty(self):
+        """ Get the difficulty of the task. """
         return self._difficulty
 
     @difficulty.setter
     def difficulty(self, obj):
+        """ Set the difficulty of the task. """
         if obj not in DIFFICULTY.keys:
             raise ValueError
         self._difficulty = obj
@@ -416,7 +474,7 @@ class Task(Event):
                 )
 
 
-class Appointment(Event):
+class Appointment(Event, Base):
     """
     An appointment (APMT) has a fixed starting date and cannot be started or finished.
 
@@ -466,6 +524,12 @@ CacheItem = collections.namedtuple("CacheItem", ["event_id", "event_type"])
 
 
 def dump_cache(filename, events):
+    """
+    Dump the Cache in the given file.
+
+    @param filename the name of the file
+    @param events the events that will be stored in the cache.
+    """
     with open(filename, "wb") as cache_file:
         pickle.dump([CacheItem(event.event_id, event.__class__) for event in events],
                     cache_file,
@@ -473,6 +537,13 @@ def dump_cache(filename, events):
 
 
 def load_cache(filename):
+    """
+    Load the cache from the cache file.
+
+    @param filename the name of the file
+
+    @return the cache as a list of events.
+    """
     try:
         with open(filename, "rb") as cache_file:
             return pickle.load(cache_file), False
@@ -481,6 +552,12 @@ def load_cache(filename):
 
 
 def _create_dir(db_name):
+    """
+    Create the whole directory path to the database file if necessary.
+
+    @param db_name the complete path to the database file
+            It can be a local path.
+    """
     import errno
     import os
     dir_path = os.path.dirname(db_name)
@@ -508,20 +585,41 @@ class Store(object):
         self.session = sqlalchemy.orm.sessionmaker(bind=engine)()
         Base.metadata.create_all(engine)
 
+        self.__cache = False
         self.__cache_file = cache_file
+        self._cache_list = []
+
+    def enable_caching(self):
+        """ Enable the caching for this store. """
+        self.__cache = True
 
     @staticmethod
     def _get_limit(query, limit):
+        """
+        A helper function that uses the right method call depending on the given limit.
+
+        @param limit if it is smaller then zero all events will be returned
+                if it is above zero only limit events will be returned.
+        """
         if limit <= 0:
             return query.all()
         else:
             return query[:limit]
 
-    def _cache(self, tasks, cache):
-        if cache:
-            dump_cache(self.__cache_file, tasks)
+    def _add_to_cache(self, events):
+        """
+        Add the events to the cache.
 
-    def get_tasks(self, cache=False, limit=10):
+        @param events the events that will be added to the cache.
+        """
+        cache_len = len(self._cache_list)
+        for i, event in enumerate(events):
+            event.cache_id = cache_len + i
+
+        if self.__cache:
+            self._cache_list += events
+
+    def get_tasks(self, limit=10):
         """
         Get a list of all tasks.
 
@@ -532,14 +630,34 @@ class Store(object):
 
         """
         tasks = Store._get_limit(self.session.query(Task), limit)
-        self._cache(tasks, cache)
+        self._add_to_cache(tasks)
 
         return tasks
 
+    def get_apmts(self, date, delta):
+        """
+        Get the appointments that are between the given date and the date + delta.
+
+        So to get the appointments of the next seven days set date to now and delta to seven days.
+
+        @param date The returned appointments are younger then this date.
+        @param delta Only Appointments that are older than date + delta are returned.
+
+        @return the appointments between the date and date + delta
+        """
+        apmts = self.session.query(Appointment).filter(
+            sqlalchemy.and_(
+                Appointment._sch_start >= date,
+                Appointment._sch_start < (date + delta))
+        ).all()
+        self._add_to_cache(apmts)
+        return apmts
+
     def get_task_count(self):
+        """ Get the count Tasks in the database. """
         return self.session.query(Task).count()
 
-    def get_open_tasks(self, cache=False, limit=10):
+    def get_open_tasks(self, limit=20):
         """
         Get all task which are not completed.
 
@@ -547,9 +665,10 @@ class Store(object):
                 so a cache_id can be used. Default=False
         @param limit Set the maximum number of returned items. Default=10
 
+        @return A list of unfinished tasks
         """
         tasks = Store._get_limit(self.session.query(Task).filter(Task.state != StateHolder.completed), limit)
-        self._cache(tasks, cache)
+        self._add_to_cache(tasks)
 
         return tasks
 
@@ -564,6 +683,13 @@ class Store(object):
         return load_cache(self.__cache_file)
 
     def get_cache_item(self, cache_id):
+        """
+        Get the Item with the id cache_id from the cache.
+
+        @param cache_id the id of the cache item
+
+        @return the cache item that matches the given id or None.
+        """
         cache, cache_error = self.get_cache()
 
         if cache_error or cache_id < 0:
@@ -612,6 +738,14 @@ class Store(object):
         self.session.commit()
 
     def close(self):
+        """
+        Close the connection to the database and clean up.
+
+        If the cache was enabled also save the cache to disk.
+        """
+        if self.__cache:
+            dump_cache(self.__cache_file, self._cache_list)
+
         self.session.close()
 
     def __enter__(self):

@@ -26,7 +26,7 @@ class TestDBManager(unittest.TestCase):
 
     def test_init(self):
         """ Test the constructor of the database store. """
-        tasks = self.store.get_tasks(False, 10)
+        tasks = self.store.get_tasks(10)
         self.assertEqual(tasks, [])
 
     def test_store(self):
@@ -34,7 +34,7 @@ class TestDBManager(unittest.TestCase):
         test_task = task.Task("title", "description")
         self.store.add_new(test_task)
         self.store.save()
-        tasks = self.store.get_tasks(False, 10)
+        tasks = self.store.get_tasks(10)
         self.assertEqual(tasks, [test_task])
 
     def test_get_tasks_with_undone_only(self):
@@ -44,14 +44,15 @@ class TestDBManager(unittest.TestCase):
         test_open = task.Task("title", "description")
         self.store.add_new([test_done, test_open])
         self.store.save()
-        tasks = self.store.get_open_tasks(False, 10)
+        tasks = self.store.get_open_tasks(10)
         self.assertEqual(tasks, [test_open])
 
     def test_get_tasks_with_cache(self):
         """ Test if we can gte a list of the tasks and also create the cache. """
+        self.store.enable_caching()
         test_task = task.Task("title", "description")
         self.store.add_new(test_task)
-        tasks = self.store.get_tasks(True, 10)
+        tasks = self.store.get_tasks(10)
         self.assertEqual(tasks, [test_task])
         cache = self.store.get_cache()
         self.assertTrue(len(cache) > 0)
@@ -62,7 +63,7 @@ class TestDBManager(unittest.TestCase):
         ref_list = [task.Task("title %i" % i, "description") for i in xrange(10)]
         self.store.add_new(ref_list)
         self.store.save()
-        tasks = self.store.get_tasks(False, 10)
+        tasks = self.store.get_tasks(10)
         self.assertEqual(tasks, ref_list)
 
     def test_update(self):
@@ -75,7 +76,7 @@ class TestDBManager(unittest.TestCase):
         test_task.due = now
         self.assertFalse(self.store.is_saved)
         self.store.save()
-        tasks = self.store.get_tasks(False, 10)
+        tasks = self.store.get_tasks(10)
         self.assertEqual(tasks, [test_task])
         self.assertEqual(tasks[0].due, now)
 
@@ -86,7 +87,7 @@ class TestDBManager(unittest.TestCase):
         self.store.save()
         self.store.delete(test_task)
         self.store.save()
-        tasks = self.store.get_tasks(False, 10)
+        tasks = self.store.get_tasks(10)
         self.assertEqual(tasks, [])
 
     def test_fail_delete(self):
@@ -119,11 +120,11 @@ class TestDBFiles(unittest.TestCase):
         self.store = task.Store(test_file, TEST_CAHCE_FILE)
         self.store.add_new(test_task)
         self.store.save()
-        self.assertEqual(self.store.get_tasks(False, 10), [test_task])
+        self.assertEqual(self.store.get_tasks(10), [test_task])
         self.store.close()
         self.assertTrue(os.path.isfile(test_file))
         self.store = task.Store(test_file, TEST_CAHCE_FILE)
-        self.assertEqual(self.store.get_tasks(False, 10), [test_task])
+        self.assertEqual(self.store.get_tasks(10), [test_task])
         self.store.close()
 
     @classmethod
