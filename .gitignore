@@ -52,3 +52,12 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+# VIM swap files
+*.swp
+
+#Project internal
+avatars/
+avatars/*
+doc/*
+test/data/*
+test/store/*
