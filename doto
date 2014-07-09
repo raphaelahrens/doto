@@ -23,7 +23,7 @@ import sys
 import task
 import util
 
-USER_PATH = os.path.expanduser("~") + "/.doto/"
+USER_PATH = os.path.expanduser("~") + "/.config/doto/"
 
 CONFIG_FILE = USER_PATH + "dotorc"
 
