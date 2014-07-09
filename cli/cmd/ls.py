@@ -101,12 +101,19 @@ class WrapColumn(Column):
 
     So a string that is to long for the column will be split into multiple lines in that column
     """
+
+    newline_sym = u" ↩"
+    len_nl_sy = len(newline_sym)
+
     def __init__(self, name, width, align, display_fn=unicode, expand=None):
         Column.__init__(self, name, width, align, display_fn, expand=expand)
-        self._wrapper = textwrap.TextWrapper(width=self._width,
+        self._wrapper = textwrap.TextWrapper(width=self._width - WrapColumn.len_nl_sy,
                                              expand_tabs=False,
                                              subsequent_indent=u"  "
                                              )
+
+    def add_newline_symbol(self, line):
+        return u"{:{align}{width}}{}".format(line, WrapColumn.newline_sym, align=self.align, width=self._wrapper.width)
 
     def pack(self, data):
         """
@@ -117,11 +124,12 @@ class WrapColumn(Column):
 
         @return an iteratable  with multiple column lines
         """
-        return self._wrapper.wrap(self._display_fn(data))
+        column_lines = self._wrapper.wrap(self._display_fn(data))
+        return [self.add_newline_symbol(line) for line in column_lines[:-1]] + column_lines[-1:]
 
     def set_width(self, width):
         Column.set_width(self, width)
-        self._wrapper.width = self._width
+        self._wrapper.width = self._width - WrapColumn.len_nl_sy
 
 
 class CutColumn(Column):
@@ -158,7 +166,7 @@ def line_generator(columns, data):
         @returns the iterator for the lines of the rows
         """
         items = (column.pack(datum) for column, datum in zip(columns, row_data))
-        return itertools.izip_longest(*items, fillvalue="")
+        return itertools.izip_longest(*items, fillvalue=u"")
 
     data_iter = iter(data)
     line_iter = next_line_iter(data_iter.next())
@@ -166,11 +174,8 @@ def line_generator(columns, data):
         try:
             yield line_iter.next()
         except StopIteration:
-            # ignore since we might have more in the data_iter
-            pass
-
-        # This breaks out of the loop when data_iter.next() throws a StopIteration
-        line_iter = next_line_iter(data_iter.next())
+            # This breaks out of the loop when data_iter.next() throws a StopIteration
+            line_iter = next_line_iter(data_iter.next())
 
 
 class View(object):
