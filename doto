@@ -23,16 +23,16 @@ import sys
 import task
 import util
 
-USER_PATH = os.path.expanduser("~") + "/.config/doto/"
+USER_PATH = os.path.join(os.path.expanduser("~"), ".config", "doto")
 
-CONFIG_FILE = USER_PATH + "dotorc"
+CONFIG_FILE = os.path.join(USER_PATH, "dotorc")
 
 EXIT_CODES = util.enum(unknown_cmd=1)
 
 CONF_DEF = {"path": {"icons": "/home/tant/pomodoro/",
                      "user": USER_PATH,
-                     "store": USER_PATH + "store.db",
-                     "cache": USER_PATH + "cache"
+                     "store": os.path.join(USER_PATH, "store.db"),
+                     "cache": os.path.join(USER_PATH, "cache")
                      },
             "date": {"short_out_str": "%d. %b. %Y",
                      "full_out_str": "%d.%m.%Y-%H:%M",
