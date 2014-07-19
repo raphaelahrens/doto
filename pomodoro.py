@@ -4,11 +4,13 @@
 """Pomodoro is a simple pomodoro clock and part of the Done!Tools."""
 import gtk
 import pynotify
+import os
 import sys
 
 import gui.icon
+import defaultconfig
 
-ICONS = gui.icon.Theme(128)
+ICONS = None
 
 SUMMARY = "Pomodoro"
 
@@ -72,7 +74,7 @@ class StatusIcon(object):
     def done(self):
         """Mark the task as done."""
         self.__menu.show_start()
-        #here comes the nect step
+        # here comes the next step
 
 
 class NotifyMenu(gtk.Menu):
@@ -282,7 +284,7 @@ class NotifyHandler(object):
 
         """
         msg = pynotify.Notification(SUMMARY, msg, icon.filename)
-        #Always set the closed callback so we clean up every message object
+        # Always set the closed callback so we clean up every message object
         msg.connect('closed', self._msg_closed)
 
         if callback:
@@ -307,6 +309,25 @@ class NotifyHandler(object):
         del self._msgs[id(msg)]
 
 
+USER_PATH = os.path.join(os.path.expanduser("~"), ".config", "doto")
+
+
+CONFIG_FILE = os.path.join(USER_PATH, "dotorc")
+
+
+CONF_DEF = {"path": {"icons": "/home/tant/pomodoro/",
+                     "user": USER_PATH,
+                     "store": os.path.join(USER_PATH, "store.db"),
+                     "cache": os.path.join(USER_PATH, "cache")
+                     },
+            "date": {"short_out_str": "%d. %b. %Y",
+                     "full_out_str": "%d.%m.%Y-%H:%M",
+                     "cli_input_str": "%Y.%m.%d-%H:%M",
+                     "local_tz": "Europe/Berlin"
+                     }
+            }
+
+
 def main():
     """
     The main function for the pomodoro clock.
@@ -314,6 +335,9 @@ def main():
     It starts the gui of the pomodoro clock and displays the StatusIcon.
 
     """
+    config = defaultconfig.read_config()
+    global ICONS
+    ICONS = gui.icon.Theme(128, config.path.icons)
     pynotify.init("Pomodoro")
     StatusIcon()
     gtk.main()

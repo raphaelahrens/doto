@@ -443,6 +443,11 @@ class Task(Event, Base):
         self.real_sch.start = now_with_tz()
         return True
 
+    @property
+    def started(self):
+        return self.state.state is StateHolder.started
+
+
     def reset(self):
         """
         Reset the tasks state.

@@ -16,30 +16,14 @@ import blessings
 import cli
 import cli.cmd
 import importlib
-import os.path
 import pkgutil
-import simpleconf
+import defaultconfig
 import sys
 import task
 import util
 
-USER_PATH = os.path.join(os.path.expanduser("~"), ".config", "doto")
-
-CONFIG_FILE = os.path.join(USER_PATH, "dotorc")
 
 EXIT_CODES = util.enum(unknown_cmd=1)
-
-CONF_DEF = {"path": {"icons": "/home/tant/pomodoro/",
-                     "user": USER_PATH,
-                     "store": os.path.join(USER_PATH, "store.db"),
-                     "cache": os.path.join(USER_PATH, "cache")
-                     },
-            "date": {"short_out_str": "%d. %b. %Y",
-                     "full_out_str": "%d.%m.%Y-%H:%M",
-                     "cli_input_str": "%Y.%m.%d-%H:%M",
-                     "local_tz": "Europe/Berlin"
-                     }
-            }
 
 
 def import_commands():
@@ -64,9 +48,7 @@ def init_env(commands):
     @param commands the modules of the cli commands
 
     """
-    for cmd in commands:
-        CONF_DEF[cmd.COMMAND] = cmd.CONF_DEF
-    config = simpleconf.Config(os.getenv("DOTO_CONFIG", CONFIG_FILE), CONF_DEF)
+    config = defaultconfig.read_config()
     parser = argparse.ArgumentParser(prog="doto", description="The Done!Tools are a collection of tools to handle task and events.")
     subparsers = parser.add_subparsers(help='command', dest="cmd")
     for cmd in commands:
