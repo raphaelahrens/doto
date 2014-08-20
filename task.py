@@ -359,7 +359,7 @@ class Event(object):
 
     def __init__(self, title, description):
         self.title = unicode(title)
-        self.description = unicode(description) if description else None
+        self.description = unicode(description) if description else u""
         self.created = now_with_tz()
         self.cache_id = None
 
