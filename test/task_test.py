@@ -3,7 +3,6 @@
 import unittest
 import task
 from datetime import datetime, timedelta
-import pytz
 
 TITLE = "important task"
 DESCRIPTION = "long description of this task \n"
@@ -90,7 +89,6 @@ class TestTimeSpan(unittest.TestCase):
         print repr(time_span)
 
 
-
 class TestState(unittest.TestCase):
 
     """Unittest for the StateHolder class."""
@@ -160,7 +158,6 @@ class TestState(unittest.TestCase):
         """Test if next_state fails on wrong input."""
         state = task.StateHolder(task.StateHolder.started)
         self.assertRaises(KeyError, state.next_state, "test")
-
 
     def test_operators(self):
         """ Test if the equal and not eqaul operators work. """
@@ -287,7 +284,7 @@ class TestAppointment(unittest.TestCase):
         start = task.now_with_tz()
         apmt = task.Appointment(TITLE, start)
 
-        self.assertEqual(apmt.description, None)
+        self.assertEqual(apmt.description, "")
 
         new_title = "new title"
         new_description = "description one O one"
