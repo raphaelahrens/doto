@@ -6,7 +6,8 @@ An example of its use would be
     $ doto done id
 
 """
-import cli
+import cli.util
+import cli.cmd.task
 
 
 COMMAND = "done"
@@ -25,7 +26,7 @@ def init_parser(subparsers):
 
 def main(store, args, *_):
     """ The Main method of done."""
-    done_task, error = cli.util.get_cached_task(store, args.id)
+    done_task, error = cli.cmd.task.get_cached_task(store, args.id)
     if not done_task:
         return error
     if not done_task.done():

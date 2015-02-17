@@ -447,7 +447,6 @@ class Task(Event, Base):
     def started(self):
         return self.state.state is StateHolder.started
 
-
     def reset(self):
         """
         Reset the tasks state.
@@ -662,6 +661,10 @@ class Store(object):
         """ Get the count Tasks in the database. """
         return self.session.query(Task).count()
 
+    def get_apmt_count(self):
+        """ Get the count Tasks in the database. """
+        return self.session.query(Appointment).count()
+
     def get_open_tasks(self, limit=20):
         """
         Get all task which are not completed.
@@ -687,7 +690,7 @@ class Store(object):
         """
         return load_cache(self.__cache_file)
 
-    def get_cache_item(self, cache_id):
+    def __get_cache_item(self, cache_id, query):
         """
         Get the Item with the id cache_id from the cache.
 
@@ -697,11 +700,34 @@ class Store(object):
         """
         cache, cache_error = self.get_cache()
 
-        if cache_error or cache_id < 0:
+        if cache_error or cache_id < 0 or cache_id > len(cache):
             return None, cache_error
 
         item = cache[cache_id]
-        return self.session.query(item.event_type).get(item.event_id), cache_error
+
+        return query(item), cache_error
+
+    def get_cache_item(self, cache_id):
+        """
+        Get the Item with the id cache_id from the cache.
+
+        @param cache_id the id of the cache item
+
+        @return the cache item that matches the given id or None.
+        """
+        def query(item):
+            return self.session.query(item.event_type).get(item.event_id)
+        return self.__get_cache_item(cache_id, query)
+
+    def get_cache_task(self, cache_id):
+        def query(item):
+            return self.session.query(Task).get(item.event_id)
+        return self.__get_cache_item(cache_id, query)
+
+    def get_cache_apmt(self, cache_id):
+        def query(item):
+            return self.session.query(Appointment).get(item.event_id)
+        return self.__get_cache_item(cache_id, query)
 
     def add_new(self, event):
         """

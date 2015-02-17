@@ -4,29 +4,29 @@ A Collection of functions to display tasks and other data.
 """
 
 import datetime
-import task
+import dbmodel
 import pytz
 
 
-__state_symbols = {task.StateHolder.completed.key: u"✓",
-                   task.StateHolder.blocked.key: u"✗",
-                   task.StateHolder.interrupted.key: u"↯",
-                   task.StateHolder.pending.key: u" ",
-                   task.StateHolder.started.key: u"▶"
+__state_symbols = {dbmodel.StateHolder.completed.key: u"✓",
+                   dbmodel.StateHolder.blocked.key: u"✗",
+                   dbmodel.StateHolder.interrupted.key: u"↯",
+                   dbmodel.StateHolder.pending.key: u" ",
+                   dbmodel.StateHolder.started.key: u"▶"
                    }
 
-__state_strings = {task.StateHolder.completed.key: u"completed",
-                   task.StateHolder.blocked.key: u"blocked",
-                   task.StateHolder.interrupted.key: u"interrupted",
-                   task.StateHolder.pending.key: u"pending",
-                   task.StateHolder.started.key: u"started"
+__state_strings = {dbmodel.StateHolder.completed.key: u"completed",
+                   dbmodel.StateHolder.blocked.key: u"blocked",
+                   dbmodel.StateHolder.interrupted.key: u"interrupted",
+                   dbmodel.StateHolder.pending.key: u"pending",
+                   dbmodel.StateHolder.started.key: u"started"
                    }
 
-__difficulty_symbols = {task.DIFFICULTY.unknown: u" ",
-                        task.DIFFICULTY.simple: u"Ⅰ",
-                        task.DIFFICULTY.easy: u"Ⅱ",
-                        task.DIFFICULTY.medium: u"Ⅲ",
-                        task.DIFFICULTY.hard: u"Ⅳ",
+__difficulty_symbols = {dbmodel.DIFFICULTY.unknown: u" ",
+                        dbmodel.DIFFICULTY.simple: u"Ⅰ",
+                        dbmodel.DIFFICULTY.easy: u"Ⅱ",
+                        dbmodel.DIFFICULTY.medium: u"Ⅲ",
+                        dbmodel.DIFFICULTY.hard: u"Ⅳ",
                         }
 
 
@@ -107,7 +107,7 @@ class DatePrinter(object):
     def due_to_str(self, due_date, default=u""):
         if due_date is None:
             return default
-        t_span = due_date - task.now_with_tz()
+        t_span = due_date - dbmodel.now_with_tz()
         if t_span.days < 0:
             # the time span is negativ so the time is over due
             return u"over due"

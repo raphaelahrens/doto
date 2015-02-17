@@ -18,10 +18,9 @@ def init_parser(subparsers):
     cli.parser.init_id_flag(COMMAND, subparsers)
 
 
-
 def main(store, args, *_):
     """ The Main method of start."""
-    start_task, error = cli.util.get_cached_task(store, args.id)
+    start_task, error = cli.cmd.task.get_cached_task(store, args.id)
     if not start_task:
         return error
     start_task.reset()

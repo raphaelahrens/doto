@@ -7,6 +7,7 @@ An example of its use would be
 
 """
 import cli.util
+import cli.cmd.task
 
 COMMAND = "del"
 CONF_DEF = {}
@@ -21,7 +22,7 @@ def init_parser(subparsers):
 def main(store, args, *_):
     """ Delete the given task in args.id. """
 
-    del_task, error = cli.util.get_cached_task(store, args.id)
+    del_task, error = cli.cmd.task.get_cached_task(store, args.id)
     if not del_task:
         return error
     store.delete(del_task)

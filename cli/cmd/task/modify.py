@@ -6,8 +6,9 @@ An example of its use would be
 $ doto modify id  [--title <string>] [--description <string>]  [--due <date>]  [--difficulty <int>]
 
 """
-import cli
-import task
+import cli.parser
+import cli.util
+import cli.cmd.task
 
 
 COMMAND = "modify"
@@ -26,7 +27,7 @@ def init_parser(subparsers):
     parser.add_argument("id", type=int, help="The id of the task which should be modified.")
     parser.add_argument("--title", type=cli.parser.to_unicode, help="Change the title of the task")
     parser.add_argument("--description", type=cli.parser.to_unicode, help="Change the description of the task")
-    cli.parser.init_task_flags(parser)
+    cli.cmd.task.init_task_flags(parser)
 
 
 def set_or_reset(value, fnc=lambda x: x):
@@ -47,7 +48,7 @@ def set_or_reset(value, fnc=lambda x: x):
 def main(store, args, config, _):
     """ The Main method of start."""
 
-    modify_task, error = cli.util.get_cached_task(store, args.id)
+    modify_task, error = cli.cmd.task.get_cached_task(store, args.id)
     if not modify_task:
         return error
     cli.util.uprint(("Changing task " + cli.util.ID_FORMAT + ":\n\t %s") % (args.id, modify_task.event_id, modify_task.title))

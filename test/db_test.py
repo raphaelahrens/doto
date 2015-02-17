@@ -4,7 +4,7 @@ import shutil
 import os.path
 import tempfile
 
-import task
+import dbmodel
 import datetime
 import pytz
 
@@ -18,7 +18,7 @@ class TestDBManager(unittest.TestCase):
 
     def setUp(self):
         """ Create a new Db store. """
-        self.store = task.Store(TEST_DB_FILE, TEST_CAHCE_FILE)
+        self.store = dbmodel.Store(TEST_DB_FILE, TEST_CAHCE_FILE)
 
     def tearDown(self):
         """ Close the connection after everx test. """
@@ -31,7 +31,7 @@ class TestDBManager(unittest.TestCase):
 
     def test_store(self):
         """ Test if we can store tasks. """
-        test_task = task.Task("title", "description")
+        test_task = dbmodel.Task("title", "description")
         self.store.add_new(test_task)
         self.store.save()
         tasks = self.store.get_tasks(10)
@@ -39,9 +39,9 @@ class TestDBManager(unittest.TestCase):
 
     def test_get_tasks_with_undone_only(self):
         """ Test if we can get only unfinished tasks. """
-        test_done = task.Task("title", "description")
+        test_done = dbmodel.Task("title", "description")
         test_done.done()
-        test_open = task.Task("title", "description")
+        test_open = dbmodel.Task("title", "description")
         self.store.add_new([test_done, test_open])
         self.store.save()
         tasks = self.store.get_open_tasks(10)
@@ -50,7 +50,7 @@ class TestDBManager(unittest.TestCase):
     def test_get_tasks_with_cache(self):
         """ Test if we can gte a list of the tasks and also create the cache. """
         self.store.enable_caching()
-        test_task = task.Task("title", "description")
+        test_task = dbmodel.Task("title", "description")
         self.store.add_new(test_task)
         tasks = self.store.get_tasks(10)
         self.assertEqual(tasks, [test_task])
@@ -60,7 +60,7 @@ class TestDBManager(unittest.TestCase):
 
     def test_store_10(self):
         """ Test if we can save 10 tasks in a row. """
-        ref_list = [task.Task("title %i" % i, "description") for i in xrange(10)]
+        ref_list = [dbmodel.Task("title %i" % i, "description") for i in xrange(10)]
         self.store.add_new(ref_list)
         self.store.save()
         tasks = self.store.get_tasks(10)
@@ -68,7 +68,7 @@ class TestDBManager(unittest.TestCase):
 
     def test_update(self):
         """ Test if we can update Tasks in the store. """
-        test_task = task.Task("title", "description")
+        test_task = dbmodel.Task("title", "description")
         self.store.add_new(test_task)
         self.store.save()
         self.assertTrue(self.store.is_saved)
@@ -82,7 +82,7 @@ class TestDBManager(unittest.TestCase):
 
     def test_delete(self):
         """ Test if we can delete tasks from the store. """
-        test_task = task.Task("title", "description")
+        test_task = dbmodel.Task("title", "description")
         self.store.add_new([test_task])
         self.store.save()
         self.store.delete(test_task)
@@ -92,7 +92,7 @@ class TestDBManager(unittest.TestCase):
 
     def test_fail_delete(self):
         """ Test if a task with no id can't be deleted. """
-        test_task = task.Task("title", "description")
+        test_task = dbmodel.Task("title", "description")
         self.assertFalse(self.store.delete(test_task))
         self.store.save()
 
@@ -109,21 +109,21 @@ class TestDBFiles(unittest.TestCase):
     def test_create_store(self):
         """ Test if we can create a new store file """
         test_file = os.path.join(self.path, "file1.db")
-        self.store = task.Store(test_file, TEST_CAHCE_FILE)
+        self.store = dbmodel.Store(test_file, TEST_CAHCE_FILE)
         self.store.close()
         self.assertTrue(os.path.isfile(test_file))
 
     def test_create_and_read(self):
         """ Test if we can create a new  """
         test_file = os.path.join(self.path, "file2.db")
-        test_task = task.Task("create a file and read it", "We want a new db file and read this task from it.")
-        self.store = task.Store(test_file, TEST_CAHCE_FILE)
+        test_task = dbmodel.Task("create a file and read it", "We want a new db file and read this task from it.")
+        self.store = dbmodel.Store(test_file, TEST_CAHCE_FILE)
         self.store.add_new(test_task)
         self.store.save()
         self.assertEqual(self.store.get_tasks(10), [test_task])
         self.store.close()
         self.assertTrue(os.path.isfile(test_file))
-        self.store = task.Store(test_file, TEST_CAHCE_FILE)
+        self.store = dbmodel.Store(test_file, TEST_CAHCE_FILE)
         self.assertEqual(self.store.get_tasks(10), [test_task])
         self.store.close()
 

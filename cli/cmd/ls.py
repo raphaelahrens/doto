@@ -9,10 +9,11 @@ An example of its use is
 import abc
 import cli.util
 import cli.printing
+import cli.parser
 import textwrap
 import itertools
 import util
-import task
+import dbmodel
 import datetime
 
 
@@ -330,7 +331,7 @@ class ApmtOverview(View):
         @param store the Store object
         @param args the arguments of the cli
         """
-        return store.get_apmts(task.now_with_tz(), datetime.timedelta(7, 0, 0))
+        return store.get_apmts(dbmodel.now_with_tz(), datetime.timedelta(7, 0, 0))
 
 
 class EventOverview(object):
