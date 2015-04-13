@@ -372,6 +372,25 @@ class Event(object):
                 )
 
 
+class Timerecord(Base):
+
+    """
+    """
+
+    __tablename__ = "timerecord"
+
+    tr_id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    parent_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('tasks.event_id'))
+    _start = sqlalchemy.Column("start", UTCDateTime(timezone=True), nullable=True)
+    _end = sqlalchemy.Column("end", UTCDateTime(timezone=True), nullable=True)
+    span = sqlalchemy.orm.composite(TimeSpan, _start, _end)
+
+    def __init__(self):
+        """
+        """
+        self.span = TimeSpan()
+
+
 class Task(Event, Base):
 
     """
@@ -389,6 +408,8 @@ class Task(Event, Base):
     _planned_end = sqlalchemy.Column("planned_end", UTCDateTime(timezone=True), nullable=True)
     _real_start = sqlalchemy.Column("real_start", UTCDateTime(timezone=True), nullable=True)
     _real_end = sqlalchemy.Column("real_end", UTCDateTime(timezone=True), nullable=True)
+
+    timerecords = sqlalchemy.orm.relationship("Timerecord")
 
     state = sqlalchemy.orm.composite(StateHolder, _state, comparator_factory=StateHolderComp)
     planned_sch = sqlalchemy.orm.composite(TimeSpan, _planned_start, _planned_end)
