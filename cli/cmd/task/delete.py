@@ -29,7 +29,7 @@ def main(store, args, *_):
     try:
         store.save()
     except:
-        cli.util.uprint(("It was not possible to delete the task with the id " + cli.util.ID_FORMAT + ":\n\t %r") % (args.id, del_task))
+        cli.util.uprint(("It was not possible to delete the task with the id " + cli.util.ID_FORMAT + ":\n\t %r") % (args.id, del_task.event_id))
         return 4
 
     cli.util.uprint(("Deleted event with id " + cli.util.ID_FORMAT + ":\n\t Title: %s") % (args.id, del_task.event_id, del_task.title))
