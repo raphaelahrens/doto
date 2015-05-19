@@ -128,6 +128,11 @@ it_runs_del() {
     $COVERAGE doto task del 0    
 }
 
+it_runs_punch() {
+    $COVERAGE doto punch in
+    $COVERAGE doto punch out
+}
+
 it_fails_with_wrong_id() {
     doto ls tasks
     test 1 -eq $($COVERAGE doto task done -1 > /dev/null; echo $?)

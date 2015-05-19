@@ -375,20 +375,28 @@ class Event(object):
 class Timerecord(Base):
 
     """
+    A timerecord is a time span for which one worked on a task
+
+    A timerecord is a time span that is assosiated with a event.
+    The sum of all timerecords is the total amount of work taht was put into the Task.
+
+    This can be used to track the amount of time one worked a specific task.
+    This should come in handy for freelancers (like me).
     """
 
     __tablename__ = "timerecord"
 
     tr_id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    parent_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('tasks.event_id'))
+    event_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('tasks.event_id'), nullable=True)
     _start = sqlalchemy.Column("start", UTCDateTime(timezone=True), nullable=True)
     _end = sqlalchemy.Column("end", UTCDateTime(timezone=True), nullable=True)
     span = sqlalchemy.orm.composite(TimeSpan, _start, _end)
 
-    def __init__(self):
+    def __init__(self, start, end=None, event=None):
         """
         """
-        self.span = TimeSpan()
+        self.span = TimeSpan(start=start, end=end)
+        self.event_id = event
 
 
 class Task(Event, Base):
@@ -658,6 +666,15 @@ class Store(object):
         self._add_to_cache(tasks)
 
         return tasks
+
+    def get_started_timerecords(self):
+        """
+        """
+        record = self.session.query(Timerecord).filter(
+            Timerecord._end is None
+        )
+
+        return record
 
     def get_apmts(self, date, delta):
         """
