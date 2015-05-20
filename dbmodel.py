@@ -320,7 +320,7 @@ class TimeSpan(sqlalchemy.ext.mutable.MutableComposite):
         self._end = end
         self.changed()
 
-    def time_span(self):
+    def time_delta(self):
         """
         Return the time span.
 
@@ -671,8 +671,8 @@ class Store(object):
         """
         """
         record = self.session.query(Timerecord).filter(
-            Timerecord._end is None
-        )
+            Timerecord._end == None
+        ).all()
 
         return record
 

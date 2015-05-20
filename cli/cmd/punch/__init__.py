@@ -18,6 +18,7 @@ import functools
 import cli.util
 import cli.sub_cmds
 import cli.parser
+import cli.printing
 
 
 COMMAND = "punch"
@@ -33,4 +34,5 @@ init_parser = functools.partial(cli.sub_cmds.init_sub_cmd,
 
 def main(store, args, config, term):
     """The Main function of the command gets the subcommand and executes it."""
-    return sub_cmds[args.sub_cmd].main(store, args, config, term)
+    date_printer = cli.printing.DatePrinter(config)
+    return sub_cmds[args.sub_cmd].main(store, args, config, term, date_printer=date_printer)

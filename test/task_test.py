@@ -81,7 +81,7 @@ class TestTimeSpan(unittest.TestCase):
     def test_span(self):
         """ Test if the result of time span is correct. """
         time_span = dbmodel.TimeSpan(start=self.start, end=self.end)
-        self.assertEqual(time_span.time_span(), timedelta(1))
+        self.assertEqual(time_span.time_delta(), timedelta(1))
 
     def test_repr(self):
         """ Test if repr does not fail """

@@ -60,26 +60,27 @@ def one_or_more(amount, single_str, multiple_str):
     return ret_str % amount
 
 
-def str_from_time_span(t_span):
+def str_from_time_delta(t_delta):
     """
     Create a pretty string representation of a Time span.
 
     The function returns a string that is a natural representation
     of the time span. For example "1 day", "2 days", "3 hours", ...
 
+    @param t_delta a datetime.timedelta object
 
     @return the string
 
     """
-    if t_span.days < 0:
+    if t_delta.days < 0:
         raise
-    if t_span.days > 0:
-        return one_or_more(t_span.days, "%d day", "%d days")
-    if t_span.seconds > 3600:
-        return one_or_more(t_span.seconds // 3600, "%d hour", "%d hours")
-    if t_span.seconds > 60:
-        return one_or_more(t_span.seconds // 60, "%d minute", "%d minutes")
-    return one_or_more(t_span.seconds, "%d second", "%d seconds")
+    if t_delta.days > 0:
+        return one_or_more(t_delta.days, "%d day", "%d days")
+    if t_delta.seconds >= 3600:
+        return one_or_more(t_delta.seconds // 3600, "%d hour", "%d hours")
+    if t_delta.seconds >= 60:
+        return one_or_more(t_delta.seconds // 60, "%d minute", "%d minutes")
+    return one_or_more(t_delta.seconds, "%d second", "%d seconds")
 
 
 def max_date_len(date_to_str):
@@ -107,14 +108,14 @@ class DatePrinter(object):
     def due_to_str(self, due_date, default=u""):
         if due_date is None:
             return default
-        t_span = due_date - dbmodel.now_with_tz()
-        if t_span.days < 0:
+        t_delta = due_date - dbmodel.now_with_tz()
+        if t_delta.days < 0:
             # the time span is negativ so the time is over due
             return u"over due"
-        if t_span.days < 7:
+        if t_delta.days < 7:
             # if the time span is smaller than one week
             # return the time span string
-            return u"in " + str_from_time_span(t_span)
+            return u"in " + str_from_time_delta(t_delta)
         # return the string if it is over one week
         return u"to " + self.date_to_str(due_date)
 
