@@ -12,6 +12,7 @@ import cli.printing
 import cli.util
 import cli.parser
 import cli.cmd.task
+import cli.interactive
 
 
 COMMAND = "out"
@@ -23,6 +24,26 @@ def print_result(date_printer, choosen_record):
     time_span_str = cli.printing.str_from_time_delta(choosen_record.span.time_delta())
     end_date_str = date_printer.full_date_string(choosen_record.span.end)
     cli.util.uprint(message % (end_date_str, time_span_str))
+
+
+def handle_multiple_records(date_printer, records):
+
+    def format_record(record):
+        start_date_str = date_printer.full_date_string(record.span.start)
+        return u"Timerecord started %s" % start_date_str
+
+    records_strs = (format_record(r) for r in records)
+    try:
+        result = cli.interactive.dialog(u"There are ", records_strs)
+    except cli.interactive.DialogAbortError:
+        return -1, 1
+        pass
+    except cli.interactive.DialogBoundError:
+        return -1, 2
+    except ValueError:
+        return -1, 3
+
+    return result, 0
 
 
 def init_parser(subparsers):
@@ -40,7 +61,16 @@ def main(store, args, config, _, date_printer=None):
         cli.util.uprint(u"You haven't punch in, yet!\nMaybe you should get your self a hot beverage, before you continue.")
         return 5
     elif records_len > 1:
-        index = 0
+        index, error = handle_multiple_records(date_printer, started_records)
+        if error == 1:
+            cli.util.uprint(u"Aborted.")
+            return 6
+        elif error == 2:
+            cli.util.uprint(u"Please enter a number between 0 and %d." % records_len)
+            return 7
+        elif error == 3:
+            cli.util.uprint(u"That was not a valid dezimal number.")
+            return 8
 
     end = dbmodel.now_with_tz()
 
