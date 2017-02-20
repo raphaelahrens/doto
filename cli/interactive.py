@@ -15,16 +15,16 @@ class DialogBoundError(Exception):
 
 
 def dialog(question, anwsers):
-    cli.util.uprint(question)
+    print(question)
     i = 0
     for anwser in anwsers:
-        cli.util.uprint(u"%d) %s" % (i, anwser))
+        print("%d) %s" % (i, anwser))
         i += 1
-    cli.util.uprint(u"\nq) Abort")
-    cli.util.uprint_list
-    user_reply = raw_input("?>")
+    print("\nq) Abort")
+    cli.util.print_list
+    user_reply = input("?>")
 
-    if user_reply == u"q":
+    if user_reply == "q":
         raise DialogAbortError()
     # throws ValueError
     result = int(user_reply)

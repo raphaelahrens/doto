@@ -45,13 +45,13 @@ def set_or_reset(value, fnc=lambda x: x):
     return fnc(value)
 
 
-def main(store, args, config, _):
+def main(store, args, _config, _env):
     """ The Main method of start."""
 
     modify_task, error = cli.cmd.task.get_cached_task(store, args.id)
     if not modify_task:
         return error
-    cli.util.uprint(("Changing task " + cli.util.ID_FORMAT + ":\n\t %s") % (args.id, modify_task.event_id, modify_task.title))
+    print(("Changing task " + cli.util.ID_FORMAT + ":\n\t %s") % (args.id, modify_task.event_id, modify_task.title))
     if args.title is not None:
         modify_task.title = args.title
     if args.description is not None:
@@ -64,8 +64,8 @@ def main(store, args, config, _):
     try:
         store.save()
     except:
-        cli.util.uprint(("It was not possible to modify the task with id " + cli.util.ID_FORMAT + ":\n\t %r") % (args.id, modify_task.event_id))
+        print(("It was not possible to modify the task with id " + cli.util.ID_FORMAT + ":\n\t %r") % (args.id, modify_task.event_id))
         return 4
 
-    cli.util.uprint(("You modified:\n\t(" + cli.util.ID_FORMAT + ") %s") % (args.id, modify_task.event_id, modify_task.title))
+    print(("You modified:\n\t(" + cli.util.ID_FORMAT + ") %s") % (args.id, modify_task.event_id, modify_task.title))
     return 0

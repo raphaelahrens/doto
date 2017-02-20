@@ -12,7 +12,7 @@ def enum(*sequential, **named):
 
     """
     enums = dict(zip(sequential, range(len(sequential))), **named)
-    keys = list(value for value in enums.iterkeys())
+    keys = list(enums.keys())
     ident = enums.copy()
     enums['keys'] = keys
     enums['ident'] = ident.get

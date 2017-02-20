@@ -121,7 +121,7 @@ class State(AbstractState):
         @return all possible actions
 
         """
-        return self._neighbors.keys()
+        return list(self._neighbors.keys())
 
 
 class FinalState(AbstractState):

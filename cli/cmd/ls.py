@@ -7,14 +7,14 @@ An example of its use is
 
 """
 import abc
-import cli.util
-import cli.printing
-import cli.parser
-import textwrap
-import itertools
-import util
-import dbmodel
 import datetime
+import itertools
+import textwrap
+
+import cli.parser
+import cli.printing
+import dbmodel
+import util
 
 
 COMMAND = "ls"
@@ -40,7 +40,7 @@ class Column(object):
                      columns in the table.
 
     """
-    def __init__(self, name, width, align, display_fn=unicode, expand=None):
+    def __init__(self, name, width, align, display_fn=str, expand=None):
         self._name = name
         len_name = len(self._name)
         self._width = width if width >= len_name else len_name
@@ -103,18 +103,17 @@ class WrapColumn(Column):
     So a string that is to long for the column will be split into multiple lines in that column
     """
 
-    newline_sym = u" ↩"
+    newline_sym = " ↩"
     len_nl_sy = len(newline_sym)
 
-    def __init__(self, name, width, align, display_fn=unicode, expand=None):
+    def __init__(self, name, width, align, display_fn=str, expand=None):
         Column.__init__(self, name, width, align, display_fn, expand=expand)
         self._wrapper = textwrap.TextWrapper(width=self._width - WrapColumn.len_nl_sy,
                                              expand_tabs=False,
-                                             subsequent_indent=u"  "
-                                             )
+                                             subsequent_indent="  ")
 
     def add_newline_symbol(self, line):
-        return u"{:{align}{width}}{}".format(line, WrapColumn.newline_sym, align=self.align, width=self._wrapper.width)
+        return "{:{align}{width}}{}".format(line, WrapColumn.newline_sym, align=self.align, width=self._wrapper.width)
 
     def pack(self, data):
         """
@@ -137,7 +136,7 @@ class CutColumn(Column):
     """
     CutColumn is a Column that cuts of text that is greater then the Column.
     """
-    def __init__(self, name, width, align, display_fn=unicode, expand=None):
+    def __init__(self, name, width, align, display_fn=str, expand=None):
         Column.__init__(self, name, width, align, display_fn, expand=expand)
 
     def pack(self, data):
@@ -160,33 +159,32 @@ def line_generator(columns, data):
     """
     def next_line_iter(row_data):
         """
-        Since a row can contain multiple lines we create the row and then return an iterator with all the lines.
+        Since a row can contain multiple lines we create the row and then
+        return an iterator with all the lines.
 
         @param row_data the data for this row
 
         @returns the iterator for the lines of the rows
         """
         items = (column.pack(datum) for column, datum in zip(columns, row_data))
-        return itertools.izip_longest(*items, fillvalue=u"")
+        return itertools.zip_longest(*items, fillvalue="")
 
     data_iter = iter(data)
-    line_iter = next_line_iter(data_iter.next())
+    line_iter = next_line_iter(next(data_iter))
     while True:
         try:
-            yield line_iter.next()
+            yield next(line_iter)
         except StopIteration:
-            # This breaks out of the loop when data_iter.next() throws a StopIteration
-            line_iter = next_line_iter(data_iter.next())
+            # This breaks out of the loop when data_iter next throws a StopIteration
+            line_iter = next_line_iter(next(data_iter))
 
 
-class View(object):
+class View(object, metaclass=abc.ABCMeta):
     """
     View is an abstract class that defines the interface for a simple view.
 
     A view defines how events are displayed, therefor every view defines a
     """
-
-    __metaclass__ = abc.ABCMeta
 
     def __init__(self, width, columns):
         fixed_columns, expanding_columns = util.partition(lambda x: x.expand is None, columns)
@@ -202,10 +200,10 @@ class View(object):
         row_format = []
         for each in columns:
             header.append(("{:%s%d}" % ("^", each.width)).format(each.name))
-            divider.append(u"─" * each.width)
+            divider.append("─" * each.width)
             row_format.append("{:%s%d}" % (each.align, each.width))
-        self._header = (u" ".join(header)) + u"\n" + (u"┼".join(divider))
-        self._row_format = u"│".join(row_format)
+        self._header = (" ".join(header)) + "\n" + ("┼".join(divider))
+        self._row_format = "│".join(row_format)
 
     def print_view(self, store, args):
         """
@@ -214,13 +212,14 @@ class View(object):
         @param store the Store object that holds the events
         @param args the arguments that define which events shall be selected
         """
-        self.print_header()
         events = self._get_events(store, args)
-        self._print_rows(self._get_data(events))
+        if len(events) > 0:
+            self.print_header()
+            self._print_rows(self._get_data(events))
 
     def print_header(self):
         """ Print the header information of the view. """
-        cli.util.uprint(self._header)
+        print(self._header)
 
     def _print_row(self, event_data):
         """
@@ -228,7 +227,7 @@ class View(object):
 
         @param event_data the event that is displayed in that row
         """
-        cli.util.uprint(self._row_format.format(*event_data))
+        print(self._row_format.format(*event_data))
 
     def _print_rows(self, data_list):
         """
@@ -347,7 +346,7 @@ class EventOverview(object):
         """
         Print a separator for the different sub views.
         """
-        cli.util.uprint(self.__head_line_format.format(head_line))
+        print(self.__head_line_format.format(head_line))
 
     def print_view(self, store, args):
         """
@@ -391,8 +390,8 @@ def main(store, args, config, term):
 
     try:
         view = VIEWS[args.view](config, term.width if term.width else 80)
-    except KeyError as excpt:
-        cli.util.uprint("There is now view named \"%s\" \n\t Mhh this should not happen. \n\t(Error: %s)" % (args.view, excpt.message))
+    except KeyError:
+        print('There is now view named "%s"\n\tMhh this should not happen.' % (args.view))
         return 1
 
     view.print_view(store, args)

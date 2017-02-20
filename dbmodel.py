@@ -7,7 +7,7 @@ It's a base for all future plug-ins.
 
 """
 
-import cPickle as pickle
+import pickle
 import collections
 import datetime
 import pytz
@@ -38,7 +38,7 @@ def create_difficulties(**difficulties):
     """
     keys = []
     names = {}
-    for name, d_id in difficulties.iteritems():
+    for name, d_id in difficulties.items():
         names[name] = d_id
         keys.append(d_id)
 
@@ -154,6 +154,9 @@ class StateHolder(sqlalchemy.ext.mutable.MutableComposite):
         if isinstance(obj, StateHolder):
             return self.key == obj.key
         return self.state == obj
+
+    def __hash__(self):
+        return hash(self.key)
 
     def __ne__(self, obj):
         return not self.__eq__(obj)
@@ -331,8 +334,14 @@ class TimeSpan(sqlalchemy.ext.mutable.MutableComposite):
         """
         return self._end - self._start
 
+    def __keys(self):
+        return (self.end, self.start)
+
     def __eq__(self, obj):
-        return isinstance(obj, TimeSpan) and self.end == obj.end and self.start == obj.start
+        return isinstance(obj, TimeSpan) and self.__keys() == obj.__keys()
+
+    def __hash__(self):
+        return hash(self.__keys())
 
     def __ne__(self, obj):
         return not self.__eq__(obj)
@@ -358,8 +367,8 @@ class Event(object):
     created = sqlalchemy.Column(UTCDateTime(timezone=True), nullable=False)
 
     def __init__(self, title, description):
-        self.title = unicode(title)
-        self.description = unicode(description) if description else u""
+        self.title = str(title)
+        self.description = str(description) if description else ""
         self.created = now_with_tz()
         self.cache_id = None
 
@@ -409,7 +418,7 @@ class Task(Event, Base):
     """
     __tablename__ = "tasks"
 
-    _state = sqlalchemy.Column("state", StateType(StateHolder.states.keys()), nullable=False)
+    _state = sqlalchemy.Column("state", StateType(*StateHolder.states.keys()), nullable=False)
     _difficulty = sqlalchemy.Column("difficulty", sqlalchemy.Integer, nullable=False)
     due = sqlalchemy.Column("due", UTCDateTime(timezone=True), nullable=True)
     _planned_start = sqlalchemy.Column("planned_start", UTCDateTime(timezone=True), nullable=True)
@@ -487,15 +496,20 @@ class Task(Event, Base):
         self.real_sch = TimeSpan()
         return True
 
+    def __key(self):
+        return (self.title,
+                self.description,
+                self.state,
+                self.difficulty,
+                self.created,
+                self.planned_sch,
+                self.real_sch,)
+
     def __eq__(self, obj):
-        return (isinstance(obj, Task)
-                and self.title == obj.title
-                and self.description == obj.description
-                and self.state == obj.state
-                and self.difficulty == obj.difficulty
-                and self.created == obj.created
-                and self.planned_sch == obj.planned_sch
-                and self.real_sch == obj.real_sch)
+        return isinstance(obj, Task) and self.__key() == obj.__key()
+
+    def __hash__(self):
+        return hash(self.__key())
 
     def __str__(self):
         return repr(self)

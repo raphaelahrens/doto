@@ -7,7 +7,6 @@ An example of its use would be
 
 """
 import dbmodel
-import cli.util
 import cli.parser
 
 
@@ -24,7 +23,7 @@ def init_parser(subparsers):
 
 
 def print_error(message, exc):
-    cli.util.uprint((message + "\n\t (Error: " + exc.message + ")"))
+    print(("{}\n\t (Error: {})".format(message, exc)))
 
 
 def main(store, args, config, _):

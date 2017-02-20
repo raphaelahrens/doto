@@ -2,25 +2,12 @@
 """
 Small utilities for the cli commands.
 """
-__all__ = ["uprint"]
-
 import locale
+
 LOCAL_ENCODING = locale.getdefaultlocale()[1]
 
 
-def uprint(string):
-    """
-    Print the given string to standard out.
-
-    The string is encoded to UTF-8.
-
-    @param string the string that will be printed and encoded to UTF-8
-
-    """
-    print unicode(string).encode(LOCAL_ENCODING)
-
-
-def uprint_list(strings):
+def print_list(strings):
     """
     Print a collection of strings to standard out.
 
@@ -30,7 +17,7 @@ def uprint_list(strings):
 
     """
     for string in strings:
-        uprint(string)
+        print(string)
 
 
 def to_str(obj):
@@ -43,14 +30,13 @@ def to_str(obj):
 
     """
     if obj is None:
-        return u""
-    return unicode(obj)
+        return ""
+    return str(obj)
 
 
-LINES = {"v": unichr(0x2502),
-         "+": unichr(0x253c),
-         "h": unichr(0x2500)
-         }
+LINES = {"v": chr(0x2502),
+         "+": chr(0x253c),
+         "h": chr(0x2500)}
 
 ID_FORMAT = "%d [%08x]"
 
@@ -65,13 +51,13 @@ def get_cached_task(store, cache_id):
     cache_item, cache_error = store.get_cache_item(cache_id)
     if not cache_item:
         if not cache_error:
-            uprint("There is no task with the id %d" % cache_id)
+            print("There is no task with the id %d" % cache_id)
             return None, 1
 
         if store.get_task_count() > 0:
-            uprint("I don't know which task you want!\nYou should first run:\n\tdoto ls")
+            print("I don't know which task you want!\nYou should first run:\n\tdoto ls")
             return None, 3
-        uprint("There are no tasks.\nMaybe you would first like to add a new task with: \n\t doto add \"title\" \"description\" ")
+        print("There are no tasks.\nMaybe you would first like to add a new task with: \n\t doto add \"title\" \"description\" ")
         return None, 2
 
     return cache_item, 0

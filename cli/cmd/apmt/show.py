@@ -24,41 +24,41 @@ class TaskPrinter(object):
         self.__date_printer = cli.printing.DatePrinter(config)
 
     def show(self, tsk, width):
-        title_header = u"Title"
+        title_header = "Title"
 
-        state_header = u"State"
+        state_header = "State"
 
         state_str = cli.printing.state_to_str(tsk.state)
         state_sym = cli.printing.state_to_symbol(tsk.state)
 
-        headline_format = u"{}: {:>{fill_width}}:{:>{state_width}}{}\n  {}\n"
+        headline_format = "{}: {:>{fill_width}}:{:>{state_width}}{}\n  {}\n"
 
         state_width = 10
 
         headline_width = max(0, width - len(title_header) - len(state_header) - state_width)
 
-        cli.util.uprint(headline_format.format(title_header,
-                                               state_header,
-                                               state_str,
-                                               state_sym,
-                                               tsk.title,
-                                               fill_width=headline_width,
-                                               state_width=state_width
-                                               )
-                        )
-        cli.util.uprint(u"Description:\n {}\n".format(tsk.description))
+        print(headline_format.format(title_header,
+                                     state_header,
+                                     state_str,
+                                     state_sym,
+                                     tsk.title,
+                                     fill_width=headline_width,
+                                     state_width=state_width
+                                     )
+              )
+        print("Description:\n {}\n".format(tsk.description))
         date_width = max(0, (width - 2) / 2)
-        date_format = u"{:^{date_width}}  {:^{date_width}}"
-        cli.util.uprint(date_format.format("Created:",
-                                           "Due:",
-                                           date_width=date_width
-                                           )
-                        )
-        cli.util.uprint(date_format.format(self.__date_printer.date_to_str(tsk.created),
-                                           self.__date_printer.due_to_str(tsk.due, default="--"),
-                                           date_width=date_width
-                                           )
-                        )
+        date_format = "{:^{date_width}}  {:^{date_width}}"
+        print(date_format.format("Created:",
+                                 "Due:",
+                                 date_width=date_width
+                                 )
+              )
+        print(date_format.format(self.__date_printer.date_to_str(tsk.created),
+                                 self.__date_printer.due_to_str(tsk.due, default="--"),
+                                 date_width=date_width
+                                 )
+              )
 
 
 def main(store, args, config, term):

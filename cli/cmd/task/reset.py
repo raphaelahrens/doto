@@ -27,8 +27,8 @@ def main(store, args, *_):
     try:
         store.save()
     except:
-        cli.util.uprint(("It was not possible to finish the task with id " + cli.util.ID_FORMAT + ":\n\t %r") % (args.id, start_task.event_id))
+        print(("It was not possible to finish the task with id " + cli.util.ID_FORMAT + ":\n\t %r") % (args.id, start_task.event_id))
         return 4
 
-    cli.util.uprint(("Reseted the state of :\n\t(" + cli.util.ID_FORMAT + ") %s") % (args.id, start_task.event_id, start_task.title))
+    print(("Reseted the state of :\n\t(" + cli.util.ID_FORMAT + ") %s") % (args.id, start_task.event_id, start_task.title))
     return 0

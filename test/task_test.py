@@ -86,7 +86,6 @@ class TestTimeSpan(unittest.TestCase):
     def test_repr(self):
         """ Test if repr does not fail """
         time_span = dbmodel.TimeSpan(start=self.start, end=self.end)
-        print repr(time_span)
 
 
 class TestState(unittest.TestCase):
@@ -100,7 +99,7 @@ class TestState(unittest.TestCase):
 
     def test_contructor2(self):
         """Test if the constructor works properly with arguments."""
-        for value in dbmodel.StateHolder.states.itervalues():
+        for value in dbmodel.StateHolder.states.values():
             state = dbmodel.StateHolder(value)
             self.assertEqual(state.state, value)
 
@@ -138,7 +137,7 @@ class TestState(unittest.TestCase):
 
     def test_get_actions(self):
         """ Test if all state return a list of actions. """
-        for state in dbmodel.StateHolder.states.itervalues():
+        for state in dbmodel.StateHolder.states.values():
             actions = state.get_actions()
             if state.is_final():
                 self.assertEqual(actions, [])
@@ -149,7 +148,7 @@ class TestState(unittest.TestCase):
         """
         Test the action of the State holder and if we can go through them
         """
-        for state in dbmodel.StateHolder.states.itervalues():
+        for state in dbmodel.StateHolder.states.values():
             for action in state.get_actions():
                 next_state = state.next_state(action)
                 self.assertIsNotNone(next_state)
@@ -173,7 +172,6 @@ class TestState(unittest.TestCase):
     def test_repr(self):
         """ Test if repr does not fail """
         state = dbmodel.StateHolder(dbmodel.StateHolder.started)
-        print repr(state)
 
 
 class TestTask(unittest.TestCase):
@@ -220,7 +218,6 @@ class TestTask(unittest.TestCase):
     def test_repr(self):
         """ Test if repr does not fail """
         tsk = dbmodel.Task(title=TITLE, description=DESCRIPTION)
-        print repr(tsk)
 
 
 class TestAppointment(unittest.TestCase):
@@ -297,4 +294,3 @@ class TestAppointment(unittest.TestCase):
     def test_repr(self):
         """ Test if repr does not fail """
         apmt = dbmodel.Appointment(TITLE, dbmodel.now_with_tz())
-        print repr(apmt)

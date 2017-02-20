@@ -2,9 +2,9 @@
 """
 This module holds a common parser for the add and modify command.
 """
-import cli
-import pytz
 import datetime
+
+import pytz
 
 
 def to_unicode(string):
@@ -16,7 +16,7 @@ def to_unicode(string):
     @param string the string that will recoded to unicode.
 
     """
-    return string.decode(cli.util.LOCAL_ENCODING)
+    return string
 
 
 def init_id_flag(command, subparser):

@@ -28,8 +28,8 @@ def main(store, args, *_):
     try:
         store.save()
     except:
-        cli.util.uprint(("It was not possible to delete the appointment with the id " + cli.util.ID_FORMAT + ":\n\t %r") % (args.id, del_apmt))
+        print(("It was not possible to delete the appointment with the id " + cli.util.ID_FORMAT + ":\n\t %r") % (args.id, del_apmt))
         return 4
 
-    cli.util.uprint(("Deleted event with id " + cli.util.ID_FORMAT + ":\n\t Title: %s") % (args.id, del_apmt.event_id, del_apmt.title))
+    print(("Deleted event with id " + cli.util.ID_FORMAT + ":\n\t Title: %s") % (args.id, del_apmt.event_id, del_apmt.title))
     return 0

@@ -7,7 +7,6 @@ An example of its use would be
 
 """
 import functools
-import cli.util
 import cli.parser
 import cli.sub_cmds
 
@@ -38,13 +37,13 @@ def get_cached_apmt(store, cache_id):
     cache_item, cache_error = store.get_cache_task(cache_id)
     if not cache_item:
         if not cache_error:
-            cli.util.uprint("There is no appointment with the id %d" % cache_id)
+            print("There is no appointment with the id %d" % cache_id)
             return None, 1
 
         if store.get_apmt_count() > 0:
-            cli.util.uprint("I don't know which appointment you want!\nYou should first run:\n\tdoto ls")
+            print("I don't know which appointment you want!\nYou should first run:\n\tdoto ls")
             return None, 3
-        cli.util.uprint("There are no appointments.\nMaybe you would first like to add a new appointment with: \n\t doto add \"title\" \"description\" ")
+        print("There are no appointments.\nMaybe you would first like to add a new appointment with: \n\t doto add \"title\" \"description\" ")
         return None, 2
 
     return cache_item, 0

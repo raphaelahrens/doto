@@ -15,7 +15,6 @@ An example of its use would be
 
 """
 import functools
-import cli.util
 import cli.sub_cmds
 import cli.parser
 import cli.printing

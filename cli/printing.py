@@ -8,25 +8,25 @@ import dbmodel
 import pytz
 
 
-__state_symbols = {dbmodel.StateHolder.completed.key: u"✓",
-                   dbmodel.StateHolder.blocked.key: u"✗",
-                   dbmodel.StateHolder.interrupted.key: u"↯",
-                   dbmodel.StateHolder.pending.key: u" ",
-                   dbmodel.StateHolder.started.key: u"▶"
+__state_symbols = {dbmodel.StateHolder.completed.key: "✓",
+                   dbmodel.StateHolder.blocked.key: "✗",
+                   dbmodel.StateHolder.interrupted.key: "↯",
+                   dbmodel.StateHolder.pending.key: " ",
+                   dbmodel.StateHolder.started.key: "▶"
                    }
 
-__state_strings = {dbmodel.StateHolder.completed.key: u"completed",
-                   dbmodel.StateHolder.blocked.key: u"blocked",
-                   dbmodel.StateHolder.interrupted.key: u"interrupted",
-                   dbmodel.StateHolder.pending.key: u"pending",
-                   dbmodel.StateHolder.started.key: u"started"
+__state_strings = {dbmodel.StateHolder.completed.key: "completed",
+                   dbmodel.StateHolder.blocked.key: "blocked",
+                   dbmodel.StateHolder.interrupted.key: "interrupted",
+                   dbmodel.StateHolder.pending.key: "pending",
+                   dbmodel.StateHolder.started.key: "started"
                    }
 
-__difficulty_symbols = {dbmodel.DIFFICULTY.unknown: u" ",
-                        dbmodel.DIFFICULTY.simple: u"Ⅰ",
-                        dbmodel.DIFFICULTY.easy: u"Ⅱ",
-                        dbmodel.DIFFICULTY.medium: u"Ⅲ",
-                        dbmodel.DIFFICULTY.hard: u"Ⅳ",
+__difficulty_symbols = {dbmodel.DIFFICULTY.unknown: " ",
+                        dbmodel.DIFFICULTY.simple: "Ⅰ",
+                        dbmodel.DIFFICULTY.easy: "Ⅱ",
+                        dbmodel.DIFFICULTY.medium: "Ⅲ",
+                        dbmodel.DIFFICULTY.hard: "Ⅳ",
                         }
 
 
@@ -105,19 +105,19 @@ class DatePrinter(object):
 
         self.__max_date_len = max_date_len(self.short_date_string)
 
-    def due_to_str(self, due_date, default=u""):
+    def due_to_str(self, due_date, default=""):
         if due_date is None:
             return default
         t_delta = due_date - dbmodel.now_with_tz()
         if t_delta.days < 0:
             # the time span is negativ so the time is over due
-            return u"over due"
+            return "over due"
         if t_delta.days < 7:
             # if the time span is smaller than one week
             # return the time span string
-            return u"in " + str_from_time_delta(t_delta)
+            return "in " + str_from_time_delta(t_delta)
         # return the string if it is over one week
-        return u"to " + self.date_to_str(due_date)
+        return "to " + self.date_to_str(due_date)
 
     def to_local(self, date_obj):
         local_tz = pytz.timezone(self.__config.date.local_tz)
@@ -131,9 +131,9 @@ class DatePrinter(object):
 
     @property
     def max_due_len(self):
-        return len(u"to ") + self.max_date_len
+        return len("to ") + self.max_date_len
 
-    def date_to_str(self, date, default=u""):
+    def date_to_str(self, date, default=""):
         if date is None:
             return default
         return self.short_date_string(date)

@@ -60,7 +60,7 @@ class TestDBManager(unittest.TestCase):
 
     def test_store_10(self):
         """ Test if we can save 10 tasks in a row. """
-        ref_list = [dbmodel.Task("title %i" % i, "description") for i in xrange(10)]
+        ref_list = [dbmodel.Task("title %i" % i, "description") for i in range(10)]
         self.store.add_new(ref_list)
         self.store.save()
         tasks = self.store.get_tasks(10)

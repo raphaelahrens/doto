@@ -8,21 +8,14 @@
 # `describe` the plan meaningfully.
 describe "Test the functionality of the doto CLI."
 
-date_in_secs() {
-    days=$1
-    hours=$2
-    minutes=$3
-    bc <<< "$(date +%s) + ((($days*24)+$hours)*60+$minutes)*60"
-}
-
 before() {
     export DOTO_CONFIG=./test/configs/dotorc.1
-    IN_TWO_DAYS=$(date -r $(date_in_secs 2 0 0) +%Y.%m.%d-%H:%M)
-    IN_ONE_WEEK=$(date -r $(date_in_secs 7 0 0) +%Y.%m.%d-%H:%M)
-    IN_ONE_HOUR=$(date -r $(date_in_secs 0 1 0) +%Y.%m.%d-%H:%M)
+    export PATH="$PATH:."
+    IN_TWO_DAYS="$(python3 ./test/date_util.py 2 0 0)"
+    IN_ONE_WEEK="$(python3 ./test/date_util.py 7 0 0)"
+    IN_ONE_HOUR="$(python3 ./test/date_util.py 0 1 0)"
 }
 
-# Add a new task
 it_runs_add_task() {
     $COVERAGE doto task add "title" "description"
 }

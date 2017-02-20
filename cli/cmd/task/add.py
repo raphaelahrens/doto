@@ -7,7 +7,6 @@ An example of its use would be
 
 """
 import dbmodel
-import cli.util
 import cli.parser
 import cli.cmd.task
 
@@ -24,7 +23,7 @@ def init_parser(subparsers):
     cli.cmd.task.init_task_flags(parser)
 
 
-def main(store, args, config, _):
+def main(store, args, _config, _env):
     """Add a new task with the given args"""
     new_task = dbmodel.Task(args.title, args.description)
     if args.due is not None:
@@ -34,7 +33,7 @@ def main(store, args, config, _):
     store.add_new(new_task)
     try:
         store.save()
-    except Exception:
-        cli.util.uprint(u"It was not possible to save the new task. What are you doing Dave!")
+    except:
+        print("It was not possible to save the new task. What are you doing Dave!")
         return 4
     return 0
