@@ -3,7 +3,7 @@
 rm_if_there() {
     file="$1"
     if [ -e "$file" ]; then
-        rm $file
+        rm "$file"
     fi
 }
 
@@ -12,4 +12,4 @@ rm_if_there ./test/store/doto.db
 rm_if_there ./test/store/doto2.db
 
 nosetests &&
-roundup test/doto-cli-test.sh
+DOTO="python3 -m doto" roundup test/doto-cli-test.sh

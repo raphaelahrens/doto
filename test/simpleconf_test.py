@@ -1,7 +1,7 @@
 """Unitests for the task module."""
 
 import unittest
-import simpleconf
+import doto.simpleconf
 
 
 class TestConfig(unittest.TestCase):
@@ -15,19 +15,19 @@ class TestConfig(unittest.TestCase):
         pass
 
     def test_default_values(self):
-        conf = simpleconf.Config("test/configs/notThereRC", TestConfig.defaults)
+        conf = doto.simpleconf.Config("test/configs/notThereRC", TestConfig.defaults)
         self.assertEqual(conf.abc.a, "1")
         self.assertEqual(conf.abc.b, "2")
         self.assertEqual(conf.abc.c, "3")
 
     def test_load_file(self):
-        conf = simpleconf.Config("test/configs/testrc.1", TestConfig.defaults)
+        conf = doto.simpleconf.Config("test/configs/testrc.1", TestConfig.defaults)
         self.assertEqual(conf.abc.a, "1")
         self.assertEqual(conf.abc.b, "2")
         self.assertEqual(conf.abc.c, "4")
 
     def test_load_2_file(self):
-        conf = simpleconf.Config("test/configs/testrc.1", TestConfig.defaults)
+        conf = doto.simpleconf.Config("test/configs/testrc.1", TestConfig.defaults)
         self.assertEqual(conf.abc.a, "1")
         self.assertEqual(conf.abc.b, "2")
         self.assertEqual(conf.abc.c, "4")
@@ -36,5 +36,5 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(conf.abc.b, "5")
 
     def test_print_config(self):
-        conf = simpleconf.Config("test/configs/testrc.1", TestConfig.defaults)
+        conf = doto.simpleconf.Config("test/configs/testrc.1", TestConfig.defaults)
         conf.print_config()

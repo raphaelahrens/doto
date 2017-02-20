@@ -31,15 +31,15 @@ done
 
 if [ $no_nose -ne 1 ]; then
     print_headline "Running unit tests"
-    COVERAGE_FILE=".coverage.nose" nosetests --with-coverage --cover-package=.
+    COVERAGE_FILE=".coverage.nose" nosetests --with-coverage --cover-package=doto
 fi
 
 print_headline "Running functional tests"
-export COVERAGE="coverage run -a"
+export DOTO="coverage run --source doto -a -m doto"
 COVERAGE_FILE=".coverage.roundup" roundup test/doto-cli-test.sh
 
 print_headline "Results"
-unset COVERAGE
+unset DOTO
 coverage combine
 coverage report --show-missing --fail-under=90
 
