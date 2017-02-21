@@ -68,6 +68,6 @@ def main(store, args, config, term):
     if not tsk:
         return error
 
-    TaskPrinter(config).show(tsk, term.width if term.width else 80)
+    TaskPrinter(config).show(tsk, term.columns if term.columns else 80)
 
     return 0

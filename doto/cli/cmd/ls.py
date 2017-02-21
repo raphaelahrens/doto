@@ -390,7 +390,7 @@ def main(store, args, config, term):
     store.enable_caching()
 
     try:
-        view = VIEWS[args.view](config, term.width if term.width else 80)
+        view = VIEWS[args.view](config, term.columns if term.columns else 80)
     except KeyError:
         print('There is now view named "%s"\n\tMhh this should not happen.' % (args.view))
         return 1
