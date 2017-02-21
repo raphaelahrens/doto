@@ -12,7 +12,6 @@ import collections
 import datetime
 import pytz
 
-import sqlalchemy
 import sqlalchemy.ext.declarative
 import sqlalchemy.ext.mutable
 import sqlalchemy.orm
@@ -421,15 +420,12 @@ class Task(Event, Base):
     _state = sqlalchemy.Column("state", StateType(*StateHolder.states.keys()), nullable=False)
     _difficulty = sqlalchemy.Column("difficulty", sqlalchemy.Integer, nullable=False)
     due = sqlalchemy.Column("due", UTCDateTime(timezone=True), nullable=True)
-    _planned_start = sqlalchemy.Column("planned_start", UTCDateTime(timezone=True), nullable=True)
-    _planned_end = sqlalchemy.Column("planned_end", UTCDateTime(timezone=True), nullable=True)
     _real_start = sqlalchemy.Column("real_start", UTCDateTime(timezone=True), nullable=True)
     _real_end = sqlalchemy.Column("real_end", UTCDateTime(timezone=True), nullable=True)
 
     timerecords = sqlalchemy.orm.relationship("Timerecord")
 
     state = sqlalchemy.orm.composite(StateHolder, _state, comparator_factory=StateHolderComp)
-    planned_sch = sqlalchemy.orm.composite(TimeSpan, _planned_start, _planned_end)
     real_sch = sqlalchemy.orm.composite(TimeSpan, _real_start, _real_end)
 
     def __init__(self, title, description,
@@ -438,7 +434,6 @@ class Task(Event, Base):
         Event.__init__(self, title, description)
         self.state = StateHolder()
         self.difficulty = difficulty
-        self.planned_sch = TimeSpan()
         self.real_sch = TimeSpan()
         self.due = None
 
@@ -502,7 +497,6 @@ class Task(Event, Base):
                 self.state,
                 self.difficulty,
                 self.created,
-                self.planned_sch,
                 self.real_sch,)
 
     def __eq__(self, obj):
@@ -808,9 +802,7 @@ class Store(object):
     @property
     def is_saved(self):
         """ Return True if the was already saved. """
-        return not (self.session.deleted
-                    or self.session.dirty
-                    or self.session.new)
+        return not (self.session.deleted or self.session.dirty or self.session.new)
 
     def save(self):
         """
