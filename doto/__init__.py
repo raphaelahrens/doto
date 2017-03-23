@@ -4,7 +4,7 @@ import shutil
 import doto.cli
 import doto.cli.cmd
 import doto.cli.sub_cmds
-import doto.dbmodel
+import doto.model
 import doto.defaultconfig
 import doto.util
 
@@ -45,7 +45,7 @@ def main():
     args = init_env(cmds.values())
     doto.cli.parser.set_date_parser(config.date.local_tz, config.date.cli_input_str)
     term = shutil.get_terminal_size()
-    with doto.dbmodel.Store(config.path.store, config.path.cache) as store:
+    with doto.model.Store(config.path.store, config.path.cache) as store:
         # execute command
         exit_code = cmds[args.cmd].main(store, args, config, term)
     return exit_code

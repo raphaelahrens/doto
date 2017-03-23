@@ -8,7 +8,7 @@ An example of its use would be
 
 
 """
-import doto.dbmodel
+import doto.model.timerecord
 import doto.cli.parser
 import doto.cli.cmd.task
 
@@ -18,6 +18,9 @@ CONF_DEF = {}
 
 
 def print_result(date_printer, choosen_record):
+    '''
+    Print the result of the of the punch in
+    '''
     message = "Punched in on %s."
     end_date_str = date_printer.full_date_string(choosen_record.span.start)
     print(message % (end_date_str))
@@ -31,8 +34,8 @@ def init_parser(subparsers):
 
 def main(store, _args, _config, _env, date_printer=None):
     """Crete a new timerecord and punch us in"""
-    new_timerecord = doto.dbmodel.Timerecord(start=doto.dbmodel.now_with_tz())
-    store.add_new(new_timerecord)
+    new_timerecord = doto.model.timerecord.Timerecord(start=doto.model.now_with_tz())
+    doto.model.timerecord.add_new(store, new_timerecord)
     try:
         store.save()
     except:

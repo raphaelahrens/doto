@@ -20,22 +20,23 @@ def init_parser(subparsers):
 
 def main(store, args, *_):
     """ The Main method of start."""
-    start_task, error = doto.cli.cmd.task.get_cached_task(store, args.id)
-    if not start_task:
+    tsk, error = doto.cli.cmd.task.get_cached_task(store, args.id)
+    if not tsk:
         return error
 
-    if not start_task.start():
-        print(("The task with the Id: " + doto.cli.util.ID_FORMAT + "was already started!") % (args.id, start_task.event_id))
+    if not tsk.start():
+        print(("The task with the Id: " + doto.cli.util.ID_FORMAT + "was already started!") % (args.id, tsk.id))
         return 5
 
     try:
+        doto.model.task.update(store, tsk)
         store.save()
     except Exception as excpt:
         print(("It was not possible to finish the task with id "
                + doto.cli.util.ID_FORMAT
                + ":\n\t %r \n\t(Error: %s)")
-              % (args.id, start_task.event_id, excpt.message))
+              % (args.id, tsk.id, excpt.message))
         return 4
 
-    print(("You started :\n\t(" + doto.cli.util.ID_FORMAT + ") %s") % (args.id, start_task.event_id, start_task.title))
+    print(("You started :\n\t(" + doto.cli.util.ID_FORMAT + ") %s") % (args.id, tsk.id, tsk.title))
     return 0

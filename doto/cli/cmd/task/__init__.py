@@ -10,7 +10,8 @@ An example of its use would be
 import functools
 import doto.cli.sub_cmds
 import doto.cli.parser
-import doto.dbmodel
+import doto.model
+import doto.model.task
 
 
 COMMAND = "task"
@@ -36,13 +37,13 @@ def get_cached_task(store, cache_id):
     @param store the store that stores all tasks
     @param cache_id the id of the cached task
     """
-    cache_item, cache_error = store.get_cache_task(cache_id)
-    if not cache_item:
+    cache_item, cache_error = doto.model.get_cache_item(store, cache_id, doto.model.task.Task)
+    if cache_item is None:
         if not cache_error:
             print("There is no task with the id %d" % cache_id)
             return None, 1
 
-        if store.get_task_count() > 0:
+        if doto.model.task.get_count(store) > 0:
             print("I don't know which task you want!\nYou should first run:\n\tdoto ls")
             return None, 3
         print('There are no tasks.\nMaybe you would first like to add a new task with:\n\t doto add "title" "description"')
@@ -57,5 +58,5 @@ def init_task_flags(parser):
     """
     # parser.add_argument("--category", type=to_unicode, help="Set the category of this task.")
     # parser.add_argument("--project", type=to_unicode, help="Set the project of this task.")
-    parser.add_argument("--difficulty", type=int, choices=doto.dbmodel.DIFFICULTY.keys, help="the estimated difficulty of the task.")
+    parser.add_argument("--difficulty", type=int, choices=doto.model.task.DIFFICULTY.keys, help="the estimated difficulty of the task.")
     parser.add_argument("--due", type=doto.cli.parser.to_unicode, help="the estimated completion date.")

@@ -4,29 +4,29 @@ A Collection of functions to display tasks and other data.
 """
 
 import datetime
-import doto.dbmodel
+import doto.model.task
 import pytz
 
 
-__state_symbols = {doto.dbmodel.StateHolder.completed.key: "✓",
-                   doto.dbmodel.StateHolder.blocked.key: "✗",
-                   doto.dbmodel.StateHolder.interrupted.key: "↯",
-                   doto.dbmodel.StateHolder.pending.key: " ",
-                   doto.dbmodel.StateHolder.started.key: "▶"
+__state_symbols = {doto.model.task.StateHolder.completed.key: "✓",
+                   doto.model.task.StateHolder.blocked.key: "✗",
+                   doto.model.task.StateHolder.interrupted.key: "↯",
+                   doto.model.task.StateHolder.pending.key: " ",
+                   doto.model.task.StateHolder.started.key: "▶"
                    }
 
-__state_strings = {doto.dbmodel.StateHolder.completed.key: "completed",
-                   doto.dbmodel.StateHolder.blocked.key: "blocked",
-                   doto.dbmodel.StateHolder.interrupted.key: "interrupted",
-                   doto.dbmodel.StateHolder.pending.key: "pending",
-                   doto.dbmodel.StateHolder.started.key: "started"
+__state_strings = {doto.model.task.StateHolder.completed.key: "completed",
+                   doto.model.task.StateHolder.blocked.key: "blocked",
+                   doto.model.task.StateHolder.interrupted.key: "interrupted",
+                   doto.model.task.StateHolder.pending.key: "pending",
+                   doto.model.task.StateHolder.started.key: "started"
                    }
 
-__difficulty_symbols = {doto.dbmodel.DIFFICULTY.unknown: " ",
-                        doto.dbmodel.DIFFICULTY.simple: "Ⅰ",
-                        doto.dbmodel.DIFFICULTY.easy: "Ⅱ",
-                        doto.dbmodel.DIFFICULTY.medium: "Ⅲ",
-                        doto.dbmodel.DIFFICULTY.hard: "Ⅳ",
+__difficulty_symbols = {doto.model.task.DIFFICULTY.unknown: " ",
+                        doto.model.task.DIFFICULTY.simple: "Ⅰ",
+                        doto.model.task.DIFFICULTY.easy: "Ⅱ",
+                        doto.model.task.DIFFICULTY.medium: "Ⅲ",
+                        doto.model.task.DIFFICULTY.hard: "Ⅳ",
                         }
 
 
@@ -108,7 +108,7 @@ class DatePrinter(object):
     def due_to_str(self, due_date, default=""):
         if due_date is None:
             return default
-        t_delta = due_date - doto.dbmodel.now_with_tz()
+        t_delta = due_date - doto.model.now_with_tz()
         if t_delta.days < 0:
             # the time span is negativ so the time is over due
             return "over due"

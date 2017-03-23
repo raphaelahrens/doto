@@ -6,7 +6,7 @@ An example of its use would be
     $ doto add "Document the Add command" "Add still has no doc strings" --difficulty 1
 
 """
-import doto.dbmodel
+import doto.model.task
 import doto.cli.parser
 import doto.cli.cmd.task
 
@@ -25,13 +25,13 @@ def init_parser(subparsers):
 
 def main(store, args, _config, _env):
     """Add a new task with the given args"""
-    new_task = doto.dbmodel.Task(args.title, args.description)
+    tsk = doto.model.task.Task(args.title, args.description)
     if args.due is not None:
-        new_task.due = doto.cli.parser.date_parser(args.due)
+        tsk.due = doto.cli.parser.date_parser(args.due)
     if args.difficulty is not None:
-        new_task.difficulty = args.difficulty
-    store.add_new(new_task)
+        tsk.difficulty = args.difficulty
     try:
+        doto.model.task.add_new(store, tsk)
         store.save()
     except:
         print("It was not possible to save the new task. What are you doing Dave!")

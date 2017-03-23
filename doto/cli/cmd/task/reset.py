@@ -20,15 +20,16 @@ def init_parser(subparsers):
 
 def main(store, args, *_):
     """ The Main method of start."""
-    start_task, error = doto.cli.cmd.task.get_cached_task(store, args.id)
-    if not start_task:
+    tsk, error = doto.cli.cmd.task.get_cached_task(store, args.id)
+    if not tsk:
         return error
-    start_task.reset()
+    tsk.reset()
     try:
+        doto.model.task.update(store, tsk)
         store.save()
     except:
-        print(("It was not possible to finish the task with id " + doto.cli.util.ID_FORMAT + ":\n\t %r") % (args.id, start_task.event_id))
+        print(("It was not possible to finish the task with id " + doto.cli.util.ID_FORMAT + ":\n\t %r") % (args.id, tsk.id))
         return 4
 
-    print(("Reseted the state of :\n\t(" + doto.cli.util.ID_FORMAT + ") %s") % (args.id, start_task.event_id, start_task.title))
+    print(("Reseted the state of :\n\t(" + doto.cli.util.ID_FORMAT + ") %s") % (args.id, tsk.id, tsk.title))
     return 0

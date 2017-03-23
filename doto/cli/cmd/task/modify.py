@@ -48,24 +48,25 @@ def set_or_reset(value, fnc=lambda x: x):
 def main(store, args, _config, _env):
     """ The Main method of start."""
 
-    modify_task, error = doto.cli.cmd.task.get_cached_task(store, args.id)
-    if not modify_task:
+    tsk, error = doto.cli.cmd.task.get_cached_task(store, args.id)
+    if not tsk:
         return error
-    print(("Changing task " + doto.cli.util.ID_FORMAT + ":\n\t %s") % (args.id, modify_task.event_id, modify_task.title))
+    print(("Changing task " + doto.cli.util.ID_FORMAT + ":\n\t %s") % (args.id, tsk.id, tsk.title))
     if args.title is not None:
-        modify_task.title = args.title
+        tsk.title = args.title
     if args.description is not None:
-        modify_task.description = args.description
+        tsk.description = args.description
     if args.due is not None:
-        modify_task.due = set_or_reset(args.due, doto.cli.parser.date_parser)
+        tsk.due = set_or_reset(args.due, doto.cli.parser.date_parser)
     if args.difficulty is not None:
-        modify_task.difficulty = args.difficulty
+        tsk.difficulty = args.difficulty
 
     try:
+        doto.model.task.update(store, tsk)
         store.save()
     except:
-        print(("It was not possible to modify the task with id " + doto.cli.util.ID_FORMAT + ":\n\t %r") % (args.id, modify_task.event_id))
+        print(("It was not possible to modify the task with id " + doto.cli.util.ID_FORMAT + ":\n\t %r") % (args.id, tsk.id))
         return 4
 
-    print(("You modified:\n\t(" + doto.cli.util.ID_FORMAT + ") %s") % (args.id, modify_task.event_id, modify_task.title))
+    print(("You modified:\n\t(" + doto.cli.util.ID_FORMAT + ") %s") % (args.id, tsk.id, tsk.title))
     return 0

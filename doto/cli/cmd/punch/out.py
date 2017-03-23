@@ -7,7 +7,7 @@ An example of its use would be
       Punched out at 12:14 for Task "Title of task"
 
 """
-import doto.dbmodel
+import doto.model.timerecord
 import doto.cli.printing
 import doto.cli.parser
 import doto.cli.cmd.task
@@ -52,7 +52,7 @@ def init_parser(subparsers):
 
 def main(store, _args, _config, _term, date_printer=None):
     """Crete a new timerecord and punch us in"""
-    started_records = store.get_started_timerecords()
+    started_records = doto.model.timerecord.get_started_timerecords(store)
     records_len = len(started_records)
     index = 0
     if records_len < 1:
@@ -70,15 +70,17 @@ def main(store, _args, _config, _term, date_printer=None):
             print("That was not a valid dezimal number.")
             return 8
 
-    end = doto.dbmodel.now_with_tz()
+    end = doto.model.now_with_tz()
 
-    choosen_reord = started_records[index]
+    choosen_record = started_records[index]
 
-    choosen_reord.span.end = end
+    choosen_record.span.end = end
     try:
+        doto.model.timerecord.update(store, choosen_record)
         store.save()
-    except Exception:
+    except Exception as e:
+        print(e)
         print("It was not possible to create the timerecord.\nThis computer ist spending all its cycles on plotting to enslave humanity.")
         return 4
-    print_result(date_printer, choosen_reord)
+    print_result(date_printer, choosen_record)
     return 0
