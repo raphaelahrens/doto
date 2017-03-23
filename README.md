@@ -1,4 +1,5 @@
-doto
-====
+# doto
 
-Done!Tools are a colection of tools to manage task, appointment and anything time related.
+*This is not production ready* 
+
+Done!Tools is a collection of tools to manage tasks, appointments and anything self management related.
