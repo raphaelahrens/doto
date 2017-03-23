@@ -5,7 +5,10 @@ import os.path
 import tempfile
 import datetime
 
-import doto.dbmodel
+import doto.model
+import doto.model.timerecord
+import doto.model.task
+import doto.model.apmt
 import pytz
 
 TEST_DB_FILE = ""
@@ -18,7 +21,7 @@ class TestDBManager(unittest.TestCase):
 
     def setUp(self):
         """ Create a new Db store. """
-        self.store = doto.dbmodel.Store(TEST_DB_FILE, TEST_CAHCE_FILE)
+        self.store = doto.model.Store(TEST_DB_FILE, TEST_CAHCE_FILE)
 
     def tearDown(self):
         """ Close the connection after everx test. """
@@ -26,74 +29,73 @@ class TestDBManager(unittest.TestCase):
 
     def test_init(self):
         """ Test the constructor of the database store. """
-        tasks = self.store.get_tasks(10)
-        self.assertEqual(tasks, [])
+        tasks = doto.model.task.get_many(self.store, 10)
+        self.assertListEqual(list(tasks), [])
 
     def test_store(self):
         """ Test if we can store tasks. """
-        test_task = doto.dbmodel.Task("title", "description")
-        self.store.add_new(test_task)
+        test_task = doto.model.task.Task("title", "description")
+        doto.model.task.add_new(self.store, test_task)
         self.store.save()
-        tasks = self.store.get_tasks(10)
-        self.assertEqual(tasks, [test_task])
+        tasks = doto.model.task.get_many(self.store, 10)
+        self.assertListEqual(list(tasks), [test_task])
 
     def test_get_tasks_with_undone_only(self):
         """ Test if we can get only unfinished tasks. """
-        test_done = doto.dbmodel.Task("title", "description")
+        test_done = doto.model.task.Task("title", "description")
         test_done.done()
-        test_open = doto.dbmodel.Task("title", "description")
-        self.store.add_new([test_done, test_open])
+        test_open = doto.model.task.Task("title", "description")
+        doto.model.task.add_new(self.store, test_done)
+        doto.model.task.add_new(self.store, test_open)
         self.store.save()
-        tasks = self.store.get_open_tasks(10)
-        self.assertEqual(tasks, [test_open])
+        tasks = doto.model.task.get_open_tasks(self.store, 10)
+        self.assertListEqual(list(tasks), [test_open])
 
     def test_get_tasks_with_cache(self):
         """ Test if we can gte a list of the tasks and also create the cache. """
-        self.store.enable_caching()
-        test_task = doto.dbmodel.Task("title", "description")
-        self.store.add_new(test_task)
-        tasks = self.store.get_tasks(10)
-        self.assertEqual(tasks, [test_task])
+        test_task = doto.model.task.Task("title", "description")
+        doto.model.task.add_new(self.store, test_task)
+        tasks = doto.model.task.get_many(self.store, 10)
+        self.assertListEqual(list(tasks), [test_task])
         cache = self.store.get_cache()
         self.assertTrue(len(cache) > 0)
         # self.assertEqual(cache, {i: tsk for i, tsk in zip(range(len(tasks)), tasks)})
 
     def test_store_10(self):
         """ Test if we can save 10 tasks in a row. """
-        ref_list = [doto.dbmodel.Task("title %i" % i, "description") for i in range(10)]
-        self.store.add_new(ref_list)
+        ref_list = [doto.model.task.Task("title %i" % i, "description") for i in range(10)]
+        doto.model.task.add_new(self.store, ref_list)
         self.store.save()
-        tasks = self.store.get_tasks(10)
-        self.assertEqual(tasks, ref_list)
+        tasks = list(doto.model.task.get_many(self.store, 10))
+        self.assertListEqual(tasks, ref_list)
 
     def test_update(self):
         """ Test if we can update Tasks in the store. """
-        test_task = doto.dbmodel.Task("title", "description")
-        self.store.add_new(test_task)
+        test_task = doto.model.task.Task("title", "description")
+        doto.model.task.add_new(self.store, test_task)
         self.store.save()
-        self.assertTrue(self.store.is_saved)
-        now = datetime.datetime.now(tz=pytz.utc)
+        now = doto.model.now_with_tz()
         test_task.due = now
-        self.assertFalse(self.store.is_saved)
+        doto.model.task.update(self.store, test_task)
         self.store.save()
-        tasks = self.store.get_tasks(10)
-        self.assertEqual(tasks, [test_task])
+        tasks = list(doto.model.task.get_many(self.store, 10))
+        self.assertListEqual(tasks, [test_task])
         self.assertEqual(tasks[0].due, now)
 
     def test_delete(self):
         """ Test if we can delete tasks from the store. """
-        test_task = doto.dbmodel.Task("title", "description")
-        self.store.add_new([test_task])
+        test_task = doto.model.task.Task("title", "description")
+        doto.model.task.add_new(self.store, [test_task])
         self.store.save()
-        self.store.delete(test_task)
+        doto.model.task.delete(self.store, test_task)
         self.store.save()
-        tasks = self.store.get_tasks(10)
-        self.assertEqual(tasks, [])
+        tasks = doto.model.task.get_many(self.store, 10)
+        self.assertListEqual(list(tasks), [])
 
     def test_fail_delete(self):
         """ Test if a task with no id can't be deleted. """
-        test_task = doto.dbmodel.Task("title", "description")
-        self.assertFalse(self.store.delete(test_task))
+        test_task = doto.model.task.Task("title", "description")
+        self.assertFalse(doto.model.task.delete(self.store, test_task))
         self.store.save()
 
 
@@ -109,22 +111,23 @@ class TestDBFiles(unittest.TestCase):
     def test_create_store(self):
         """ Test if we can create a new store file """
         test_file = os.path.join(self.path, "file1.db")
-        self.store = doto.dbmodel.Store(test_file, TEST_CAHCE_FILE)
+        self.store = doto.model.Store(test_file, TEST_CAHCE_FILE)
         self.store.close()
         self.assertTrue(os.path.isfile(test_file))
 
     def test_create_and_read(self):
         """ Test if we can create a new  """
         test_file = os.path.join(self.path, "file2.db")
-        test_task = doto.dbmodel.Task("create a file and read it", "We want a new db file and read this task from it.")
-        self.store = doto.dbmodel.Store(test_file, TEST_CAHCE_FILE)
-        self.store.add_new(test_task)
+        test_task = doto.model.task.Task("create a file and read it",
+                                         "We want a new db file and read this task from it.")
+        self.store = doto.model.Store(test_file, TEST_CAHCE_FILE)
+        doto.model.task.add_new(self.store, test_task)
         self.store.save()
-        self.assertEqual(self.store.get_tasks(10), [test_task])
+        self.assertListEqual(list(doto.model.task.get_open_tasks(self.store, 10)), [test_task])
         self.store.close()
         self.assertTrue(os.path.isfile(test_file))
-        self.store = doto.dbmodel.Store(test_file, TEST_CAHCE_FILE)
-        self.assertEqual(self.store.get_tasks(10), [test_task])
+        self.store = doto.model.Store(test_file, TEST_CAHCE_FILE)
+        self.assertListEqual(list(doto.model.task.get_open_tasks(self.store, 10)), [test_task])
         self.store.close()
 
     @classmethod

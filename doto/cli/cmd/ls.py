@@ -13,7 +13,9 @@ import textwrap
 
 import doto.cli.parser
 import doto.cli.printing
-import doto.dbmodel
+import doto.model
+import doto.model.apmt
+import doto.model.task
 import doto.util
 
 
@@ -215,6 +217,7 @@ class View(object, metaclass=abc.ABCMeta):
         """
         events = self._get_events(store, args)
         if len(events) > 0:
+            store.add_to_cache(events)
             self.print_header()
             self._print_rows(self._get_data(events))
 
@@ -295,9 +298,9 @@ class TaskOverview(View):
         @param args the arguments of the cli
         """
         if args.all:
-            return store.get_tasks(limit=-1)
+            return doto.model.task.get_open_tasks(store, limit=None)
         else:
-            return store.get_open_tasks(limit=args.limit)
+            return doto.model.task.get_open_tasks(store, limit=args.limit)
 
 
 class ApmtOverview(View):
@@ -331,7 +334,7 @@ class ApmtOverview(View):
         @param store the Store object
         @param args the arguments of the cli
         """
-        return store.get_apmts(doto.dbmodel.now_with_tz(), datetime.timedelta(7, 0, 0))
+        return doto.model.apmt.get_current(store, doto.model.now_with_tz(), datetime.timedelta(7, 0, 0))
 
 
 class EventOverview(object):
@@ -387,7 +390,6 @@ def main(store, args, config, term):
     If args.all is given show all the tasks.
 
     """
-    store.enable_caching()
 
     try:
         view = VIEWS[args.view](config, term.columns if term.columns else 80)
@@ -396,4 +398,5 @@ def main(store, args, config, term):
         return 1
 
     view.print_view(store, args)
+    store.save()
     return 0

@@ -32,5 +32,5 @@ def main(store, args, *_):
         print(("It was not possible to delete the appointment with the id " + doto.cli.util.ID_FORMAT + ":\n\t %r") % (args.id, del_apmt))
         return 4
 
-    print(("Deleted event with id " + doto.cli.util.ID_FORMAT + ":\n\t Title: %s") % (args.id, del_apmt.event_id, del_apmt.title))
+    print(("Deleted event with id " + doto.cli.util.ID_FORMAT + ":\n\t Title: %s") % (args.id, del_apmt.id, del_apmt.title))
     return 0

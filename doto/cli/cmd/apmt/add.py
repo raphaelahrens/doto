@@ -6,7 +6,8 @@ An example of its use would be
     $ doto apmt add "Document the Add command" "Add still has no doc strings" --difficulty 1
 
 """
-import doto.dbmodel
+import doto.model
+import doto.model.apmt
 import doto.cli.parser
 
 
@@ -29,7 +30,7 @@ def print_error(message, exc):
 def main(store, args, config, _):
     """Add a new appointment with the given args"""
     start = doto.cli.parser.date_parser(args.start)
-    new_apmt = doto.dbmodel.Appointment(args.title, start)
+    new_apmt = doto.model.apmt.Appointment(args.title, start)
     if args.end is not None:
         try:
             new_apmt.schedule.end = doto.cli.parser.date_parser(args.end)
@@ -38,7 +39,7 @@ def main(store, args, config, _):
             return 5
     if args.description is not None:
         new_apmt.description = args.description
-    store.add_new(new_apmt)
+    doto.model.apmt.add_new(store, new_apmt)
     try:
         store.save()
     except Exception as e:

@@ -22,15 +22,15 @@ def init_parser(subparsers):
 def main(store, args, *_):
     """ Delete the given task in args.id. """
 
-    del_task, error = doto.cli.cmd.task.get_cached_task(store, args.id)
-    if not del_task:
+    tsk, error = doto.cli.cmd.task.get_cached_task(store, args.id)
+    if not tsk:
         return error
-    store.delete(del_task)
     try:
+        doto.model.task.delete(store, tsk)
         store.save()
     except:
-        print(("It was not possible to delete the task with the id " + doto.cli.util.ID_FORMAT + ":\n\t %r") % (args.id, del_task.event_id))
+        print(("It was not possible to delete the task with the id " + doto.cli.util.ID_FORMAT + ":\n\t %r") % (args.id, tsk.id))
         return 4
 
-    print(("Deleted event with id " + doto.cli.util.ID_FORMAT + ":\n\t Title: %s") % (args.id, del_task.event_id, del_task.title))
+    print(("Deleted event with id " + doto.cli.util.ID_FORMAT + ":\n\t Title: %s") % (args.id, tsk.id, tsk.title))
     return 0
