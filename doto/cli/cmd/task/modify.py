@@ -25,8 +25,8 @@ def init_parser(subparsers):
     """
     parser = subparsers.add_parser(COMMAND, help="")
     parser.add_argument("id", type=int, help="The id of the task which should be modified.")
-    parser.add_argument("--title", type=doto.cli.parser.to_unicode, help="Change the title of the task")
-    parser.add_argument("--description", type=doto.cli.parser.to_unicode, help="Change the description of the task")
+    parser.add_argument("--title", type=str, help="Change the title of the task")
+    parser.add_argument("--description", type=str, help="Change the description of the task")
     doto.cli.cmd.task.init_task_flags(parser)
 
 

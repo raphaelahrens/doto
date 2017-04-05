@@ -18,8 +18,8 @@ CONF_DEF = {}
 def init_parser(subparsers):
     """Initialise the subparser for Add"""
     parser = subparsers.add_parser(COMMAND, help="Add a new appointment.")
-    parser.add_argument("title", type=doto.cli.parser.to_unicode, help="The title of the new appointment")
-    parser.add_argument("start", type=doto.cli.parser.to_unicode, help="The date when the new appointment will start")
+    parser.add_argument("title", type=str, help="The title of the new appointment")
+    parser.add_argument("start", type=str, help="The date when the new appointment will start")
     doto.cli.cmd.apmt.init_apmt_flags(parser)
 
 

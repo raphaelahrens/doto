@@ -377,7 +377,7 @@ def init_parser(subparsers):
     """Initialize the subparser of ls."""
 
     parser = subparsers.add_parser(COMMAND, help="list tasks.")
-    parser.add_argument("view", type=doto.cli.parser.to_unicode, default=DEFAULT_VIEW, nargs="?",
+    parser.add_argument("view", type=str, default=DEFAULT_VIEW, nargs="?",
                         choices=VIEWS.keys())
     parser.add_argument("--all", action="store_true", help="list all tasks.")
     parser.add_argument("--limit", type=int, help="show a maximum of N tasks.", default=20)

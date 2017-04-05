@@ -50,5 +50,5 @@ def get_cached_apmt(store, cache_id):
 
 
 def init_apmt_flags(parser):
-    parser.add_argument("--description", type=doto.cli.parser.to_unicode, help="The description of the new appointment")
-    parser.add_argument("--end", type=doto.cli.parser.to_unicode, help="The date when the new appointment will end")
+    parser.add_argument("--description", type=str, help="The description of the new appointment")
+    parser.add_argument("--end", type=str, help="The date when the new appointment will end")

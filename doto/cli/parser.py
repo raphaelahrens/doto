@@ -6,18 +6,6 @@ import datetime
 import pytz
 
 
-def to_unicode(string):
-    """
-    Turn the given string into a python unicode string.
-
-    This function uses the local encoding and turns the string a unicode string.
-
-    @param string the string that will recoded to unicode.
-
-    """
-    return string
-
-
 def init_id_flag(command, subparser):
     """
     Init the parser

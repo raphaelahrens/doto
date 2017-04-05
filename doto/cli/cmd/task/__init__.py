@@ -59,4 +59,4 @@ def init_task_flags(parser):
     # parser.add_argument("--category", type=to_unicode, help="Set the category of this task.")
     # parser.add_argument("--project", type=to_unicode, help="Set the project of this task.")
     parser.add_argument("--difficulty", type=int, choices=doto.model.task.DIFFICULTY.keys, help="the estimated difficulty of the task.")
-    parser.add_argument("--due", type=doto.cli.parser.to_unicode, help="the estimated completion date.")
+    parser.add_argument("--due", type=str, help="the estimated completion date.")

@@ -23,8 +23,8 @@ def init_parser(subparsers):
     """
     parser = subparsers.add_parser(COMMAND, help="")
     parser.add_argument("id", type=int, help="The id of the appointment which should be modified.")
-    parser.add_argument("--title", type=doto.cli.parser.to_unicode, help="The title of the new appointment")
-    parser.add_argument("--start", type=doto.cli.parser.to_unicode, help="The date when the new appointment will start")
+    parser.add_argument("--title", type=str, help="The title of the new appointment")
+    parser.add_argument("--start", type=str, help="The date when the new appointment will start")
     doto.cli.cmd.apmt.init_apmt_flags(parser)
 
 
