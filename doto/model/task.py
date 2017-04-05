@@ -15,6 +15,7 @@ CREATE_CMD = '''
                     due TIMESTAMP,
                     start TIMESTAMP,
                     end TIMESTAMP,
+                    repeat TIMEDELTA,
                     PRIMARY KEY (id),
                     CHECK (state IN ('i', 'c', 'p', 's', 'b'))
                 );
@@ -194,19 +195,17 @@ class Task(doto.model.Event):
         self.state = StateHolder()
         self.schedule = doto.model.TimeSpan()
         self.due = None
+        self.repeat = None
 
     @staticmethod
     def row_to_obj(row, _store):
         '''
         Create Task from database row
         '''
-        task = Task(row['title'],
-                    row['description'],
-                    row['difficulty'])
-        task.id = row['id']
-        task.due = row['due']
-        task.created = row['created']
-        task.state = row['state']
+        task = doto.model.unwrap_row(row,
+                                     Task,
+                                     ('title', 'description', 'difficulty'),
+                                     ('id', 'due', 'created', 'state', 'repeat'))
         task.schedule = doto.model.TimeSpan(start=row['start'], end=row['end'])
         return task
 
@@ -304,7 +303,8 @@ TASK_SELECT = '''SELECT id,
                         difficulty,
                         due,
                         start,
-                        end
+                        end,
+                        repeat
                  FROM tasks
                '''
 

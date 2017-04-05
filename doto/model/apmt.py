@@ -35,12 +35,10 @@ class Appointment(doto.model.Event):
         '''
         Create Task from database row
         '''
-        apmt = Appointment(row['title'],
-                           row['start'],
-                           row['description'],
-                           row['end'],)
-        apmt.id = row['id']
-        apmt.created = row['created']
+        apmt = doto.model.unwrap_row(row,
+                                     Appointment,
+                                     ('title', 'start', 'description', 'end'),
+                                     ('id', 'created'))
         return apmt
 
     @staticmethod

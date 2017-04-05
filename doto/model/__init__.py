@@ -37,6 +37,18 @@ def now_with_tz():
     return n - datetime.timedelta(microseconds=n.microsecond)
 
 
+def unwrap_row(row, cls, arg_list, opt_list=None):
+    if opt_list is None:
+        opt_list = []
+    args = {k: v for k, v in zip(row.keys(), row) if k in arg_list}
+    obj = cls(**args)
+
+    for opt in opt_list:
+        if opt in row.keys():
+            setattr(obj, opt, row[opt])
+    return obj
+
+
 def unwrap_obj(obj, ignore_list=None):
     def member_gen(obj, ignore_list):
         for name in dir(obj):

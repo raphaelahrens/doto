@@ -37,9 +37,10 @@ class Timerecord(object):
         '''
         Create Task from database row
         '''
-        timerecord = Timerecord(row['start'],
-                                row['end'],)
-        timerecord.id = row['id']
+        timerecord = doto.model.unwrap_row(row,
+                                           Timerecord,
+                                           ('start', 'end'),
+                                           ('id',))
         task_id = row['task_id']
         if task_id is None:
             timerecord.task = None
@@ -54,6 +55,7 @@ class Timerecord(object):
         row_dict['start'] = obj.span.start
         row_dict['end'] = obj.span.end
         return row_dict
+
 
 def get_started_timerecords(store):
     '''
