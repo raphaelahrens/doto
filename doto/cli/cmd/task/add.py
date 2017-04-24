@@ -28,6 +28,7 @@ def main(store, args, _config, _env):
     tsk = doto.model.task.Task(args.title, args.description)
     if args.due is not None:
         tsk.due = doto.cli.parser.date_parser(args.due)
+    tsk.repeat = args.repeat
     if args.difficulty is not None:
         tsk.difficulty = args.difficulty
     try:
