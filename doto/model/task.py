@@ -340,14 +340,6 @@ def get_many(store, limit=10):
         return _get_tasks(store, TASK_SELECT + ' LIMIT ?;', (limit,))
 
 
-def get(store, task_id):
-    '''
-    Get one task from store
-    '''
-    query = TASK_SELECT + ' WHERE id = :id;'
-    return store.get_one(Task.row_to_obj, query, {'id': task_id})
-
-
 def get_open_tasks(store, limit=20):
     '''
     Get all task which are not completed.
@@ -381,9 +373,11 @@ update_query = '''UPDATE tasks SET title = :title,
                          WHERE id = :id;
                '''
 delete_query = 'DELETE FROM tasks WHERE id = ?;'
+select_query = TASK_SELECT + ' WHERE id = :id;'
 update = doto.model.crud.update(update_query, Task)
 add_new = doto.model.crud.insert(insert_query, Task)
 delete = doto.model.crud.delete(delete_query)
+get = doto.model.crud.get(select_query, Task)
 
 
 doto.model.setup_module(CREATE_CMD, (StateHolder.type_def(),
