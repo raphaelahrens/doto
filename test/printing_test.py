@@ -48,3 +48,77 @@ class TestStrFromTimeSpan(unittest.TestCase):
         span = doto.model.TimeSpan(TestStrFromTimeSpan.now, now_plus_x)
         result = doto.cli.printing.str_from_time_delta(span.time_delta())
         self.assertEqual(result, "2 days")
+
+
+class TestUnicodeFromatter(unittest.TestCase):
+    def test_empty(self):
+        formatter = doto.cli.printing.UnicodeFormatter()
+        self.assertEqual('', formatter.format(''))
+
+    def test_int(self):
+        formatter = doto.cli.printing.UnicodeFormatter()
+        self.assertEqual('11', formatter.format('{}', 11))
+
+    def test_float(self):
+        formatter = doto.cli.printing.UnicodeFormatter()
+        self.assertEqual('11.0', formatter.format('{}', 11.0))
+
+    def test_simple_inster(self):
+        formatter = doto.cli.printing.UnicodeFormatter()
+        format_spec = '{}'
+        test_str = 'Testa̲'
+        self.assertEqual(test_str, formatter.format(format_spec, test_str))
+        test_str = 'test'
+        self.assertEqual(format_spec.format(test_str), formatter.format(format_spec, test_str))
+
+    def test_left_pad(self):
+        formatter = doto.cli.printing.UnicodeFormatter()
+        format_spec = '{:<10}'
+        test_str = 'test'
+        self.assertEqual(format_spec.format(test_str), formatter.format(format_spec, test_str))
+        utest_str = 'Testa̲'
+        self.assertEqual(format_spec.format(utest_str) + ' ', formatter.format(format_spec, utest_str))
+
+    def test_right_pad(self):
+        formatter = doto.cli.printing.UnicodeFormatter()
+        format_spec = '{:>10}'
+        test_str = "test"
+        self.assertEqual(format_spec.format(test_str), formatter.format(format_spec, test_str))
+        utest_str = 'Testa̲'
+        self.assertEqual(' ' + format_spec.format(utest_str), formatter.format(format_spec, utest_str))
+
+    def test_center_pad(self):
+        formatter = doto.cli.printing.UnicodeFormatter()
+        format_spec = '{:^10}'
+        test_str = "test"
+        self.assertEqual(format_spec.format(test_str), formatter.format(format_spec, test_str))
+        utest_str = 'Testa̲'
+        self.assertEqual(format_spec.format(utest_str) + ' ', formatter.format(format_spec, utest_str))
+
+    def test_center_pad_fill(self):
+        formatter = doto.cli.printing.UnicodeFormatter()
+        format_spec = '{:^10}'
+        test_str = "test"
+        self.assertEqual(format_spec.format(test_str), formatter.format(format_spec, test_str))
+        utest_str = 'Testa̲'
+        self.assertEqual(format_spec.format(utest_str) + ' ', formatter.format(format_spec, utest_str))
+
+    def test_unicode_pad(self):
+        formatter = doto.cli.printing.UnicodeFormatter()
+        utest_str = 'Tet̲a̲r̲st'
+        format_specs = (('{:<10}', utest_str + '   '),
+                        ('{:>10}', '   ' + utest_str),
+                        ('{:^10}', ' ' + utest_str + '  ')
+                        )
+        for spec, t_str in format_specs:
+            self.assertEqual(t_str, formatter.format(spec, utest_str))
+
+    def test_zero_pad(self):
+        formatter = doto.cli.printing.UnicodeFormatter()
+        utest_str = 'Tet̲a̲r̲st'
+        format_specs = (('{:<010}', utest_str + '000'),
+                        ('{:>010}', '000' + utest_str),
+                        ('{:^010}', '0' + utest_str + '00')
+                        )
+        for spec, t_str in format_specs:
+            self.assertEqual(t_str, formatter.format(spec, utest_str))

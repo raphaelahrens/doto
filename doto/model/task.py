@@ -235,10 +235,8 @@ class Task(doto.model.Event):
 
         This method marks the task as completed and also sets the end date
         '''
-        print(self.state)
         if not self.state.complete():
             return False
-        print(self.state)
         now = doto.model.now_with_tz()
         if self.schedule.start is None:
             self.schedule.start = now

@@ -4,8 +4,13 @@ A Collection of functions to display tasks and other data.
 """
 
 import datetime
+import itertools
+import math
+import string
+
 import doto.model.task
 import pytz
+import wcwidth
 
 
 __state_symbols = {doto.model.task.StateHolder.completed.key: "✓",
@@ -110,14 +115,14 @@ class DatePrinter(object):
             return default
         t_delta = due_date - doto.model.now_with_tz()
         if t_delta.days < 0:
-            # the time span is negativ so the time is over due
+            # the time span is negative so the time is over due
             return "over due"
         if t_delta.days < 7:
             # if the time span is smaller than one week
             # return the time span string
             return "in " + str_from_time_delta(t_delta)
         # return the string if it is over one week
-        return "to " + self.date_to_str(due_date)
+        return self.date_to_str(due_date)
 
     def to_local(self, date_obj):
         local_tz = pytz.timezone(self.__config.date.local_tz)
@@ -131,7 +136,7 @@ class DatePrinter(object):
 
     @property
     def max_due_len(self):
-        return len("to ") + self.max_date_len
+        return self.max_date_len
 
     def date_to_str(self, date, default=""):
         if date is None:
@@ -141,3 +146,69 @@ class DatePrinter(object):
     @property
     def max_date_len(self):
         return self.__max_date_len
+
+
+class UnicodeFormatter(string.Formatter):
+    def format_field(self, value, format_spec):
+        if not isinstance(value, str):
+            # If `value` is not a string use format built-in
+            return format(value, format_spec)
+        if format_spec == '':
+            # If `format_spec` is empty we just return the `value` string
+            return value
+
+        print_length = wcwidth.wcswidth(value)
+        if len(value) == print_length:
+            return format(value, format_spec)
+
+        fill, align, width, format_spec = UnicodeFormatter.parse_align(format_spec)
+        if width == 0:
+            return value
+        formatted_value = format(value, format_spec)
+        pad_len = width - print_length
+        if pad_len <= 0:
+            return formatted_value
+        left_pad = ''
+        right_pad = ''
+        if align in '<=':
+            right_pad = fill * pad_len
+        elif align == '>':
+            left_pad = fill * pad_len
+        elif align == '^':
+            left_pad = fill * math.floor(pad_len/2)
+            right_pad = fill * math.ceil(pad_len/2)
+        return ''.join((left_pad, formatted_value, right_pad))
+
+    @staticmethod
+    def parse_align(format_spec):
+        format_chars = '=<>^'
+        align = '<'
+        fill = None
+        if format_spec[1] in format_chars:
+            align = format_spec[1]
+            fill = format_spec[0]
+            format_spec = format_spec[2:]
+        elif format_spec[0] in format_chars:
+            align = format_spec[0]
+            format_spec = format_spec[1:]
+
+        if align == '=':
+            raise ValueError("'=' alignment not allowed in string format specifier")
+        if format_spec[0] in '+- ':
+            raise ValueError('Sign not allowed in string format specifier')
+        if format_spec[0] == '#':
+            raise ValueError('Alternate form (#) not allowed in string format specifier')
+        if format_spec[0] == '0':
+            if fill is None:
+                fill = '0'
+            format_spec = format_spec[1:]
+        if fill is None:
+            fill = ' '
+        width_str = ''.join(itertools.takewhile(str.isdigit, format_spec))
+        width_len = len(width_str)
+        format_spec = format_spec[width_len:]
+        if width_len > 0:
+            width = int(width_str)
+        else:
+            width = 0
+        return fill, align, width, format_spec
