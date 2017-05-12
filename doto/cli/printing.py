@@ -120,7 +120,7 @@ class DatePrinter(object):
         if t_delta.days < 7:
             # if the time span is smaller than one week
             # return the time span string
-            return "in " + str_from_time_delta(t_delta)
+            return str_from_time_delta(t_delta)
         # return the string if it is over one week
         return self.date_to_str(due_date)
 

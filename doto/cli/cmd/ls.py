@@ -9,9 +9,6 @@ import abc
 import datetime
 import itertools
 import textwrap
-import math
-
-import wcwidth
 
 import doto.cli.parser
 import doto.cli.printing
@@ -87,7 +84,7 @@ class Column(object):
         '''
         Set the widths of this Column.
 
-        This method can becalled if the width of the column can be enlarged.
+        This method can be called if the width of the column can be enlarged.
 
         If the parameter width is smaller then the member variable width, then this method has no effect
 
@@ -302,7 +299,7 @@ class ApmtOverview(View):
     def __init__(self, config, width):
         date_printer = doto.cli.printing.DatePrinter(config)
         columns = [CutColumn('I̲D̲', 4, '>'),
-                   Column('S̲t̲a̲r̲t̲s̲', date_printer.max_due_len + 4, '^', date_printer.due_to_str),
+                   Column('S̲t̲a̲r̲t̲s̲ ̲i̲n̲', date_printer.max_due_len, '^', date_printer.due_to_str),
                    WrapColumn('A̲p̲p̲o̲i̲n̲t̲m̲e̲n̲t̲ ̲t̲i̲t̲l̲e̲', 10, '<', expand=1)
                    ]
         View.__init__(self, width, columns)
