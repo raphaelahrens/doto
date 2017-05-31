@@ -5,7 +5,6 @@ An example of its use is
     $ doto ls
 
 '''
-import abc
 import datetime
 import itertools
 import textwrap
@@ -20,6 +19,8 @@ import doto.util
 
 COMMAND = 'ls'
 CONF_DEF = {}
+
+APMT_LIMIT = datetime.timedelta(14, 0, 0)
 
 uf = doto.cli.printing.UnicodeFormatter()
 
@@ -177,7 +178,7 @@ def line_generator(columns, data):
             line_iter = next_line_iter(next(data_iter))
 
 
-class View(object, metaclass=abc.ABCMeta):
+class View(object):
     '''
     View is an abstract class that defines the interface for a simple view.
 
@@ -212,7 +213,7 @@ class View(object, metaclass=abc.ABCMeta):
         if len(events) > 0:
             store.add_to_cache(events)
             print(self._header)
-            self._print_rows(self.get_data(events))
+            self._print_rows(self.get_column_data(events))
 
     def _print_row(self, event_data):
         '''
@@ -231,26 +232,6 @@ class View(object, metaclass=abc.ABCMeta):
         for event_data in line_generator(self._columns, data_list):
             self._print_row(event_data)
 
-    @abc.abstractmethod
-    def get_data(self, event):
-        '''
-        Get the data for that row from the event.
-
-        @event the event
-        '''
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def get_events(self, store, args):
-        '''
-        Get the Events form the store object.
-
-        @param store the Store object
-        @param args the arguments of the CLI
-        '''
-        raise NotImplementedError
-
-
 class TaskOverview(View):
     '''
     An Overview for the tasks.
@@ -258,14 +239,14 @@ class TaskOverview(View):
     def __init__(self, config, width):
         date_printer = doto.cli.printing.DatePrinter(config)
         columns = [CutColumn('I̲D̲', 4, '>'),
-                   Column('D̲u̲e̲', date_printer.max_due_len, '^', date_printer.due_to_str),
+                   Column('D̲u̲e̲', date_printer.max_due_len, '>', date_printer.due_to_str),
                    Column(' ', 1, '^', doto.cli.printing.state_to_symbol),
                    Column(' ', 1, '^', doto.cli.printing.diff_to_str),
                    WrapColumn('T̲a̲s̲k̲ ̲t̲i̲t̲l̲e̲', 10, '<', expand=1)
                    ]
         View.__init__(self, width, columns)
 
-    def get_data(self, tasks):
+    def get_column_data(self, tasks):
         '''
         Get the data for that row from the event.
 
@@ -299,12 +280,12 @@ class ApmtOverview(View):
     def __init__(self, config, width):
         date_printer = doto.cli.printing.DatePrinter(config)
         columns = [CutColumn('I̲D̲', 4, '>'),
-                   Column('S̲t̲a̲r̲t̲s̲ ̲i̲n̲', date_printer.max_due_len, '^', date_printer.due_to_str),
+                   Column('S̲t̲a̲r̲t̲s̲ ̲i̲n̲', date_printer.max_due_len, '>', date_printer.due_to_str),
                    WrapColumn('A̲p̲p̲o̲i̲n̲t̲m̲e̲n̲t̲ ̲t̲i̲t̲l̲e̲', 10, '<', expand=1)
                    ]
         View.__init__(self, width, columns)
 
-    def get_data(self, apmts):
+    def get_column_data(self, apmts):
         '''
         Get the data for that row from the event.
 
@@ -323,7 +304,9 @@ class ApmtOverview(View):
         @param store the Store object
         @param args the arguments of the CLI
         '''
-        return doto.model.apmt.get_current(store, doto.model.now_with_tz(), datetime.timedelta(7, 0, 0))
+        apmts = doto.model.apmt.get_current(store, doto.model.now_with_tz(), APMT_LIMIT)
+        apmts.sort(key=lambda x: x.schedule.start)
+        return apmts
 
 
 class EventOverview(object):
@@ -376,7 +359,7 @@ def main(store, args, config, term):
     try:
         view = VIEWS[args.view](config, term.columns if term.columns else 80)
     except KeyError:
-        print('There is now view named "%s"\n\tMhh this should not happen.' % (args.view))
+        print('There is now view named "{}"\n\tMhh this should not happen.'.format(args.view))
         return 1
 
     view.print_view(store, args)

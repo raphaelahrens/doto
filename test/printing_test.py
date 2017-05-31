@@ -17,37 +17,37 @@ class TestStrFromTimeSpan(unittest.TestCase):
         now_plus_x = TestStrFromTimeSpan.now + datetime.timedelta(0, 1, 0)
         span = doto.model.TimeSpan(TestStrFromTimeSpan.now, now_plus_x)
         result = doto.cli.printing.str_from_time_delta(span.time_delta())
-        self.assertEqual(result, "1 second")
+        self.assertEqual(result, "soon")
 
     def test_two_secs(self):
         now_plus_x = TestStrFromTimeSpan.now + datetime.timedelta(0, 2, 0)
         span = doto.model.TimeSpan(TestStrFromTimeSpan.now, now_plus_x)
         result = doto.cli.printing.str_from_time_delta(span.time_delta())
-        self.assertEqual(result, "2 seconds")
+        self.assertEqual(result, "soon")
 
     def test_one_min(self):
         now_plus_x = TestStrFromTimeSpan.now + datetime.timedelta(0, 60, 0)
         span = doto.model.TimeSpan(TestStrFromTimeSpan.now, now_plus_x)
         result = doto.cli.printing.str_from_time_delta(span.time_delta())
-        self.assertEqual(result, "1 minute")
+        self.assertEqual(result, "1m")
 
     def test_two_min(self):
         now_plus_x = TestStrFromTimeSpan.now + datetime.timedelta(0, 120, 0)
         span = doto.model.TimeSpan(TestStrFromTimeSpan.now, now_plus_x)
         result = doto.cli.printing.str_from_time_delta(span.time_delta())
-        self.assertEqual(result, "2 minutes")
+        self.assertEqual(result, "2m")
 
     def test_one_day(self):
         now_plus_x = TestStrFromTimeSpan.now + datetime.timedelta(1, 0, 0)
         span = doto.model.TimeSpan(TestStrFromTimeSpan.now, now_plus_x)
         result = doto.cli.printing.str_from_time_delta(span.time_delta())
-        self.assertEqual(result, "1 day")
+        self.assertEqual(result, "1d 0h 0m")
 
     def test_two_days(self):
         now_plus_x = TestStrFromTimeSpan.now + datetime.timedelta(2, 120, 0)
         span = doto.model.TimeSpan(TestStrFromTimeSpan.now, now_plus_x)
         result = doto.cli.printing.str_from_time_delta(span.time_delta())
-        self.assertEqual(result, "2 days")
+        self.assertEqual(result, "2d 0h 2m")
 
 
 class TestUnicodeFromatter(unittest.TestCase):

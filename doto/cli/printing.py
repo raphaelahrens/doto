@@ -35,6 +35,11 @@ __difficulty_symbols = {doto.model.task.DIFFICULTY.unknown: " ",
                         }
 
 
+ZERO_DELTA = datetime.timedelta(0)
+STR_THRESHOLD = datetime.timedelta(days=7)
+ONE_MINUTE = datetime.timedelta(seconds=60)
+
+
 def state_to_symbol(state):
     return __state_symbols[state.key]
 
@@ -62,7 +67,7 @@ def one_or_more(amount, single_str, multiple_str):
         ret_str = single_str
     else:
         ret_str = multiple_str
-    return ret_str % amount
+    return ret_str.format(amount)
 
 
 def str_from_time_delta(t_delta):
@@ -77,15 +82,23 @@ def str_from_time_delta(t_delta):
     @return the string
 
     """
-    if t_delta.days < 0:
-        raise ValueError('t_delat was negative')
-    if t_delta.days > 0:
-        return one_or_more(t_delta.days, "%d day", "%d days")
-    if t_delta.seconds >= 3600:
-        return one_or_more(t_delta.seconds // 3600, "%d hour", "%d hours")
-    if t_delta.seconds >= 60:
-        return one_or_more(t_delta.seconds // 60, "%d minute", "%d minutes")
-    return one_or_more(t_delta.seconds, "%d second", "%d seconds")
+    def check_zero_time(fmt_time):
+        _, time = fmt_time
+        return time == 0
+
+    if t_delta < ONE_MINUTE:
+        return 'soon'
+
+    days = t_delta.days
+    hours = t_delta.seconds // 3600
+    minutes = t_delta.seconds % 3600 // 60
+
+    format_strs = ['{}d', '{}h', '{}m']
+    times = [days, hours, minutes]
+
+    fmt_times = itertools.dropwhile(check_zero_time, zip(format_strs, times))
+
+    return ' '.join(fmt.format(time) for fmt, time in fmt_times)
 
 
 def max_date_len(date_to_str):
@@ -114,10 +127,10 @@ class DatePrinter(object):
         if due_date is None:
             return default
         t_delta = due_date - doto.model.now_with_tz()
-        if t_delta.days < 0:
+        if t_delta < ZERO_DELTA:
             # the time span is negative so the time is over due
             return "over due"
-        if t_delta.days < 7:
+        if t_delta <= STR_THRESHOLD:
             # if the time span is smaller than one week
             # return the time span string
             return str_from_time_delta(t_delta)
@@ -129,10 +142,12 @@ class DatePrinter(object):
         return date_obj.astimezone(local_tz)
 
     def short_date_string(self, date):
-        return self.to_local(date).strftime(self.__config.date.short_out_str)
+        local_date = self.to_local(date)
+        return '{:{fmt}}'.format(local_date, fmt=self.__config.date.short_out_str)
 
     def full_date_string(self, date):
-        return self.to_local(date).strftime(self.__config.date.full_out_str)
+        local_date = self.to_local(date)
+        return '{:{fmt}}'.format(local_date, fmt=self.__config.date.full_out_str)
 
     @property
     def max_due_len(self):
