@@ -1,19 +1,18 @@
 '''
-Description of a reocurring event.
+Description of a recurring event.
 '''
 import doto.model
+import doto.model.crud
+from dateutil import rrule
 
 CREATE_CMD = '''
              CREATE TABLE IF NOT EXISTS
                 repeats (
                      id INTEGER NOT NULL,
-                     minute INTEGER,
-                     hour INTEGER,
-                     day INTEGER,
-                     month INTEGER,
-                     dow INTEGER,
-                     PRIMARY KEY (id),
-             )
+                     repeat_rule rrule NOT NULL,
+                     event INTEGER, -- id of the event either a task or apmt
+                     PRIMARY KEY (id)
+             );
              '''
 
 
@@ -24,48 +23,24 @@ class Repeat(object):
     It indicates that the event will repeat in a specific pattern.
     """
 
-    def __init__(self, repeat_pattern, dt):
+    def __init__(self, repeat_rule, event):
         """
         """
-        self.id = None
+        self.event = event
 
-        self.minute = None
-        self.hour = None
-        self.day = None
-        self.month = None
-        self.dow = None  # Day of week 0 (SUN) - 7 (SA)
-
-        min = dt.minute
-        hour = dt.hour
-        day = dt.day
-        month = dt.month
-        dow = dt.weekday()
-
-        patterns = {
-                '@yearly':    (min, hour,  day, month, None),
-                '@monthy':    (min, hour,  day,  None, None),
-                '@weekly':    (min, hour, None,  None,  dow),
-                '@daily':     (min, hour, None,  None, None),
-                '@hourly':    (min, None, None,  None, None),
-                }
-
-        self.set_values(*patterns[repeat_pattern])
-
-    def set_values(self, minute, hour, day, month, dow):
-        self.minute = minute
-        self.hour = hour
-        self.day = day
-        self.month = month
-        self.dow = dow  # Day of week 0 (SUN) - 7 (SA)
+        self.repeat_rule = repeat_rule
 
     @staticmethod
-    def row_to_obj(row, _):
+    def row_to_obj(row, store):
         '''
-        Create Task from database row
+        Create Repeat from database row
         '''
-        repeat = doto.model.unwrap_row(row,
+        repeat = doto.model.unwrap_row(store,
+                                       row,
                                        Repeat,
-                                       ('id',))
+                                       ('repeat_rule', 'event'),
+                                       ('id',)
+                                       )
         return repeat
 
     @staticmethod
@@ -73,19 +48,32 @@ class Repeat(object):
         '''
         Create Row from repeat object
         '''
-        row_dict = doto.model.unwrap_obj(obj, ignore_list=[])
+        row_dict = doto.model.unwrap_obj(obj)
         return row_dict
 
+    def next(self, dt):
+        return self.repeat_rule.after(dt)
 
-insert_query = '''INSERT INTO repeats (minute, hour, day, month, dow)
-                              VALUES  (:minute, :hour, :day, :month, :dow)
-                  ;
+    def __eq__(self, obj):
+        return str(self.repeat_rule) == str(obj.repeat_rule)
+
+
+def parse(rule_pattern, start_dt, event):
+    patterns = {
+            '@yearly':    rrule.YEARLY,
+            '@monthly':   rrule.MONTHLY,
+            '@weekly':    rrule.WEEKLY,
+            '@daily':     rrule.DAILY,
+            '@hourly':    rrule.HOURLY,
+            }
+    return Repeat(rrule.rrule(patterns[rule_pattern], dtstart=start_dt), event=event)
+
+
+insert_query = '''INSERT INTO repeats ( repeat_rule,  event)
+                              VALUES  (:repeat_rule, :event);
                '''
-update_query = '''UPDATE repeats SET minute = :minute
-                                     hour = :hour,
-                                     day = :day,
-                                     month = :month,
-                                     dow = :dow
+update_query = '''UPDATE repeats SET repeat_rule = :repeat_rule,
+                                     event = :event
                                      WHERE id = :id;
                '''
 delete_query = 'DELETE FROM repeats WHERE id = ?;'
@@ -96,4 +84,8 @@ add_new = doto.model.crud.insert(insert_query, Repeat)
 delete = doto.model.crud.delete(delete_query)
 get = doto.model.crud.get(select_query, Repeat)
 
-doto.model.setup_module(CREATE_CMD, ())
+
+def convert_rrule(rule_str):
+    return rrule.rrulestr(rule_str.decode("utf-8"))
+
+doto.model.setup_module(CREATE_CMD, ((rrule.rrule, str, convert_rrule),))

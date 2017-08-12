@@ -1,5 +1,6 @@
 import doto.model
 import doto.model.crud
+import doto.model.repeat
 
 
 CREATE_CMD = '''
@@ -11,7 +12,9 @@ CREATE_CMD = '''
                             created TIMESTAMP NOT NULL,
                             start TIMESTAMP NOT NULL,
                             end TIMESTAMP,
-                            PRIMARY KEY (id)
+                            repeat INTEGER,
+                            PRIMARY KEY (id),
+                            FOREIGN KEY(repeat) REFERENCES repeats(id)
                     );
              '''
 
@@ -25,27 +28,33 @@ class Appointment(doto.model.Event):
     __tablename__ = "appointments"
 
     def __init__(self, title, start,
-                 description=None, end=None
+                 description=None, end=None,
+                 repeat=None
                  ):
         super().__init__(title, description)
         self.schedule = doto.model.TimeSpan(start, end)
+        self.repeat = repeat
 
     @staticmethod
-    def row_to_obj(row, _store):
+    def row_to_obj(row, store):
         '''
         Create Task from database row
         '''
-        apmt = doto.model.unwrap_row(row,
+        apmt = doto.model.unwrap_row(store,
+                                     row,
                                      Appointment,
                                      ('title', 'start', 'description', 'end'),
-                                     ('id', 'created'))
+                                     ('id', 'created'),
+                                     foreign_keys=(('repeat', doto.model.repeat),)
+                                     )
         return apmt
 
     @staticmethod
     def obj_to_row(obj):
-        row_dict = doto.model.unwrap_obj(obj, ignore_list=['schedule'])
+        row_dict = doto.model.unwrap_obj(obj, ignore_list=('schedule',), foreign_keys=('repeat',))
         row_dict['start'] = obj.schedule.start
         row_dict['end'] = obj.schedule.end
+        row_dict['repeat'] = doto.model.get_id(obj.repeat)
         return row_dict
 
     def move(self, start, end=None):
@@ -99,21 +108,23 @@ def get_count(store):
     return store.get_one(tuple_to_count, 'SELECT COUNT(id) FROM appointments')
 
 
-insert_query = '''INSERT INTO appointments ( title,  description,  created,  start,  end)
-                                    VALUES (:title, :description, :created, :start, :end)
+insert_query = '''INSERT INTO appointments ( title,  description,  created,  start,  end,  repeat)
+                                    VALUES (:title, :description, :created, :start, :end, :repeat)
                   ;
                '''
 update_query = '''UPDATE appointments SET title = :title,
                                           description = :description,
                                           created = :created,
                                           start = :start,
-                                          end = :end
+                                          end = :end,
+                                          repeat = :repeat
                                          WHERE id = :id;
                '''
 delete_query = 'DELETE FROM appointments WHERE id = ?;'
+select_query = 'SELECT * FROM appointments WHERE id = ?;'
 update = doto.model.crud.update(update_query, Appointment)
 add_new = doto.model.crud.insert(insert_query, Appointment)
 delete = doto.model.crud.delete(delete_query)
-
+get = doto.model.crud.get(select_query, Appointment)
 
 doto.model.setup_module(CREATE_CMD, ())

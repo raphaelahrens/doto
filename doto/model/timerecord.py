@@ -37,7 +37,8 @@ class Timerecord(object):
         '''
         Create Task from database row
         '''
-        timerecord = doto.model.unwrap_row(row,
+        timerecord = doto.model.unwrap_row(store,
+                                           row,
                                            Timerecord,
                                            ('start', 'end'),
                                            ('id',))

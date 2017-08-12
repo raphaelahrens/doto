@@ -15,7 +15,6 @@ CREATE_CMD = '''
                     due TIMESTAMP,
                     start TIMESTAMP,
                     end TIMESTAMP,
-                    repeat TIMEDELTA,
                     PRIMARY KEY (id),
                     CHECK (state IN ('i', 'c', 'p', 's', 'b'))
                 );
@@ -49,7 +48,7 @@ DIFFICULTY = create_difficulties(unknown=0,
 
 def _add_new_state(states, key, name, cls=doto.statemachine.State):
     '''
-    Add a new state to the dictionary and retrun the state.
+    Add a new state to the dictionary and return the state.
 
     @param dir the dictionary to which the state will be added.
     @param key the key for the state
@@ -195,17 +194,17 @@ class Task(doto.model.Event):
         self.state = StateHolder()
         self.schedule = doto.model.TimeSpan()
         self.due = None
-        self.repeat = None
 
     @staticmethod
-    def row_to_obj(row, _store):
+    def row_to_obj(row, store):
         '''
         Create Task from database row
         '''
-        task = doto.model.unwrap_row(row,
+        task = doto.model.unwrap_row(store,
+                                     row,
                                      Task,
                                      ('title', 'description', 'difficulty'),
-                                     ('id', 'due', 'created', 'state', 'repeat'))
+                                     ('id', 'due', 'created', 'state'))
         task.schedule = doto.model.TimeSpan(start=row['start'], end=row['end'])
         return task
 
@@ -303,8 +302,7 @@ TASK_SELECT = '''SELECT id,
                         difficulty,
                         due,
                         start,
-                        end,
-                        repeat
+                        end
                  FROM tasks
                '''
 
@@ -358,7 +356,7 @@ def get_open_tasks(store, limit=20):
                           TASK_SELECT + 'WHERE state != ? LIMIT ?;', (StateHolder.completed, limit,))
 
 
-insert_query = '''INSERT INTO tasks (title,  description,  created,  state,  difficulty,  due,  start,  end)
+insert_query = '''INSERT INTO tasks ( title,  description,  created,  state,  difficulty,  due,  start,  end)
                              VALUES (:title, :description, :created, :state, :difficulty, :due, :start, :end)
                   ;
                '''

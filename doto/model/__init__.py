@@ -32,15 +32,26 @@ def now_with_tz():
 
     @return the current time
     """
+    # remove the micrsoseconds before return
     n = datetime.datetime.now(tz=pytz.utc)
-    # remove the micrsoseconds befor return
     return n - datetime.timedelta(microseconds=n.microsecond)
 
 
-def unwrap_row(row, cls, arg_list, opt_list=None):
+def get_foreign_obj(store, id, module):
+    if id is None:
+        return None
+    return module.get(store, id)
+
+
+def unwrap_row(store, row, cls, arg_list, opt_list=None, foreign_keys=None):
     if opt_list is None:
-        opt_list = []
+        opt_list = ()
+    if foreign_keys is None:
+        foreign_keys = ()
     args = {k: v for k, v in zip(row.keys(), row) if k in arg_list}
+
+    foreign_args = {key: get_foreign_obj(store, row[key], module) for key, module in foreign_keys}
+    args.update(foreign_args)
     obj = cls(**args)
 
     for opt in opt_list:
@@ -49,15 +60,27 @@ def unwrap_row(row, cls, arg_list, opt_list=None):
     return obj
 
 
-def unwrap_obj(obj, ignore_list=None):
+def get_id(obj):
+    if obj is None:
+        return None
+    return obj.id
+
+
+def unwrap_obj(obj, ignore_list=None, foreign_keys=None):
     def member_gen(obj, ignore_list):
         for name in dir(obj):
             name_attr = getattr(obj, name)
             if name.startswith('_') or name in ignore_list or callable(name_attr):
                 continue
-            yield name, name_attr
+            if name in foreign_keys:
+                yield name, get_id(name_attr)
+            else:
+                yield name, name_attr
+
     if ignore_list is None:
-        ignore_list = []
+        ignore_list = ()
+    if foreign_keys is None:
+        foreign_keys = ()
 
     return dict(member_gen(obj, ignore_list))
 
