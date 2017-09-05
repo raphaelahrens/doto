@@ -17,38 +17,54 @@ before() {
 
 it_runs_add_task() {
     $DOTO task add "title" "description"
+    $DOTO task show -1
 }
 
 it_runs_add_task_with_due() {
     $DOTO task add "title" "description" --due "$IN_TWO_DAYS"
+    $DOTO task show -1
 }
 
 it_runs_add_task_with_difficulty() {
     $DOTO task add "title" "description" --difficulty 0
+    $DOTO task show -1
     $DOTO task add "title" "description" --difficulty 1
+    $DOTO task show -1
     $DOTO task add "title" "description" --difficulty 2
+    $DOTO task show -1
     $DOTO task add "title" "description" --difficulty 3
+    $DOTO task show -1
     $DOTO task add "title" "description" --difficulty 4
+    $DOTO task show -1
 }
 
 it_runs_apmt() {
     $DOTO apmt add "Appointment made on $(date +%d.%m.%y-%H:%M)" "$IN_TWO_DAYS"
+    $DOTO apmt show -1
 }
 
 it_runs_apmt_with_description() {
     $DOTO apmt add "Appointment made on $(date +%d.%m.%y-%H:%M)" "$IN_TWO_DAYS" --description "long description"
+    $DOTO apmt show -1
 }
 
 it_runs_apmt_with_end() {
     $DOTO apmt add "Appointment made on $(date +%d.%m.%y-%H:%M)" "$IN_TWO_DAYS" --end "$IN_ONE_WEEK"
+    $DOTO apmt show -1
 }
 
 it_fails_apmt_with_end_lt() {
     test 5 -eq "$($DOTO apmt add "Appointment" "$IN_ONE_WEEK" --end "$IN_TWO_DAYS" > /dev/null; echo $?)"
 }
 
+it_runs_apmt_with_repeat() {
+    $DOTO apmt add "Appointment made on $(date +%d.%m.%y-%H:%M)" "$IN_TWO_DAYS" --repeat @hourly
+    $DOTO apmt show -1
+}
+
 it_runs_add_task_with_UTF() {
     $DOTO task add 'äöüß@ł€¶ŧ←↓→øþæðæſðđŋħ' 'öäüßµ”“đŋŧ←↓→øĸħððŋđŧ' --difficulty 0
+    $DOTO task show -1
 }
 
 it_fails_with_wrong_difficulty() {
@@ -127,11 +143,11 @@ it_runs_punch() {
 
 it_fails_with_wrong_id() {
     $DOTO ls tasks
-    test 1 -eq "$($DOTO task "done" -1 > /dev/null; echo $?)"
-    test 1 -eq "$($DOTO task start -1 > /dev/null; echo $?)"
-    test 1 -eq "$($DOTO task reset -1 > /dev/null; echo $?)"
-    test 1 -eq "$($DOTO task del -1 > /dev/null; echo $?)"
-    test 1 -eq "$($DOTO task show -1 > /dev/null; echo $?)"
+    test 1 -eq "$($DOTO task done -2 > /dev/null; echo $?)"
+    test 1 -eq "$($DOTO task start -2 > /dev/null; echo $?)"
+    test 1 -eq "$($DOTO task reset -2 > /dev/null; echo $?)"
+    test 1 -eq "$($DOTO task del -2 > /dev/null; echo $?)"
+    test 1 -eq "$($DOTO task show -2 > /dev/null; echo $?)"
 }
 it_fails_done_with_already_done() {
     $DOTO ls tasks

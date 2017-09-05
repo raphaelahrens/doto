@@ -9,10 +9,11 @@ import doto.model
 import doto.model.timerecord
 import doto.model.task
 import doto.model.apmt
-import pytz
+import doto.model.repeat
 
 TEST_DB_FILE = ""
-TEST_CAHCE_FILE = "./test/store/cache"
+TEST_CACHE_FILE = "./test/store/cache"
+TEST_LAST_FILE = "./test/store/last"
 
 
 class TestDBManager(unittest.TestCase):
@@ -21,7 +22,7 @@ class TestDBManager(unittest.TestCase):
 
     def setUp(self):
         """ Create a new Db store. """
-        self.store = doto.model.Store(TEST_DB_FILE, TEST_CAHCE_FILE)
+        self.store = doto.model.Store(TEST_DB_FILE, TEST_CACHE_FILE, TEST_LAST_FILE)
 
     def tearDown(self):
         """ Close the connection after everx test. """
@@ -52,7 +53,7 @@ class TestDBManager(unittest.TestCase):
         self.assertListEqual(list(tasks), [test_open])
 
     def test_get_tasks_with_cache(self):
-        """ Test if we can gte a list of the tasks and also create the cache. """
+        """ Test if we can get a list of the tasks and also create the cache. """
         test_task = doto.model.task.Task("title", "description")
         doto.model.task.add_new(self.store, test_task)
         tasks = doto.model.task.get_many(self.store, 10)
@@ -92,6 +93,17 @@ class TestDBManager(unittest.TestCase):
         tasks = doto.model.task.get_many(self.store, 10)
         self.assertListEqual(list(tasks), [])
 
+    def test_repeat(self):
+        ''' Test if we can create a repeat object. '''
+        task = doto.model.task.Task("title", "description")
+        self.store.save()
+        doto.model.task.add_new(self.store, task)
+        repeat = doto.model.repeat.parse('@yearly', datetime.datetime.utcnow(), event=task.id)
+        doto.model.repeat.add_new(self.store, repeat)
+        self.store.save()
+        repeat_two = doto.model.repeat.get(self.store, repeat.id)
+        self.assertEqual(repeat_two, repeat)
+
     def test_fail_delete(self):
         """ Test if a task with no id can't be deleted. """
         test_task = doto.model.task.Task("title", "description")
@@ -111,8 +123,8 @@ class TestDBFiles(unittest.TestCase):
     def test_create_store(self):
         """ Test if we can create a new store file """
         test_file = os.path.join(self.path, "file1.db")
-        self.store = doto.model.Store(test_file, TEST_CAHCE_FILE)
-        self.store.close()
+        store = doto.model.Store(test_file, TEST_CACHE_FILE, TEST_LAST_FILE)
+        store.close()
         self.assertTrue(os.path.isfile(test_file))
 
     def test_create_and_read(self):
@@ -120,15 +132,15 @@ class TestDBFiles(unittest.TestCase):
         test_file = os.path.join(self.path, "file2.db")
         test_task = doto.model.task.Task("create a file and read it",
                                          "We want a new db file and read this task from it.")
-        self.store = doto.model.Store(test_file, TEST_CAHCE_FILE)
-        doto.model.task.add_new(self.store, test_task)
-        self.store.save()
-        self.assertListEqual(list(doto.model.task.get_open_tasks(self.store, 10)), [test_task])
-        self.store.close()
+        store = doto.model.Store(test_file, TEST_CACHE_FILE, TEST_LAST_FILE)
+        doto.model.task.add_new(store, test_task)
+        store.save()
+        self.assertListEqual(list(doto.model.task.get_open_tasks(store, 10)), [test_task])
+        store.close()
         self.assertTrue(os.path.isfile(test_file))
-        self.store = doto.model.Store(test_file, TEST_CAHCE_FILE)
-        self.assertListEqual(list(doto.model.task.get_open_tasks(self.store, 10)), [test_task])
-        self.store.close()
+        store = doto.model.Store(test_file, TEST_CACHE_FILE, TEST_LAST_FILE)
+        self.assertListEqual(list(doto.model.task.get_open_tasks(store, 10)), [test_task])
+        store.close()
 
     @classmethod
     def tearDownClass(cls):

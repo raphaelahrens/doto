@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 """
 The command "task" can be used to add a new task to Done!Tools
@@ -46,7 +45,7 @@ def get_cached_task(store, cache_id):
         if doto.model.task.get_count(store) > 0:
             print("I don't know which task you want!\nYou should first run:\n\tdoto ls")
             return None, 3
-        print('There are no tasks.\nMaybe you would first like to add a new task with:\n\t doto add "title" "description"')
+        print('There are no tasks.\nMaybe you would first like to add a new task with:\n\t doto task add "title" "description"')
         return None, 2
 
     return cache_item, 0

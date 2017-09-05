@@ -16,63 +16,80 @@ CONF_DEF = {}
 def init_parser(subparsers):
     """ Initialize the subparser. """
     parser = subparsers.add_parser(COMMAND, help="delete a task from the list.")
-    parser.add_argument("id", type=int, help="the id of the task which should be deleted.")
+    parser.add_argument("id", type=int, nargs='?', default=-1, help="the id of the task which should be deleted.")
 
 
-class TaskPrinter(object):
-    ''' '''
-    def __init__(self, config):
-        self.__date_printer = doto.cli.printing.DatePrinter(config)
+def schedule_to_str(schedule, date_printer):
+    start = date_printer.date_to_str(schedule.start)
+    if schedule.end is not None:
+        end = date_printer.date_to_str(schedule.end)
+        return '{start}--{end}'.format(start=start, end=end)
+    else:
+        return '{start}'.format(start=start)
 
-    def show(self, tsk, width):
-        ''' Show the given task in a given width
-        @param: tsk a object of type Task
-        @param: width an int
-        '''
-        title_header = "Title"
 
-        state_header = "State"
+class Row(object):
+    def __init__(self, title, value, *, fmt_str='{}'):
+        self.fmt_str = fmt_str
+        self.title = title
+        self.value = value
 
-        state_str = doto.cli.printing.state_to_str(tsk.state)
-        state_sym = doto.cli.printing.state_to_symbol(tsk.state)
+    def print_row(self, width):
+        return self.fmt_str.format(self.title, self.value, width=width)
 
-        headline_format = "{}: {:>{fill_width}}:{:>{state_width}}{}\n  {}\n"
 
-        state_width = 10
+class SplitRow(object):
+    def __init__(self, columns):
+        self.columns = columns
 
-        headline_width = max(0, width - len(title_header) - len(state_header) - state_width)
+    def print_row(self, width):
+        n_columns = len(self.columns)
+        split_width = max(0, (width // n_columns) - 2)
 
-        print(headline_format.format(title_header,
-                                     state_header,
-                                     state_str,
-                                     state_sym,
-                                     tsk.title,
-                                     fill_width=headline_width,
-                                     state_width=state_width
-                                     )
-              )
-        print("Description:\n {}\n".format(tsk.description))
-        date_width = max(0, (width - 2) / 2)
-        date_format = "{:^{date_width}}  {:^{date_width}}"
-        print(date_format.format("Created:",
-                                 "Due:",
-                                 date_width=date_width
-                                 )
-              )
-        print(date_format.format(self.__date_printer.date_to_str(tsk.created),
-                                 self.__date_printer.due_to_str(tsk.due, default="--"),
-                                 date_width=date_width
-                                 )
-              )
+        def cut(string):
+            return string[:split_width]
+        title_fmt = ' {:^{width}} ' * n_columns
+        value_fmt = ' {:^{width}} ' * n_columns
+        titles, values = zip(*((cut(c.title), cut(c.value)) for c in self.columns))
+
+        title_str = title_fmt.format(*titles, width=split_width)
+        value_str = value_fmt.format(*values, width=split_width)
+        return '\n'.join((title_str, value_str))
+
+
+def show(apmt, width, date_printer):
+    ''' Show the given Appointment in a given width
+    @param: apmt a object of type Appointment
+    @param: width an int
+    @param: config the configuration
+    '''
+    title = Row('Title', apmt.title, fmt_str='{}: {}\n')
+    description = Row('Description', apmt.description, fmt_str='{}:\n {}\n')
+    schedule = Row('Schedule', schedule_to_str(apmt.schedule, date_printer))
+    created = Row('Created', date_printer.date_to_str(apmt.created))
+
+    repeat = Row('Repeat', str(apmt.repeat)) if apmt.repeat else Row('', '')
+
+    merged = SplitRow((schedule, repeat, created))
+
+    layout = [title]
+    if apmt.description:
+        layout.append(description)
+
+    layout.append(merged)
+
+    for row in layout:
+        print(row.print_row(width))
 
 
 def main(store, args, config, term):
     """ Delete the given task in args.id. """
 
-    tsk, error = doto.cli.util.get_cached_task(store, args.id)
-    if not tsk:
+    apmt, error = doto.cli.cmd.apmt.get_cached_apmt(store, args.id)
+    if not apmt:
         return error
-
-    TaskPrinter(config).show(tsk, term.columns if term.columns else 80)
+    width = term.columns if term.columns else 80
+    date_printer = doto.cli.printing.DatePrinter(config)
+    show(apmt, width, date_printer)
 
     return 0

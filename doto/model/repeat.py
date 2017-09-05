@@ -15,6 +15,21 @@ CREATE_CMD = '''
              );
              '''
 
+PATTERNS = {
+        '@yearly':    rrule.YEARLY,
+        '@monthly':   rrule.MONTHLY,
+        '@weekly':    rrule.WEEKLY,
+        '@daily':     rrule.DAILY,
+        '@hourly':    rrule.HOURLY,
+        }
+REV_PATTERNS = {
+        rrule.YEARLY: '@yearly',
+        rrule.MONTHLY: '@monthly',
+        rrule.WEEKLY: '@weekly',
+        rrule.DAILY: '@daily',
+        rrule.HOURLY: '@hourly',
+        }
+
 
 class Repeat(object):
     """
@@ -24,17 +39,14 @@ class Repeat(object):
     """
 
     def __init__(self, repeat_rule, event):
-        """
-        """
+        ''' constructor for Repeat '''
         self.event = event
 
         self.repeat_rule = repeat_rule
 
     @staticmethod
     def row_to_obj(row, store):
-        '''
-        Create Repeat from database row
-        '''
+        ''' Create Repeat from database row '''
         repeat = doto.model.unwrap_row(store,
                                        row,
                                        Repeat,
@@ -51,22 +63,19 @@ class Repeat(object):
         row_dict = doto.model.unwrap_obj(obj)
         return row_dict
 
-    def next(self, dt):
-        return self.repeat_rule.after(dt)
+    def next(self, after_dt):
+        ''' return the next event after after_dt '''
+        return self.repeat_rule.after(after_dt)
 
     def __eq__(self, obj):
         return str(self.repeat_rule) == str(obj.repeat_rule)
 
+    def __str__(self):
+        return REV_PATTERNS[self.repeat_rule._freq]
+
 
 def parse(rule_pattern, start_dt, event):
-    patterns = {
-            '@yearly':    rrule.YEARLY,
-            '@monthly':   rrule.MONTHLY,
-            '@weekly':    rrule.WEEKLY,
-            '@daily':     rrule.DAILY,
-            '@hourly':    rrule.HOURLY,
-            }
-    return Repeat(rrule.rrule(patterns[rule_pattern], dtstart=start_dt), event=event)
+    return Repeat(rrule.rrule(PATTERNS[rule_pattern], dtstart=start_dt), event=event)
 
 
 insert_query = '''INSERT INTO repeats ( repeat_rule,  event)

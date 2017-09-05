@@ -3,9 +3,30 @@ Module for crud operations
 '''
 
 
-def insert(insert_query, cls):
+def add_one(store, cls, insert_query, obj):
+    '''
+    Add one row
+    '''
+    row_parameters = cls.obj_to_row(obj)
+    cur = store.execute(insert_query, row_parameters)
+
+    obj.id = cur.lastrowid
+    return obj
+
+
+def add_and_cache(store, cls, insert_query, obj):
+    '''
+    Add a new row and store the id and type in the last event cache
+    '''
+    obj = add_one(store, cls, insert_query, obj)
+    store.set_last(obj)
+    return obj
+
+
+def insert(insert_query, cls, add_fn=add_one):
     '''
     Create insert function
+
     @param insert_query the query for the new insert function
     @param obj_to_row the function to create the row_parameters from the obj
     @param cls the class or module which has a obj_to_row function
@@ -17,22 +38,10 @@ def insert(insert_query, cls):
         @param store the database store
         @param obj the new event
         '''
-        def add_one(obj):
-            '''
-            Add one row
-            '''
-            row_parameters = cls.obj_to_row(obj)
-            cur = store.execute(insert_query, row_parameters)
-
-            obj.id = cur.lastrowid
-            return obj
-
         try:
-            for obj in obj_s:
-                add_one(obj)
-            return obj_s
+            return [add_fn(store, cls, insert_query, obj) for obj in obj_s]
         except TypeError:
-            return add_one(obj_s)
+            return add_fn(store, cls, insert_query, obj_s)
 
     return insert_clojure
 
@@ -90,3 +99,16 @@ def get(select_query, cls):
         '''
         return store.get_one(cls.row_to_obj, select_query, {'id': select_id})
     return get_clojure
+
+
+def get_count(count_query):
+    ''' Get the number of rows with the SELECT COUNT(*) query '''
+    def get_count_clojure(store):
+        ''' Get the count in table of database. '''
+        def tuple_to_count(row, _store):
+            ''' Extract the first value of the row.  '''
+            (count,) = row
+            return count
+        return store.get_one(tuple_to_count, count_query)
+
+    return get_count_clojure

@@ -8,6 +8,7 @@ An example of its use would be
 """
 import doto.model
 import doto.model.apmt
+import doto.model.repeat
 import doto.cli.parser
 
 
@@ -24,10 +25,13 @@ def init_parser(subparsers):
 
 
 def print_error(message, exc):
+    '''
+    Print the message and the Exception
+    '''
     print(("{}\n\t (Error: {})".format(message, exc)))
 
 
-def main(store, args, config, _):
+def main(store:doto.model.Store, args, _config, _):
     """Add a new appointment with the given args"""
     start = doto.cli.parser.date_parser(args.start)
     new_apmt = doto.model.apmt.Appointment(args.title, start)
@@ -35,11 +39,18 @@ def main(store, args, config, _):
         try:
             new_apmt.schedule.end = doto.cli.parser.date_parser(args.end)
         except ValueError as e:
-            print_error("Mhh, looks like the end date is wrong.", e)
+            print_error("Mhh, looks like the end date is wrong.\n Shit happens.", e)
             return 5
     if args.description is not None:
         new_apmt.description = args.description
+
     doto.model.apmt.add_new(store, new_apmt)
+
+    if args.repeat is not None:
+        new_apmt.repeat = doto.model.repeat.parse(args.repeat, new_apmt.schedule.start, new_apmt.id)
+        doto.model.repeat.add_new(store, new_apmt.repeat)
+
+    doto.model.apmt.update(store, new_apmt)
     try:
         store.save()
     except Exception as e:

@@ -10,7 +10,8 @@ CONFIG_FILE = os.path.join(USER_PATH, "dotorc")
 
 CONF_DEF = {"path": {"user": USER_PATH,
                      "store": os.path.join(USER_PATH, "store.db"),
-                     "cache": os.path.join(USER_PATH, "cache")
+                     "cache": os.path.join(USER_PATH, "cache"),
+                     "last": os.path.join(USER_PATH, "last"),
                      },
             "date": {"short_out_str": "%d. %b. %Y",
                      "full_out_str": "%d.%m.%Y-%H:%M",

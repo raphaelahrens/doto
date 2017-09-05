@@ -1,5 +1,7 @@
 #!/bin/sh
 
+. ./venv/bin/activate
+
 print_headline() {
     printf "###################\n"
     printf "%s\n" "$1"

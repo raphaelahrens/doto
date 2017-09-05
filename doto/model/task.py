@@ -307,12 +307,7 @@ TASK_SELECT = '''SELECT id,
                '''
 
 
-def get_count(store):
-    ''' Get the count Tasks in the database. '''
-    def tuple_to_count(row, _store):
-        (count,) = row
-        return count
-    return store.get_one(tuple_to_count, 'SELECT COUNT(id) FROM tasks')
+count_query = 'SELECT COUNT(id) FROM tasks'
 
 
 def _get_tasks(store, query, args=None):
@@ -373,9 +368,10 @@ update_query = '''UPDATE tasks SET title = :title,
 delete_query = 'DELETE FROM tasks WHERE id = ?;'
 select_query = TASK_SELECT + ' WHERE id = :id;'
 update = doto.model.crud.update(update_query, Task)
-add_new = doto.model.crud.insert(insert_query, Task)
+add_new = doto.model.crud.insert(insert_query, Task, add_fn=doto.model.crud.add_and_cache)
 delete = doto.model.crud.delete(delete_query)
 get = doto.model.crud.get(select_query, Task)
+get_count = doto.model.crud.get_count(count_query)
 
 
 doto.model.setup_module(CREATE_CMD, (StateHolder.type_def(),

@@ -51,6 +51,8 @@ class Appointment(doto.model.Event):
 
     @staticmethod
     def obj_to_row(obj):
+        '''
+        '''
         row_dict = doto.model.unwrap_obj(obj, ignore_list=('schedule',), foreign_keys=('repeat',))
         row_dict['start'] = obj.schedule.start
         row_dict['end'] = obj.schedule.end
@@ -83,6 +85,19 @@ class Appointment(doto.model.Event):
                 )
 
 
+def create_repeats(store):
+    oudated_query = '''SELECT appointments.* FROM appointments
+                                               INNER JOIN repeats
+                                               ON appointments.id=repeats.event
+                                               WHERE appointments.start <= :now;
+                      '''
+    outdated_apmts = store.query(Appointment.row_to_obj, oudated_query, {'now': doto.model.now_with_tz()})
+    for apmt in outdated_apmts:
+        pass
+
+    
+
+
 def get_current(store, date, delta):
     """
     Get the appointments that are between the given date and the date + delta.
@@ -100,14 +115,7 @@ def get_current(store, date, delta):
     return apmts
 
 
-def get_count(store):
-    ''' Get the count Tasks in the database. '''
-    def tuple_to_count(row, _store):
-        (count,) = row
-        return count
-    return store.get_one(tuple_to_count, 'SELECT COUNT(id) FROM appointments')
-
-
+count_query = 'SELECT COUNT(id) FROM appointments'
 insert_query = '''INSERT INTO appointments ( title,  description,  created,  start,  end,  repeat)
                                     VALUES (:title, :description, :created, :start, :end, :repeat)
                   ;
@@ -121,10 +129,11 @@ update_query = '''UPDATE appointments SET title = :title,
                                          WHERE id = :id;
                '''
 delete_query = 'DELETE FROM appointments WHERE id = ?;'
-select_query = 'SELECT * FROM appointments WHERE id = ?;'
+select_query = 'SELECT * FROM appointments WHERE id = :id;'
 update = doto.model.crud.update(update_query, Appointment)
-add_new = doto.model.crud.insert(insert_query, Appointment)
+add_new = doto.model.crud.insert(insert_query, Appointment, add_fn=doto.model.crud.add_and_cache)
 delete = doto.model.crud.delete(delete_query)
 get = doto.model.crud.get(select_query, Appointment)
+get_count = doto.model.crud.get_count(count_query)
 
 doto.model.setup_module(CREATE_CMD, ())

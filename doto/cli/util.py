@@ -35,25 +35,3 @@ def to_str(obj):
 
 
 ID_FORMAT = "%d [%08x]"
-
-
-def get_cached_task(store, cache_id):
-    """
-    Get the cached task with the cache_id from the given store.
-
-    @param store the store that stores all tasks
-    @param cache_id the id of the cached task
-    """
-    cache_item, cache_error = store.get_cache_item(cache_id)
-    if not cache_item:
-        if not cache_error:
-            print("There is no task with the id %d" % cache_id)
-            return None, 1
-
-        if store.get_task_count() > 0:
-            print("I don't know which task you want!\nYou should first run:\n\tdoto ls")
-            return None, 3
-        print("There are no tasks.\nMaybe you would first like to add a new task with: \n\t doto add \"title\" \"description\" ")
-        return None, 2
-
-    return cache_item, 0

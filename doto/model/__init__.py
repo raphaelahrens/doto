@@ -15,6 +15,9 @@ def adapt_datetime(dt):
 def convert_datetime(str_dt):
     return datetime.datetime.fromtimestamp(int(str_dt), tz=pytz.utc)
 
+def collate_datetime(a, b):
+#TODO go on
+
 
 def setup_module(create_cmd, type_list):
     Store.CREATE_CMDS.add(create_cmd)
@@ -250,12 +253,19 @@ def get_cache_item(store, cache_id, e_type):
     '''
     Get the item with cache_id from the cache file and return it.
     '''
-    if cache_id < 0:
+    if cache_id == -1:
+        cache, cache_error = load_cache(store.last_file)
+        cache_id = 0
+    elif cache_id < 0:
         return None, False
-    cache, cache_error = load_cache(store.cache_file)
+    else:
+        cache, cache_error = load_cache(store.cache_file)
     if cache_error:
         return None, cache_error
-    cache_item = cache[cache_id]
+    try:
+        cache_item = cache[cache_id]
+    except IndexError:
+        return None, False
     if cache_item.type != e_type:
         return None, cache_error
     event_module = importlib.import_module(cache_item.module)
@@ -281,9 +291,10 @@ def _create_dir(db_name):
 
 
 class Store(object):
+    ''' The store object take care of all permanten data stores. '''
     CREATE_CMDS = set()
 
-    def __init__(self, filename, cache_file):
+    def __init__(self, filename, cache_file, last_file):
         if filename != "":
             _create_dir(filename)
         else:
@@ -296,18 +307,23 @@ class Store(object):
         self.create()
 
         self.cache_file = cache_file
+        self.last_file = last_file
         self._cache_list = []
+        self._last_cache = None
 
     def create(self):
+        ''' Run all the create commands which come from the submodules. '''
         create_cmds = ';'.join(Store.CREATE_CMDS)
         self.cur.executescript(create_cmds)
 
     def execute(self, query, parameters=None):
+        ''' Execute an SQL query with the given parameters. '''
         if parameters is None:
             return self.cur.execute(query)
         return self.cur.execute(query, parameters)
 
     def get_one(self, convert, query, parameters=None):
+        ''' Run a select statement which only return one row.'''
         cur = self.execute(query, parameters)
         row = cur.fetchone()
         assert cur.fetchone() is None
@@ -329,6 +345,15 @@ class Store(object):
 
         self._cache_list += events
 
+    def set_last(self, event):
+        '''
+        Set the last added event so it can be staored in the last cache file
+        '''
+        self._last_cache = event
+
+    def get_last(self):
+        return load_cache(self.last_file)[0]
+
     def get_cache(self):
         """
         Get all elements in the cache.
@@ -339,23 +364,6 @@ class Store(object):
         """
         return load_cache(self.cache_file)
 
-    def __get_cache_item(self, cache_id, query):
-        """
-        Get the Item with the id cache_id from the cache.
-
-        @param cache_id the id of the cache item
-
-        @return the cache item that matches the given id or None.
-        """
-        cache, cache_error = self.get_cache()
-
-        if cache_error or cache_id < 0 or cache_id > len(cache):
-            return None, cache_error
-
-        item = cache[cache_id]
-
-        return query(item), cache_error
-
     def save(self):
         """
         Save the store.
@@ -364,6 +372,8 @@ class Store(object):
         """
         if len(self._cache_list) > 0:
             dump_cache(self.cache_file, self._cache_list)
+        if self._last_cache is not None:
+            dump_cache(self.last_file, (self._last_cache,))
 
         self.conn.commit()
 

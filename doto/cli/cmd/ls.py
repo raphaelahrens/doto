@@ -14,7 +14,6 @@ import doto.cli.printing
 import doto.model
 import doto.model.apmt
 import doto.model.task
-import doto.util
 
 
 COMMAND = 'ls'
@@ -23,6 +22,29 @@ CONF_DEF = {}
 APMT_LIMIT = datetime.timedelta(14, 0, 0)
 
 uf = doto.cli.printing.UnicodeFormatter()
+
+
+def partition(pred, iterable):
+    """
+    Partion a list in two lists
+    where the first list hold all items
+    for which the function pred returned True
+    and the second list holds all reset.
+
+    @param pred a function that returns True or False and has one parameter
+    @param iterable a list of items which can be called with pred
+
+    @returns two list one with all items for which pred returned True
+                and a second list with all items for which pred returned False
+    """
+    trues = []
+    falses = []
+    for item in iterable:
+        if pred(item):
+            trues.append(item)
+        else:
+            falses.append(item)
+    return trues, falses
 
 
 class Column(object):
@@ -186,7 +208,7 @@ class View(object):
     '''
 
     def __init__(self, width, columns):
-        fixed_columns, expanding_columns = doto.util.partition(lambda x: x.expand is None, columns)
+        fixed_columns, expanding_columns = partition(lambda x: x.expand is None, columns)
         fix_size = sum((column.width for column in fixed_columns))
         expand_sum = sum(column.expand for column in expanding_columns)
         rest_size = max(0, width - fix_size - len(columns))
@@ -231,6 +253,7 @@ class View(object):
         '''
         for event_data in line_generator(self._columns, data_list):
             self._print_row(event_data)
+
 
 class TaskOverview(View):
     '''

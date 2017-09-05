@@ -22,7 +22,7 @@ def init_parser(subparsers):
     It adds the id argument to the argument parser
     """
     parser = subparsers.add_parser(COMMAND, help="")
-    parser.add_argument("id", type=int, help="The id of the appointment which should be modified.")
+    parser.add_argument("id", type=int, nargs='?', default=-1, help="The id of the appointment which should be modified.")
     parser.add_argument("--title", type=str, help="The title of the new appointment")
     parser.add_argument("--start", type=str, help="The date when the new appointment will start")
     doto.cli.cmd.apmt.init_apmt_flags(parser)
@@ -46,7 +46,7 @@ def set_or_reset(value, fnc=lambda x: x):
 def main(store, args, _config, _env):
     """ The Main method of start."""
 
-    modify_task, error = doto.cli.util.get_cached_task(store, args.id)
+    modify_task, error = doto.cli.cmd.apmt.get_cached_apmt(store, args.id)
     if not modify_task:
         return error
     print(("Changing task " + doto.cli.util.ID_FORMAT + ":\n\t %s") % (args.id, modify_task.id, modify_task.title))

@@ -47,7 +47,7 @@ class TaskPrinter(object):
                                      )
               )
         print("Description:\n {}\n".format(tsk.description))
-        date_width = max(0, (width - 2) / 2)
+        date_width = max(0, (width - 2) // 2)
         date_format = "{:^{date_width}}  {:^{date_width}}"
         print(date_format.format("Created:",
                                  "Due:",

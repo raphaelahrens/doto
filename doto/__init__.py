@@ -1,3 +1,5 @@
+''' Doto main module '''
+
 import argparse
 import shutil
 
@@ -6,9 +8,6 @@ import doto.cli.cmd
 import doto.cli.sub_cmds
 import doto.model
 import doto.defaultconfig
-import doto.util
-
-EXIT_CODES = doto.util.enum(unknown_cmd=1)
 
 
 def init_env(commands):
@@ -45,7 +44,7 @@ def main():
     parser, args = init_env(cmds.values())
     doto.cli.parser.set_date_parser(config.date.local_tz, config.date.cli_input_str)
     term = shutil.get_terminal_size()
-    with doto.model.Store(config.path.store, config.path.cache) as store:
+    with doto.model.Store(config.path.store, config.path.cache, config.path.last) as store:
         # execute command
         if args.cmd not in cmds:
             parser.print_help()
