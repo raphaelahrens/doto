@@ -3,7 +3,6 @@ import unittest
 import shutil
 import os.path
 import tempfile
-import datetime
 
 import doto.model
 import doto.model.timerecord
@@ -31,7 +30,7 @@ class TestDBManager(unittest.TestCase):
     def test_init(self):
         """ Test the constructor of the database store. """
         tasks = doto.model.task.get_many(self.store, 10)
-        self.assertListEqual(list(tasks), [])
+        self.assertListEqual(tasks, [])
 
     def test_store(self):
         """ Test if we can store tasks. """
@@ -39,7 +38,7 @@ class TestDBManager(unittest.TestCase):
         doto.model.task.add_new(self.store, test_task)
         self.store.save()
         tasks = doto.model.task.get_many(self.store, 10)
-        self.assertListEqual(list(tasks), [test_task])
+        self.assertListEqual(tasks, [test_task])
 
     def test_get_tasks_with_undone_only(self):
         """ Test if we can get only unfinished tasks. """
@@ -50,14 +49,14 @@ class TestDBManager(unittest.TestCase):
         doto.model.task.add_new(self.store, test_open)
         self.store.save()
         tasks = doto.model.task.get_open_tasks(self.store, 10)
-        self.assertListEqual(list(tasks), [test_open])
+        self.assertListEqual(tasks, [test_open])
 
     def test_get_tasks_with_cache(self):
         """ Test if we can get a list of the tasks and also create the cache. """
         test_task = doto.model.task.Task("title", "description")
         doto.model.task.add_new(self.store, test_task)
         tasks = doto.model.task.get_many(self.store, 10)
-        self.assertListEqual(list(tasks), [test_task])
+        self.assertListEqual(tasks, [test_task])
         cache = self.store.get_cache()
         self.assertTrue(len(cache) > 0)
         # self.assertEqual(cache, {i: tsk for i, tsk in zip(range(len(tasks)), tasks)})
@@ -67,7 +66,7 @@ class TestDBManager(unittest.TestCase):
         ref_list = [doto.model.task.Task("title %i" % i, "description") for i in range(10)]
         doto.model.task.add_new(self.store, ref_list)
         self.store.save()
-        tasks = list(doto.model.task.get_many(self.store, 10))
+        tasks = doto.model.task.get_many(self.store, 10)
         self.assertListEqual(tasks, ref_list)
 
     def test_update(self):
@@ -79,7 +78,7 @@ class TestDBManager(unittest.TestCase):
         test_task.due = now
         doto.model.task.update(self.store, test_task)
         self.store.save()
-        tasks = list(doto.model.task.get_many(self.store, 10))
+        tasks = doto.model.task.get_many(self.store, 10)
         self.assertListEqual(tasks, [test_task])
         self.assertEqual(tasks[0].due, now)
 
@@ -91,14 +90,14 @@ class TestDBManager(unittest.TestCase):
         doto.model.task.delete(self.store, test_task)
         self.store.save()
         tasks = doto.model.task.get_many(self.store, 10)
-        self.assertListEqual(list(tasks), [])
+        self.assertListEqual(tasks, [])
 
     def test_repeat(self):
         ''' Test if we can create a repeat object. '''
         task = doto.model.task.Task("title", "description")
         self.store.save()
         doto.model.task.add_new(self.store, task)
-        repeat = doto.model.repeat.parse('@yearly', datetime.datetime.utcnow(), event=task.id)
+        repeat = doto.model.repeat.parse('@yearly', doto.model.now_with_tz(), event=task.id)
         doto.model.repeat.add_new(self.store, repeat)
         self.store.save()
         repeat_two = doto.model.repeat.get(self.store, repeat.id)
@@ -135,11 +134,11 @@ class TestDBFiles(unittest.TestCase):
         store = doto.model.Store(test_file, TEST_CACHE_FILE, TEST_LAST_FILE)
         doto.model.task.add_new(store, test_task)
         store.save()
-        self.assertListEqual(list(doto.model.task.get_open_tasks(store, 10)), [test_task])
+        self.assertListEqual(doto.model.task.get_open_tasks(store, 10), [test_task])
         store.close()
         self.assertTrue(os.path.isfile(test_file))
         store = doto.model.Store(test_file, TEST_CACHE_FILE, TEST_LAST_FILE)
-        self.assertListEqual(list(doto.model.task.get_open_tasks(store, 10)), [test_task])
+        self.assertListEqual(doto.model.task.get_open_tasks(store, 10), [test_task])
         store.close()
 
     @classmethod

@@ -34,6 +34,8 @@ def main(store, args, *_):
         return 5
     try:
         doto.model.task.update(store, tsk)
+        if tsk.due is not None and tsk.repeat is not None:
+            doto.model.task.create_repeat(store, tsk)
         store.save()
     except:
         print(("It was not possible to finish the task with id " + doto.cli.util.ID_FORMAT + ":\n\t %r") % (args.id, tsk.id))

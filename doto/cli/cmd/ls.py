@@ -303,7 +303,8 @@ class ApmtOverview(View):
     def __init__(self, config, width):
         date_printer = doto.cli.printing.DatePrinter(config)
         columns = [CutColumn('I̲D̲', 4, '>'),
-                   Column('S̲t̲a̲r̲t̲s̲ ̲i̲n̲', date_printer.max_due_len, '>', date_printer.due_to_str),
+                   Column('S̲t̲a̲r̲t̲s̲ ̲i̲n̲', date_printer.max_due_len, '^', date_printer.due_to_str),
+                   Column(' ', 8, '<'),
                    WrapColumn('A̲p̲p̲o̲i̲n̲t̲m̲e̲n̲t̲ ̲t̲i̲t̲l̲e̲', 10, '<', expand=1)
                    ]
         View.__init__(self, width, columns)
@@ -316,6 +317,7 @@ class ApmtOverview(View):
         '''
         return ((apmt.cache_id,
                  apmt.schedule.start,
+                 apmt.repeat,
                  apmt.title
                  )
                 for apmt in apmts)
@@ -327,8 +329,10 @@ class ApmtOverview(View):
         @param store the Store object
         @param args the arguments of the CLI
         '''
-        apmts = doto.model.apmt.get_current(store, doto.model.now_with_tz(), APMT_LIMIT)
-        apmts.sort(key=lambda x: x.schedule.start)
+        if args.all:
+            apmts = doto.model.apmt.get_all(store, doto.model.now_with_tz())
+        else:
+            apmts = doto.model.apmt.get_current(store, doto.model.now_with_tz(), APMT_LIMIT)
         return apmts
 
 

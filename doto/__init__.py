@@ -39,7 +39,7 @@ def main():
     """
 
     # Init phase
-    cmds = doto.cli.sub_cmds.import_commands(doto.cli.cmd.__path__, doto.cli.cmd.__name__)
+    cmds = doto.cli.sub_cmds.import_commands(doto.cli.cmd)
     config = doto.defaultconfig.read_config()
     parser, args = init_env(cmds.values())
     doto.cli.parser.set_date_parser(config.date.local_tz, config.date.cli_input_str)

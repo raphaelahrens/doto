@@ -7,6 +7,7 @@ An example of its use would be
 
 """
 import doto.model.task
+import doto.model.repeat
 import doto.cli.parser
 import doto.cli.cmd.task
 
@@ -28,7 +29,10 @@ def main(store, args, _config, _env):
     tsk = doto.model.task.Task(args.title, args.description)
     if args.due is not None:
         tsk.due = doto.cli.parser.date_parser(args.due)
-    tsk.repeat = args.repeat
+        if args.repeat is not None:
+            tsk.repeat = doto.model.repeat.parse(args.repeat, tsk.due, tsk.id)
+            doto.model.repeat.add_new(store, tsk.repeat)
+
     if args.difficulty is not None:
         tsk.difficulty = args.difficulty
     try:

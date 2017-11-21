@@ -4,6 +4,7 @@ Description of a recurring event.
 import doto.model
 import doto.model.crud
 from dateutil import rrule
+import pytz
 
 CREATE_CMD = '''
              CREATE TABLE IF NOT EXISTS
@@ -65,7 +66,8 @@ class Repeat(object):
 
     def next(self, after_dt):
         ''' return the next event after after_dt '''
-        return self.repeat_rule.after(after_dt)
+        utc_after = pytz.utc.normalize(after_dt).replace(tzinfo=None)
+        return self.repeat_rule.after(utc_after).replace(tzinfo=pytz.utc)
 
     def __eq__(self, obj):
         return str(self.repeat_rule) == str(obj.repeat_rule)
@@ -75,7 +77,8 @@ class Repeat(object):
 
 
 def parse(rule_pattern, start_dt, event):
-    return Repeat(rrule.rrule(PATTERNS[rule_pattern], dtstart=start_dt), event=event)
+    utc_start = pytz.utc.normalize(start_dt)
+    return Repeat(rrule.rrule(PATTERNS[rule_pattern], dtstart=utc_start), event=event)
 
 
 insert_query = '''INSERT INTO repeats ( repeat_rule,  event)

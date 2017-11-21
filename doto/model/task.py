@@ -1,3 +1,5 @@
+import copy
+
 import doto.model
 import doto.statemachine
 import doto.model.crud
@@ -15,7 +17,9 @@ CREATE_CMD = '''
                     due TIMESTAMP,
                     start TIMESTAMP,
                     end TIMESTAMP,
+                    repeat INTEGER,
                     PRIMARY KEY (id),
+                    FOREIGN KEY(repeat) REFERENCES repeats(id)
                     CHECK (state IN ('i', 'c', 'p', 's', 'b'))
                 );
              '''
@@ -188,12 +192,13 @@ class Task(doto.model.Event):
     '''
     __tablename__ = "tasks"
 
-    def __init__(self, title, description, difficulty=DIFFICULTY.unknown):
+    def __init__(self, title, description, difficulty=DIFFICULTY.unknown, repeat=None):
         super().__init__(title, description)
         self.difficulty = difficulty
         self.state = StateHolder()
         self.schedule = doto.model.TimeSpan()
         self.due = None
+        self.repeat = repeat
 
     @staticmethod
     def row_to_obj(row, store):
@@ -204,7 +209,9 @@ class Task(doto.model.Event):
                                      row,
                                      Task,
                                      ('title', 'description', 'difficulty'),
-                                     ('id', 'due', 'created', 'state'))
+                                     ('id', 'due', 'created', 'state'),
+                                     foreign_keys=(('repeat', doto.model.repeat),)
+                                     )
         task.schedule = doto.model.TimeSpan(start=row['start'], end=row['end'])
         return task
 
@@ -213,6 +220,7 @@ class Task(doto.model.Event):
         row_dict = doto.model.unwrap_obj(obj, ignore_list=['schedule', 'started'])
         row_dict['start'] = obj.schedule.start
         row_dict['end'] = obj.schedule.end
+        row_dict['repeat'] = doto.model.get_id(obj.repeat)
         return row_dict
 
     @property
@@ -302,7 +310,8 @@ TASK_SELECT = '''SELECT id,
                         difficulty,
                         due,
                         start,
-                        end
+                        end,
+                        repeat
                  FROM tasks
                '''
 
@@ -311,10 +320,7 @@ count_query = 'SELECT COUNT(id) FROM tasks'
 
 
 def _get_tasks(store, query, args=None):
-    if args is None:
-        return store.query(Task.row_to_obj, query, ())
-    else:
-        return store.query(Task.row_to_obj, query, args)
+    return store.query(Task.row_to_obj, query, args)
 
 
 def get_many(store, limit=10):
@@ -331,6 +337,21 @@ def get_many(store, limit=10):
         return _get_tasks(store, TASK_SELECT + ';')
     else:
         return _get_tasks(store, TASK_SELECT + ' LIMIT ?;', (limit,))
+
+
+def create_repeat(store, task):
+    ''' Create a repeated appointment '''
+    new_task = copy.copy(task)
+    new_task.reset()
+    now = doto.model.now_with_tz()
+    next_dt = now if now > task.due else task.due
+    new_task.due = new_task.repeat.next(next_dt)
+    new_task.created = now
+    # TODO: This cries for a transaction
+    add_new(store, new_task)
+    new_task.repeat.task = new_task.id
+    doto.model.repeat.update(store, new_task.repeat)
+    return new_task
 
 
 def get_open_tasks(store, limit=20):
@@ -351,8 +372,8 @@ def get_open_tasks(store, limit=20):
                           TASK_SELECT + 'WHERE state != ? LIMIT ?;', (StateHolder.completed, limit,))
 
 
-insert_query = '''INSERT INTO tasks ( title,  description,  created,  state,  difficulty,  due,  start,  end)
-                             VALUES (:title, :description, :created, :state, :difficulty, :due, :start, :end)
+insert_query = '''INSERT INTO tasks ( title,  description,  created,  state,  difficulty,  due,  start,  end,  repeat)
+                             VALUES (:title, :description, :created, :state, :difficulty, :due, :start, :end, :repeat)
                   ;
                '''
 update_query = '''UPDATE tasks SET title = :title,
@@ -362,7 +383,8 @@ update_query = '''UPDATE tasks SET title = :title,
                                    difficulty = :difficulty,
                                    due = :due,
                                    start = :start,
-                                   end = :end
+                                   end = :end,
+                                   repeat = :repeat
                          WHERE id = :id;
                '''
 delete_query = 'DELETE FROM tasks WHERE id = ?;'

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 The command "add" can be used to add a new task to Done!Tools
 
@@ -23,10 +22,7 @@ init_parser = functools.partial(doto.cli.sub_cmds.init_sub_cmd,
                                 module_name=__name__,
                                 help="The appointment command")
 
-
-def main(store, args, config, term):
-    """Add a new task with the given arguments."""
-    return sub_cmds[args.sub_cmd].main(store, args, config, term)
+main = doto.cli.sub_cmds.main(sub_cmds)
 
 
 def get_cached_apmt(store, cache_id):

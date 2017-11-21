@@ -75,14 +75,27 @@ class Appointment(doto.model.Event):
         return True
 
     def __repr__(self):
-        return ("%s(title=%r, description=%r, start=%r, end=%r)" %
+        return ("%s(id=%s, title=%r, description=%r, start=%r, end=%r)" %
                 (self.__class__.__name__,
+                 self.id,
                  self.title,
                  self.description,
                  self.schedule.start,
                  self.schedule.end
                  )
                 )
+
+
+def create_repeat(store, apmt):
+    ''' Create a repeated appointment '''
+    next_dt = apmt.repeat.next(doto.model.now_with_tz())
+    repeat = apmt.repeat
+    apmt.schedule = doto.model.TimeSpan.move(apmt.schedule, next_dt)
+    # TODO: This cries for a transaction
+    new_apmt = add_new(store, apmt).id
+    repeat.event = new_apmt
+    doto.model.repeat.update(store, repeat)
+    return new_apmt
 
 
 def create_repeats(store):
@@ -93,9 +106,12 @@ def create_repeats(store):
                       '''
     outdated_apmts = store.query(Appointment.row_to_obj, oudated_query, {'now': doto.model.now_with_tz()})
     for apmt in outdated_apmts:
-        pass
+        create_repeat(store, apmt)
 
-    
+
+def get_many(store, query, params):
+    create_repeats(store)
+    return store.query(Appointment.row_to_obj, query, params)
 
 
 def get_current(store, date, delta):
@@ -109,10 +125,16 @@ def get_current(store, date, delta):
 
     @return the appointments between the date and date + delta
     """
-    query = 'SELECT * FROM appointments WHERE start >= :from AND start < :until;'
+    query = 'SELECT * FROM appointments WHERE start >= :from AND start < :until ORDER BY start;'
+    params = {'from': date, 'until': date + delta}
 
-    apmts = store.query(Appointment.row_to_obj, query, {'from': date, 'until': date + delta})
-    return apmts
+    return get_many(store, query, params)
+
+
+def get_all(store, date):
+    query = 'SELECT * FROM appointments WHERE start >= :from ORDER BY start;'
+    params = {'from': date}
+    return get_many(store, query, params)
 
 
 count_query = 'SELECT COUNT(id) FROM appointments'

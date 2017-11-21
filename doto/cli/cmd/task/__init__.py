@@ -24,9 +24,7 @@ init_parser = functools.partial(doto.cli.sub_cmds.init_sub_cmd,
                                 help="The task command")
 
 
-def main(store, args, config, term):
-    """Add a new task with the given args"""
-    return sub_cmds[args.sub_cmd].main(store, args, config, term)
+main = doto.cli.sub_cmds.main(sub_cmds)
 
 
 def get_cached_task(store, cache_id):
@@ -55,8 +53,6 @@ def init_task_flags(parser):
     """
     Set the Flags for creating or modifing a task
     """
-    # parser.add_argument("--category", type=to_unicode, help="Set the category of this task.")
-    # parser.add_argument("--project", type=to_unicode, help="Set the project of this task.")
     parser.add_argument("--difficulty", type=int, choices=doto.model.task.DIFFICULTY.keys, help="the estimated difficulty of the task.")
     parser.add_argument("--due", type=str, help="the estimated completion date.")
-    parser.add_argument("--repeat", type=str, help="number of days in which the task should be repeated.")
+    parser.add_argument("--repeat", type=str, help="repeat pattern of the task")

@@ -7,23 +7,26 @@ import importlib
 import pytz
 
 
+DATETIME_FMT = '%Y-%m-%d %H:%M:%S'
+
+
 def adapt_datetime(dt):
     utc_dt = pytz.utc.normalize(dt)
-    return round(utc_dt.timestamp())
+    return utc_dt.strftime(DATETIME_FMT).encode('utf-8')
 
 
 def convert_datetime(str_dt):
-    return datetime.datetime.fromtimestamp(int(str_dt), tz=pytz.utc)
+    stored_dt = datetime.datetime.strptime(str_dt.decode("utf-8"), DATETIME_FMT)
+    return pytz.utc.localize(stored_dt)
 
-def collate_datetime(a, b):
-#TODO go on
+
+sqlite3.register_adapter(datetime.datetime, adapt_datetime)
+sqlite3.register_converter('TIMESTAMP', convert_datetime)
 
 
 def setup_module(create_cmd, type_list):
     Store.CREATE_CMDS.add(create_cmd)
 
-    sqlite3.register_adapter(datetime.datetime, adapt_datetime)
-    sqlite3.register_converter('TIMESTAMP', convert_datetime)
     for cls, adapter, converter in type_list:
         sqlite3.register_adapter(cls, adapter)
         sqlite3.register_converter(cls.__name__, converter)
@@ -192,6 +195,12 @@ class TimeSpan(object):
     def __repr__(self):
         return "TimeSpan(start=%r, end=%r" % (self.start, self.end)
 
+    @staticmethod
+    def move(time_span, new_start, new_end=None):
+        if new_end is None and time_span.end is not None:
+            new_end = time_span.end + (new_start - time_span.start)
+        return TimeSpan(new_start, new_end)
+
 
 class Event(object):
     """
@@ -291,7 +300,7 @@ def _create_dir(db_name):
 
 
 class Store(object):
-    ''' The store object take care of all permanten data stores. '''
+    ''' The store object take care of all permanent data stores. '''
     CREATE_CMDS = set()
 
     def __init__(self, filename, cache_file, last_file):
@@ -303,7 +312,6 @@ class Store(object):
         self.conn = sqlite3.connect(filename, detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES)
         self.conn.row_factory = sqlite3.Row
 
-        self.cur = self.conn.cursor()
         self.create()
 
         self.cache_file = cache_file
@@ -314,13 +322,13 @@ class Store(object):
     def create(self):
         ''' Run all the create commands which come from the submodules. '''
         create_cmds = ';'.join(Store.CREATE_CMDS)
-        self.cur.executescript(create_cmds)
+        self.conn.executescript(create_cmds)
 
     def execute(self, query, parameters=None):
         ''' Execute an SQL query with the given parameters. '''
         if parameters is None:
-            return self.cur.execute(query)
-        return self.cur.execute(query, parameters)
+            return self.conn.execute(query)
+        return self.conn.execute(query, parameters)
 
     def get_one(self, convert, query, parameters=None):
         ''' Run a select statement which only return one row.'''
@@ -330,15 +338,17 @@ class Store(object):
         return convert(row, self)
 
     def query(self, convert, query, parameters=None):
-        cur = self.execute(query, parameters)
-        return list(map(lambda x: convert(x, self), cur))
+        '''
+        Execute a query and convert the result with the convert function.
+        '''
+        return [convert(x, self) for x in self.execute(query, parameters)]
 
     def add_to_cache(self, events):
-        """
+        '''
         Add the events to the cache.
 
         @param events the events that will be added to the cache.
-        """
+        '''
         cache_len = len(self._cache_list)
         for i, event in enumerate(events):
             event.cache_id = cache_len + i
@@ -347,7 +357,7 @@ class Store(object):
 
     def set_last(self, event):
         '''
-        Set the last added event so it can be staored in the last cache file
+        Set the last added event so it can be stored in the last cache file
         '''
         self._last_cache = event
 
@@ -358,8 +368,8 @@ class Store(object):
         """
         Get all elements in the cache.
 
-        This methode gets used by the cli commandsr
-        which can use the cahe_id.
+        This method gets used by the cli commandsr
+        which can use the cache_id.
 
         """
         return load_cache(self.cache_file)
@@ -383,7 +393,6 @@ class Store(object):
 
         If the cache was enabled also save the cache to disk.
         """
-        self.cur.close()
         self.conn.close()
 
     def __enter__(self):
