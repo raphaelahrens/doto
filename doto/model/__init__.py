@@ -259,9 +259,9 @@ def load_cache(filename):
 
 
 def get_cache_item(store, cache_id, e_type):
-    '''
+    """
     Get the item with cache_id from the cache file and return it.
-    '''
+    """
     if cache_id == -1:
         cache, cache_error = load_cache(store.last_file)
         cache_id = 0
@@ -300,7 +300,7 @@ def _create_dir(db_name):
 
 
 class Store(object):
-    ''' The store object take care of all permanent data stores. '''
+    """ The store object take care of all permanent data stores. """
     CREATE_CMDS = set()
 
     def __init__(self, filename, cache_file, last_file):
@@ -320,35 +320,35 @@ class Store(object):
         self._last_cache = None
 
     def create(self):
-        ''' Run all the create commands which come from the submodules. '''
+        """ Run all the create commands which come from the submodules. """
         create_cmds = ';'.join(Store.CREATE_CMDS)
         self.conn.executescript(create_cmds)
 
     def execute(self, query, parameters=None):
-        ''' Execute an SQL query with the given parameters. '''
+        """ Execute an SQL query with the given parameters. """
         if parameters is None:
             return self.conn.execute(query)
         return self.conn.execute(query, parameters)
 
     def get_one(self, convert, query, parameters=None):
-        ''' Run a select statement which only return one row.'''
+        """ Run a select statement which only return one row."""
         cur = self.execute(query, parameters)
         row = cur.fetchone()
         assert cur.fetchone() is None
         return convert(row, self)
 
     def query(self, convert, query, parameters=None):
-        '''
+        """
         Execute a query and convert the result with the convert function.
-        '''
+        """
         return [convert(x, self) for x in self.execute(query, parameters)]
 
     def add_to_cache(self, events):
-        '''
+        """
         Add the events to the cache.
 
         @param events the events that will be added to the cache.
-        '''
+        """
         cache_len = len(self._cache_list)
         for i, event in enumerate(events):
             event.cache_id = cache_len + i
@@ -356,9 +356,9 @@ class Store(object):
         self._cache_list += events
 
     def set_last(self, event):
-        '''
+        """
         Set the last added event so it can be stored in the last cache file
-        '''
+        """
         self._last_cache = event
 
     def get_last(self):

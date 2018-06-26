@@ -93,7 +93,7 @@ class TestDBManager(unittest.TestCase):
         self.assertListEqual(tasks, [])
 
     def test_repeat(self):
-        ''' Test if we can create a repeat object. '''
+        """ Test if we can create a repeat object. """
         task = doto.model.task.Task("title", "description")
         self.store.save()
         doto.model.task.add_new(self.store, task)

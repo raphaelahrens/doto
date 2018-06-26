@@ -1,7 +1,7 @@
 import doto.model
 import doto.model.task
 
-CREATE_CMD = '''
+CREATE_CMD = """
              CREATE TABLE IF NOT EXISTS
                 timerecords (
                      id INTEGER NOT NULL,
@@ -11,7 +11,7 @@ CREATE_CMD = '''
                      PRIMARY KEY (id),
                      FOREIGN KEY(task_id) REFERENCES tasks (id)
              )
-             '''
+             """
 
 
 class Timerecord(object):
@@ -34,9 +34,9 @@ class Timerecord(object):
 
     @staticmethod
     def row_to_obj(row, store):
-        '''
+        """
         Create Task from database row
-        '''
+        """
         timerecord = doto.model.unwrap_row(store,
                                            row,
                                            Timerecord,
@@ -59,7 +59,7 @@ class Timerecord(object):
 
 
 def get_started_timerecords(store):
-    '''
+    """
     Get all task which are not completed.
 
     @param cache if True the result will be stored in the cache
@@ -67,19 +67,19 @@ def get_started_timerecords(store):
     @param limit Set the maximum number of returned items. Default=10
 
     @return A list of unfinished tasks
-    '''
+    """
     return store.query(Timerecord.row_to_obj, 'SELECT * FROM timerecords WHERE end IS NULL;', ())
 
 
-insert_query = '''INSERT INTO timerecords ( task_id,  start,  end)
+insert_query = """INSERT INTO timerecords ( task_id,  start,  end)
                               VALUES      (:task_id, :start, :end)
                   ;
-               '''
-update_query = '''UPDATE timerecords SET task_id = :task_id,
+               """
+update_query = """UPDATE timerecords SET task_id = :task_id,
                                          start = :start,
                                          end = :end
                                          WHERE id = :id;
-               '''
+               """
 delete_query = 'DELETE FROM timerecords WHERE id = ?;'
 
 update = doto.model.crud.update(update_query, Timerecord)

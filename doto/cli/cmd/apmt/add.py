@@ -25,9 +25,9 @@ def init_parser(subparsers):
 
 
 def print_error(message, exc):
-    '''
+    """
     Print the message and the Exception
-    '''
+    """
     print(("{}\n\t (Error: {})".format(message, exc)))
 
 

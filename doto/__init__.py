@@ -1,4 +1,4 @@
-''' Doto main module '''
+""" Doto main module """
 
 import argparse
 import shutil

@@ -135,7 +135,7 @@ class FinalState(AbstractState):
     def __init__(self, key, name):
         AbstractState.__init__(self, key, name)
 
-    def add_neighbor(self, **arg):
+    def add_neighbor(self, **_arg):
         """
         Add a neighbor to this state.
 
@@ -144,7 +144,8 @@ class FinalState(AbstractState):
         @throws FinalStateException
 
         """
-        raise FinalStateException("A final state has no neigbors since it is final.")
+        raise FinalStateException(
+            "A final state has no neigbors since it is final.")
 
     def next_state(self, action):
         """
@@ -155,7 +156,8 @@ class FinalState(AbstractState):
         @throws FinalStateException
 
         """
-        raise FinalStateException("This is a final state. There is no next state.")
+        raise FinalStateException(
+            "This is a final state. There is no next state.")
 
     def get_actions(self):
         """

@@ -48,9 +48,9 @@ def get_cached_apmt(store, cache_id):
 
 
 def init_apmt_flags(parser):
-    '''
+    """
     Standard option flags for all apmt commands.
-    '''
+    """
     parser.add_argument("--description", type=str, help="The description of the new appointment")
     parser.add_argument("--end", type=str, help="The date when the new appointment will end")
     parser.add_argument("--repeat", type=str, help="The repeat interval of the appointment.")

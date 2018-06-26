@@ -18,9 +18,9 @@ CONF_DEF = {}
 
 
 def print_result(date_printer, choosen_record):
-    '''
+    """
     Print the result of the of the punch in
-    '''
+    """
     message = "Punched in on %s."
     end_date_str = date_printer.full_date_string(choosen_record.span.start)
     print(message % (end_date_str))

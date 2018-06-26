@@ -58,11 +58,11 @@ class SplitRow(object):
 
 
 def show(apmt, width, date_printer):
-    ''' Show the given Appointment in a given width
+    """ Show the given Appointment in a given width
     @param: apmt a object of type Appointment
     @param: width an int
     @param: config the configuration
-    '''
+    """
     title = Row('Title', apmt.title, fmt_str='{}: {}\n')
     description = Row('Description', apmt.description, fmt_str='{}:\n {}\n')
     schedule = Row('Schedule', schedule_to_str(apmt.schedule, date_printer))

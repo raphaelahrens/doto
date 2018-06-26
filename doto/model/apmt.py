@@ -3,7 +3,7 @@ import doto.model.crud
 import doto.model.repeat
 
 
-CREATE_CMD = '''
+CREATE_CMD = """
                 CREATE TABLE IF NOT EXISTS
                     appointments (
                             id INTEGER NOT NULL,
@@ -16,7 +16,7 @@ CREATE_CMD = '''
                             PRIMARY KEY (id),
                             FOREIGN KEY(repeat) REFERENCES repeats(id)
                     );
-             '''
+             """
 
 
 class Appointment(doto.model.Event):
@@ -37,9 +37,9 @@ class Appointment(doto.model.Event):
 
     @staticmethod
     def row_to_obj(row, store):
-        '''
+        """
         Create Task from database row
-        '''
+        """
         apmt = doto.model.unwrap_row(store,
                                      row,
                                      Appointment,
@@ -51,8 +51,8 @@ class Appointment(doto.model.Event):
 
     @staticmethod
     def obj_to_row(obj):
-        '''
-        '''
+        """
+        """
         row_dict = doto.model.unwrap_obj(obj, ignore_list=('schedule',), foreign_keys=('repeat',))
         row_dict['start'] = obj.schedule.start
         row_dict['end'] = obj.schedule.end
@@ -87,7 +87,7 @@ class Appointment(doto.model.Event):
 
 
 def create_repeat(store, apmt):
-    ''' Create a repeated appointment '''
+    """ Create a repeated appointment """
     next_dt = apmt.repeat.next(doto.model.now_with_tz())
     repeat = apmt.repeat
     apmt.schedule = doto.model.TimeSpan.move(apmt.schedule, next_dt)
@@ -99,11 +99,11 @@ def create_repeat(store, apmt):
 
 
 def create_repeats(store):
-    oudated_query = '''SELECT appointments.* FROM appointments
+    oudated_query = """SELECT appointments.* FROM appointments
                                                INNER JOIN repeats
                                                ON appointments.id=repeats.event
                                                WHERE appointments.start <= :now;
-                      '''
+                      """
     outdated_apmts = store.query(Appointment.row_to_obj, oudated_query, {'now': doto.model.now_with_tz()})
     for apmt in outdated_apmts:
         create_repeat(store, apmt)
@@ -138,18 +138,18 @@ def get_all(store, date):
 
 
 count_query = 'SELECT COUNT(id) FROM appointments'
-insert_query = '''INSERT INTO appointments ( title,  description,  created,  start,  end,  repeat)
+insert_query = """INSERT INTO appointments ( title,  description,  created,  start,  end,  repeat)
                                     VALUES (:title, :description, :created, :start, :end, :repeat)
                   ;
-               '''
-update_query = '''UPDATE appointments SET title = :title,
+               """
+update_query = """UPDATE appointments SET title = :title,
                                           description = :description,
                                           created = :created,
                                           start = :start,
                                           end = :end,
                                           repeat = :repeat
                                          WHERE id = :id;
-               '''
+               """
 delete_query = 'DELETE FROM appointments WHERE id = ?;'
 select_query = 'SELECT * FROM appointments WHERE id = :id;'
 update = doto.model.crud.update(update_query, Appointment)

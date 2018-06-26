@@ -1,7 +1,8 @@
-'''
+"""
 This module defines the default values for the configuration object
-'''
+"""
 import os.path
+
 import doto.simpleconf
 
 USER_PATH = os.path.join(os.path.expanduser("~"), ".config", "doto")

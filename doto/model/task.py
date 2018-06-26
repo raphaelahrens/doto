@@ -5,7 +5,7 @@ import doto.statemachine
 import doto.model.crud
 
 
-CREATE_CMD = '''
+CREATE_CMD = """
                 CREATE TABLE IF NOT EXISTS
                   tasks (
                     id INTEGER NOT NULL,
@@ -22,15 +22,15 @@ CREATE_CMD = '''
                     FOREIGN KEY(repeat) REFERENCES repeats(id)
                     CHECK (state IN ('i', 'c', 'p', 's', 'b'))
                 );
-             '''
+             """
 
 
 def create_difficulties(**difficulties):
-    '''
+    """
     Create the difficulty values for the task evaluation.
 
     @return a enum like type
-    '''
+    """
     keys = []
     names = {}
     for name, d_id in difficulties.items():
@@ -51,7 +51,7 @@ DIFFICULTY = create_difficulties(unknown=0,
 
 
 def _add_new_state(states, key, name, cls=doto.statemachine.State):
-    '''
+    """
     Add a new state to the dictionary and return the state.
 
     @param dir the dictionary to which the state will be added.
@@ -60,7 +60,7 @@ def _add_new_state(states, key, name, cls=doto.statemachine.State):
 
     @return the new state
 
-    '''
+    """
     state = cls(key, name)
     states[key] = state
     return state
@@ -68,7 +68,7 @@ def _add_new_state(states, key, name, cls=doto.statemachine.State):
 
 class StateHolder(object):
 
-    '''
+    """
     This class is used to manage the state of a Task object.
 
     The StateHolder class holds the current state of the task and supports
@@ -76,7 +76,7 @@ class StateHolder(object):
 
     Supported states are pending, started, completed, blocked, interrupted.
 
-    '''
+    """
 
     states = {}
     completed = _add_new_state(states, "c", "completed", doto.statemachine.FinalState)
@@ -97,40 +97,40 @@ class StateHolder(object):
 
     @property
     def key(self):
-        ''' Return the key of the state. '''
+        """ Return the key of the state. """
         return self.state.key
 
     def complete(self):
-        ''' Set the state to complete if itis not already complete. '''
+        """ Set the state to complete if itis not already complete. """
         if self.state is StateHolder.completed:
             return False
         self.state = StateHolder.completed
         return True
 
     def start(self):
-        ''' Set the state to started if it is not already started.  '''
+        """ Set the state to started if it is not already started.  """
         if self.state is not StateHolder.pending:
             return False
         self.state = StateHolder.started
         return True
 
     def reset(self):
-        ''' Reset the state to pending. '''
+        """ Reset the state to pending. """
         self.state = StateHolder.pending
         return True
 
     def next_state(self, action):
-        '''Set the next state according to the given action.'''
+        """Set the next state according to the given action."""
         # TODO: unused in cli maybe in gui
         self.state = self.state.next_state(action)
 
     def get_actions(self):
-        '''
+        """
         Get all possible action from the current state.
 
         @return a list of the action for the current state.
 
-        '''
+        """
         # TODO: unused in cli
         return self.state.get_actions()
 
@@ -184,12 +184,12 @@ def final_state_def():
 
 class Task(doto.model.Event):
 
-    '''
+    """
     Super class of all tasks.
 
     Task implements the basic functionality of a task.
 
-    '''
+    """
     __tablename__ = "tasks"
 
     def __init__(self, title, description, difficulty=DIFFICULTY.unknown, repeat=None):
@@ -202,9 +202,9 @@ class Task(doto.model.Event):
 
     @staticmethod
     def row_to_obj(row, store):
-        '''
+        """
         Create Task from database row
-        '''
+        """
         task = doto.model.unwrap_row(store,
                                      row,
                                      Task,
@@ -225,22 +225,22 @@ class Task(doto.model.Event):
 
     @property
     def difficulty(self):
-        ''' Get the difficulty of the task. '''
+        """ Get the difficulty of the task. """
         return self._difficulty
 
     @difficulty.setter
     def difficulty(self, obj):
-        ''' Set the difficulty of the task. '''
+        """ Set the difficulty of the task. """
         if obj not in DIFFICULTY.keys:
             raise ValueError
         self._difficulty = obj
 
     def done(self):
-        '''
+        """
         Finish the task.
 
         This method marks the task as completed and also sets the end date
-        '''
+        """
         if not self.state.complete():
             return False
         now = doto.model.now_with_tz()
@@ -252,11 +252,11 @@ class Task(doto.model.Event):
         return True
 
     def start(self):
-        '''
+        """
         Start the task.
 
         This method marks the task as started and also sets the start date
-        '''
+        """
         if not self.state.start():
             return False
         self.schedule.start = doto.model.now_with_tz()
@@ -267,11 +267,11 @@ class Task(doto.model.Event):
         return self.state.state is StateHolder.started
 
     def reset(self):
-        '''
+        """
         Reset the tasks state.
 
         Set the state of the task to pending.
-        '''
+        """
         if not self.state.reset():
             return False
         self.schedule = doto.model.TimeSpan()
@@ -302,7 +302,7 @@ class Task(doto.model.Event):
                 )
 
 
-TASK_SELECT = '''SELECT id,
+TASK_SELECT = """SELECT id,
                         title,
                         description,
                         created,
@@ -313,7 +313,7 @@ TASK_SELECT = '''SELECT id,
                         end,
                         repeat
                  FROM tasks
-               '''
+               """
 
 
 count_query = 'SELECT COUNT(id) FROM tasks'
@@ -324,7 +324,7 @@ def _get_tasks(store, query, args=None):
 
 
 def get_many(store, limit=10):
-    '''
+    """
     Get a list of all tasks.
 
     @param cache if True the result will be stored in the cache
@@ -332,7 +332,7 @@ def get_many(store, limit=10):
     @param limit Set the maximum number of returned items. Default=10
             If limit is zero there is no limit
 
-    '''
+    """
     if limit is None:
         return _get_tasks(store, TASK_SELECT + ';')
     else:
@@ -340,7 +340,7 @@ def get_many(store, limit=10):
 
 
 def create_repeat(store, task):
-    ''' Create a repeated appointment '''
+    """ Create a repeated appointment """
     new_task = copy.copy(task)
     new_task.reset()
     now = doto.model.now_with_tz()
@@ -355,7 +355,7 @@ def create_repeat(store, task):
 
 
 def get_open_tasks(store, limit=20):
-    '''
+    """
     Get all task which are not completed.
 
     @param cache if True the result will be stored in the cache
@@ -363,7 +363,7 @@ def get_open_tasks(store, limit=20):
     @param limit Set the maximum number of returned items. Default=10
 
     @return A list of unfinished tasks
-    '''
+    """
     if limit is None:
         return _get_tasks(store,
                           TASK_SELECT + 'WHERE state != ? ;', (StateHolder.completed,))
@@ -372,11 +372,11 @@ def get_open_tasks(store, limit=20):
                           TASK_SELECT + 'WHERE state != ? LIMIT ?;', (StateHolder.completed, limit,))
 
 
-insert_query = '''INSERT INTO tasks ( title,  description,  created,  state,  difficulty,  due,  start,  end,  repeat)
+insert_query = """INSERT INTO tasks ( title,  description,  created,  state,  difficulty,  due,  start,  end,  repeat)
                              VALUES (:title, :description, :created, :state, :difficulty, :due, :start, :end, :repeat)
                   ;
-               '''
-update_query = '''UPDATE tasks SET title = :title,
+               """
+update_query = """UPDATE tasks SET title = :title,
                                    description = :description,
                                    created = :created,
                                    state = :state,
@@ -386,7 +386,7 @@ update_query = '''UPDATE tasks SET title = :title,
                                    end = :end,
                                    repeat = :repeat
                          WHERE id = :id;
-               '''
+               """
 delete_query = 'DELETE FROM tasks WHERE id = ?;'
 select_query = TASK_SELECT + ' WHERE id = :id;'
 update = doto.model.crud.update(update_query, Task)
