@@ -132,12 +132,6 @@ class TestState(unittest.TestCase):
         state.next_state("complete")
         self.assertEqual(state.state, doto.model.task.StateHolder.completed)
 
-    def test_fail_on_final(self):
-        """ Test if next_state fail when called on a FinalState. """
-        from doto.statemachine import FinalStateException
-        state = doto.model.task.StateHolder(doto.model.task.StateHolder.completed)
-        self.assertRaises(FinalStateException, state.next_state, "test")
-
     def test_get_actions(self):
         """ Test if all state return a list of actions. """
         for state in doto.model.task.StateHolder.states.values():

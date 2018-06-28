@@ -42,36 +42,7 @@ class AbstractState(object):
     def __str__(self):
         return "State: %s" % (self._name)
 
-    def add_neighbor(self, neighbor, action):
-        """
-        Add a new neighbor to that state.
-
-        This methods needs to be implemented by the subclass.
-
-        """
-        raise NotImplementedError()
-
-    def next_state(self, action):
-        """
-        Go to the next state.
-
-        This methods needs to be implemented by the subclass.
-
-        @param action the action which is used to go to the next state
-
-        """
-        raise NotImplementedError()
-
-    def get_actions(self):
-        """
-        Getter for the neighbors.
-
-        This method needs to be implemented by the subclass
-
-        """
-        raise NotImplementedError()
-
-    def is_final(self):
+    def is_final(_self):
         """
         Returns True if this state is a final state.
 
@@ -135,38 +106,9 @@ class FinalState(AbstractState):
     def __init__(self, key, name):
         AbstractState.__init__(self, key, name)
 
-    def add_neighbor(self, **_arg):
-        """
-        Add a neighbor to this state.
-
-        This method is not usable since this is final state.
-
-        @throws FinalStateException
-
-        """
-        raise FinalStateException(
-            "A final state has no neigbors since it is final.")
-
-    def next_state(self, action):
-        """
-        Go to the next neighbor with the following action.
-
-        This method is not usable since this is final state.
-
-        @throws FinalStateException
-
-        """
-        raise FinalStateException(
-            "This is a final state. There is no next state.")
-
     def get_actions(self):
         """
         Getter for all possible actions to get from this state to the next.
-
-        This method is not usable since this is final state.
-
-        @throws FinalStateException
-
         """
         return []
 
@@ -177,13 +119,3 @@ class FinalState(AbstractState):
         @returns True since this is a final state
         """
         return True
-
-
-class FinalStateException(Exception):
-
-    """
-    The FinalStateException is used by the FinalState.
-
-    The Exception is to indicate that a method was called with a final state.
-
-    """

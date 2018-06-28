@@ -6,8 +6,8 @@ import shutil
 import doto.cli
 import doto.cli.cmd
 import doto.cli.sub_cmds
-import doto.model
 import doto.defaultconfig
+import doto.model
 
 
 def init_env(commands):

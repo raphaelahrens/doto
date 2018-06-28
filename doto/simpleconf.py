@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 """Done!Tools config file."""
 
-import sys
-
 import configparser
+import sys
 
 
 class Value(object):
@@ -11,6 +10,7 @@ class Value(object):
     Value holds a configuration value and
     can return parsed version of that value.
     """
+
     def __init__(self, value, parser_fn=str):
         self.__parser = parser_fn
         self.__value = parser_fn(value)
@@ -34,6 +34,7 @@ class Section(object):
     """
     class SectionIterator(object):
         """ SectionIterator is an iterator for the section"""
+
         def __init__(self, value_dict):
             self.__iterator = iter(value_dict.items())
 
@@ -80,6 +81,7 @@ class Config(object):
           |     |- Value
 
     """
+
     def __init__(self, config_file, defaults):
         self.__sections = {name: Section(values) for name, values in defaults.items()}
         self.parse_config(config_file)

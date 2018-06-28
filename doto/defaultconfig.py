@@ -1,5 +1,5 @@
 """
-This module defines the default values for the configuration object
+This module defines the default values for the configuration object.
 """
 import os.path
 
