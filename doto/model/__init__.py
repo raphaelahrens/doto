@@ -49,18 +49,19 @@ def get_foreign_obj(store, id, module):
     return module.get(store, id)
 
 
-def unwrap_row(store, row, cls, arg_list, opt_list=None, foreign_keys=None):
-    if opt_list is None:
-        opt_list = ()
+def unwrap_row(store, row, cls, init_args, set_attrs=None, foreign_keys=None):
+    if set_attrs is None:
+        set_attrs = ()
     if foreign_keys is None:
         foreign_keys = ()
-    args = {k: v for k, v in zip(row.keys(), row) if k in arg_list}
+    args = {k: v for k, v in zip(row.keys(), row) if k in init_args}
 
     foreign_args = {key: get_foreign_obj(store, row[key], module) for key, module in foreign_keys}
     args.update(foreign_args)
     obj = cls(**args)
-
-    for opt in opt_list:
+    
+    obj.id = row['id']
+    for opt in set_attrs:
         if opt in row.keys():
             setattr(obj, opt, row[opt])
     return obj

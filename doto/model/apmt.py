@@ -44,7 +44,7 @@ class Appointment(doto.model.Event):
                                      row,
                                      Appointment,
                                      ('title', 'start', 'description', 'end'),
-                                     ('id', 'created'),
+                                     ('created',),
                                      foreign_keys=(('repeat', doto.model.repeat),)
                                      )
         return apmt

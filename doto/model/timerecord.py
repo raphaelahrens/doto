@@ -40,8 +40,7 @@ class Timerecord(object):
         timerecord = doto.model.unwrap_row(store,
                                            row,
                                            Timerecord,
-                                           ('start', 'end'),
-                                           ('id',))
+                                           ('start', 'end'),)
         task_id = row['task_id']
         if task_id is None:
             timerecord.task = None

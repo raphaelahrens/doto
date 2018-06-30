@@ -52,7 +52,6 @@ class Repeat(object):
                                        row,
                                        Repeat,
                                        ('repeat_rule', 'event'),
-                                       ('id',)
                                        )
         return repeat
 

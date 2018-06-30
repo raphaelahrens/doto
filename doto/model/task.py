@@ -209,7 +209,7 @@ class Task(doto.model.Event):
                                      row,
                                      Task,
                                      ('title', 'description', 'difficulty'),
-                                     ('id', 'due', 'created', 'state'),
+                                     ( 'due', 'created', 'state'),
                                      foreign_keys=(('repeat', doto.model.repeat),)
                                      )
         task.schedule = doto.model.TimeSpan(start=row['start'], end=row['end'])
