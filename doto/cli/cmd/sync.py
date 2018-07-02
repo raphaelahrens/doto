@@ -10,6 +10,8 @@ import getpass
 
 import caldav
 
+import pprint
+
 
 COMMAND = 'sync'
 CONF_DEF = {}
@@ -30,9 +32,20 @@ def main(store, args, config, term):
     '''
     user = 'ahrens'
     password = getpass.getpass()
+    url = 'https://webmail.fit.fraunhofer.de/SOGo/dav/'
     client = caldav.DAVClient(url, username=user, password=password)
-    calendar = caldav.Calendar(client, url)
 
-    print(calendar)
+    principal = client.principal()
+    calendars = principal.calendars()
+
+    for cal in calendars:
+        pprint.pprint(cal)
+        pprint.pprint(cal.name)
+        pprint.pprint(dir(cal))
+        pprint.pprint(vars(cal))
+
+        e = cal.events()[0]
+        pprint.pprint(e)
+        pprint.pprint(vars(e))
 
     return 0

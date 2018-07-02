@@ -13,8 +13,10 @@ CREATE_CMD = """
                             start TIMESTAMP NOT NULL,
                             end TIMESTAMP,
                             repeat INTEGER,
+                            calendar INTEGER,
                             PRIMARY KEY (id),
-                            FOREIGN KEY(repeat) REFERENCES repeats(id)
+                            FOREIGN KEY(repeat) REFERENCES repeats(id),
+                            FOREIGN KEY(calendar) REFERENCES repeats(id)
                     );
              """
 
