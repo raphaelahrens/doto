@@ -1,0 +1,8 @@
+[all]
+[all.python]
+bears = BanditBear, FilenameBear, InvalidLinkBear, KeywordBear, PEP8Bear, PyCommentedCodeBear, PyImportSortBear, PyLintBear, PyUnusedCodeBear, PycodestyleBear, RadonBear, SpaceConsistencyBear, coalaBear, MypyBear
+language = Python 3
+files = doto/*.py
+use_spaces = True
+max_line_length = 300
+pylint_disable = C0301, C0330

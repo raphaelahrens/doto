@@ -7,11 +7,10 @@ An example of its use is
 '''
 import datetime
 import getpass
-
 import caldav
-
 import pprint
 
+import doto.model.calendar
 
 COMMAND = 'sync'
 CONF_DEF = {}

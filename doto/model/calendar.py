@@ -39,7 +39,7 @@ class Calendar(object):
         repeat = doto.model.unwrap_row(store,
                                        row,
                                        Calendar,
-                                       ('name', ''),
+                                       ('name', 'url', 'remote', 'sync'),
                                        )
         return repeat
 
@@ -85,4 +85,4 @@ def convert_rrule(rule_str):
     return rrule.rrulestr(rule_str.decode('utf-8'))
 
 
-doto.model.setup_module(CREATE_CMD, ((rrule.rrule, str, convert_rrule),))
+doto.model.setup_module(CREATE_CMD)

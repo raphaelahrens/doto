@@ -1,10 +1,19 @@
-[path]
-store = ./test/store/doto2.db
-cache = ./test/store/cache
-last = ./test/store/last
-
-[date]
-short_out_str = %%d.%%m.%%Y
-full_out_str = %%d.%%m.%%Y-%%H:%%M
-cli_input_str = %%Y.%%m.%%d-%%H:%%M
-local_tz = Europe/Berlin
+{
+    "path": {
+        "store": "./test/store/doto2.db",
+        "cache": "./test/store/cache",
+        "last": "./test/store/last"
+    },
+    "date": {
+        "short_out_str": "%d.%m.%Y",
+        "full_out_str": "%d.%m.%Y-%H:%M",
+        "cli_input_str": "%Y.%m.%d-%H:%M",
+        "local_tz": "Europe/Berlin"
+    },
+    "remote": {
+        "fit": {
+            "url": "https://webmail.fit.fraunhofer.de/SOGo/dav/",
+            "user": "ahrens"
+        }
+    }
+}

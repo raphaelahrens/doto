@@ -160,4 +160,4 @@ delete = doto.model.crud.delete(delete_query)
 get = doto.model.crud.get(select_query, Appointment)
 get_count = doto.model.crud.get_count(count_query)
 
-doto.model.setup_module(CREATE_CMD, ())
+doto.model.setup_module(CREATE_CMD)

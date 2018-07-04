@@ -1,7 +1,5 @@
 #!/bin/sh
 
-. ./venv/bin/activate
-
 rm_if_there() {
     file="$1"
     if [ -e "$file" ]; then

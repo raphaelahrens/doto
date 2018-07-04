@@ -10,12 +10,12 @@ import pytz
 DATETIME_FMT = '%Y-%m-%d %H:%M:%S'
 
 
-def adapt_datetime(dt):
+def adapt_datetime(dt: datetime.datetime) -> bytes:
     utc_dt = pytz.utc.normalize(dt)
     return utc_dt.strftime(DATETIME_FMT).encode('utf-8')
 
 
-def convert_datetime(str_dt):
+def convert_datetime(str_dt: bytes) -> datetime.datetime:
     stored_dt = datetime.datetime.strptime(str_dt.decode("utf-8"), DATETIME_FMT)
     return pytz.utc.localize(stored_dt)
 
@@ -24,12 +24,13 @@ sqlite3.register_adapter(datetime.datetime, adapt_datetime)
 sqlite3.register_converter('TIMESTAMP', convert_datetime)
 
 
-def setup_module(create_cmd, type_list):
+def setup_module(create_cmd, type_list=None):
     Store.CREATE_CMDS.add(create_cmd)
 
-    for cls, adapter, converter in type_list:
-        sqlite3.register_adapter(cls, adapter)
-        sqlite3.register_converter(cls.__name__, converter)
+    if type_list is not None:
+        for cls, adapter, converter in type_list:
+            sqlite3.register_adapter(cls, adapter)
+            sqlite3.register_converter(cls.__name__, converter)
 
 
 def now_with_tz():
@@ -54,12 +55,12 @@ def unwrap_row(store, row, cls, init_args, set_attrs=None, foreign_keys=None):
         set_attrs = ()
     if foreign_keys is None:
         foreign_keys = ()
-    args = {k: v for k, v in zip(row.keys(), row) if k in init_args}
+    kwargs = {k: v for k, v in zip(row.keys(), row) if k in init_args}
 
     foreign_args = {key: get_foreign_obj(store, row[key], module) for key, module in foreign_keys}
-    args.update(foreign_args)
-    obj = cls(**args)
-    
+    kwargs.update(foreign_args)
+    obj = cls(**kwargs)
+
     obj.id = row['id']
     for opt in set_attrs:
         if opt in row.keys():

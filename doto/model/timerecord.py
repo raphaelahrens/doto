@@ -85,4 +85,4 @@ update = doto.model.crud.update(update_query, Timerecord)
 add_new = doto.model.crud.insert(insert_query, Timerecord)
 delete = doto.model.crud.delete(delete_query)
 
-doto.model.setup_module(CREATE_CMD, ())
+doto.model.setup_module(CREATE_CMD)

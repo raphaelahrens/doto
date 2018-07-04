@@ -99,4 +99,5 @@ get = doto.model.crud.get(select_query, Repeat)
 def convert_rrule(rule_str):
     return rrule.rrulestr(rule_str.decode("utf-8"))
 
+
 doto.model.setup_module(CREATE_CMD, ((rrule.rrule, str, convert_rrule),))

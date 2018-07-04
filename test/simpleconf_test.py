@@ -24,17 +24,10 @@ class TestConfig(unittest.TestCase):
         conf = doto.simpleconf.Config("test/configs/testrc.1", TestConfig.defaults)
         self.assertEqual(conf.abc.a, "1")
         self.assertEqual(conf.abc.b, "2")
-        self.assertEqual(conf.abc.c, "4")
+        self.assertEqual(conf.abc.c, 4)
 
     def test_load_2_file(self):
-        conf = doto.simpleconf.Config("test/configs/testrc.1", TestConfig.defaults)
+        conf = doto.simpleconf.Config("test/configs/testrc.2", TestConfig.defaults)
         self.assertEqual(conf.abc.a, "1")
         self.assertEqual(conf.abc.b, "2")
-        self.assertEqual(conf.abc.c, "4")
-
-        conf.parse_config("test/configs/testrc.2")
-        self.assertEqual(conf.abc.b, "5")
-
-    def test_print_config(self):
-        conf = doto.simpleconf.Config("test/configs/testrc.1", TestConfig.defaults)
-        conf.print_config()
+        self.assertEqual(conf.abc.c, 5)
